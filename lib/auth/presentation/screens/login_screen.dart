@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/main.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
-  Future<void> _signIn() async {
-    final googleSignIn = GoogleSignIn();
+  Future<void> _signIn(BuildContext context) async {
+    final googleSignIn = GoogleSignIn(
+      serverClientId:
+          dotenv.get('GCLOUD_WEB_CLIENT_ID'),
+    );
     final googleUser = await googleSignIn.signIn();
     final googleAuth = await googleUser!.authentication;
 
@@ -21,11 +25,16 @@ class LoginScreen extends StatelessWidget {
       throw 'ID token não encontrado';
     }
 
-    await supabase.auth.signInWithIdToken(
+    final response = await supabase.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       accessToken: accessToken,
       idToken: idToken,
     );
+
+    if (response.user != null && context.mounted) {
+      debugPrint("logado como ${response.user!.email}");
+      Navigator.of(context).pushReplacementNamed('/home');
+    }
   }
 
   @override
@@ -37,7 +46,7 @@ class LoginScreen extends StatelessWidget {
           children: [
             Text("Bem-vindo!"),
             ElevatedButton.icon(
-              onPressed: () => _signIn(),
+              onPressed: () => _signIn(context),
               icon: const Icon(Icons.login),
               label: const Text("Entrar com Google"),
             ),

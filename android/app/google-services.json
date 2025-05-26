@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "409916661575",
+    "project_id": "comprinhas-73254",
+    "storage_bucket": "comprinhas-73254.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409916661575:android:bc47a8e2a7c7cd279b3662",
+        "android_client_info": {
+          "package_name": "io.github.kaducmk.flutter_comprinhas"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "409916661575-n8gbkvn98f9rtst955uv5qg8se40nvdi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5D0_BYmtnu7IiyfI1MMInbE6ahc-MkM8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "409916661575-n8gbkvn98f9rtst955uv5qg8se40nvdi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

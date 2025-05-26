@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/splash_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: '.env');
 
-  Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
-    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  await Supabase.initialize(
+    url: dotenv.get('SUPABASE_URL'),
+    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
   );
 
   runApp(const MyApp());
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => SplashScreen(),
         '/home': (context) => HomeScreen(),
+        '/listas/nova_lista': (context) => NovaListaScreen(),
         '/login': (context) => LoginScreen(),
       },
     );
