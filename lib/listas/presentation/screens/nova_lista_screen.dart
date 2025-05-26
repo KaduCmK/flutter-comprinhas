@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 
 class NovaListaScreen extends StatelessWidget {
-  const NovaListaScreen({super.key});
+  final _nameController = TextEditingController();
+
+  NovaListaScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +19,7 @@ class NovaListaScreen extends StatelessWidget {
             children: [
               Text("Nome da Lista:"),
               TextField(
+                controller: _nameController,
                 decoration: const InputDecoration(border: OutlineInputBorder()),
               ),
               const SizedBox(height: 16),
@@ -24,7 +29,15 @@ class NovaListaScreen extends StatelessWidget {
                 enabled: false,
               ),
               const SizedBox(height: 16),
-              ElevatedButton(onPressed: () {}, child: Text("Criar Lista")),
+              ElevatedButton(
+                onPressed: () async {
+                  context.read<ListasBloc>().add(
+                    CreateListEvent(_nameController.text),
+                  );
+                  Navigator.pop(context);
+                },
+                child: Text("Criar Lista"),
+              ),
             ],
           ),
         ),

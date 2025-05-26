@@ -37,6 +37,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_dotenv: ^5.2.1
   google_sign_in: ^6.3.0
+  intl: ^0.20.2
   supabase_flutter: ^2.9.0
 
 dev_dependencies:

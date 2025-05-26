@@ -2,23 +2,26 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 
 class ListaCompra extends Equatable {
   final String id;
   final String name;
-  final DateTime createdAt;
+  final DateTime _createdAt;
 
   const ListaCompra({
     required this.id,
     required this.name,
-    required this.createdAt,
-  });
+    required DateTime createdAt,
+  }) : _createdAt = createdAt;
+
+  String get createdAt => DateFormat('dd/MM/yyyy').format(_createdAt);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
       'name': name,
-      'createdAt': createdAt.millisecondsSinceEpoch,
+      'createdAt': _createdAt.millisecondsSinceEpoch,
     };
   }
 
@@ -26,7 +29,7 @@ class ListaCompra extends Equatable {
     return ListaCompra(
       id: map['id'] as String,
       name: map['name'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
+      createdAt: DateTime.parse(map['created_at'] as String),
     );
   }
 
@@ -36,5 +39,5 @@ class ListaCompra extends Equatable {
       ListaCompra.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  List<Object?> get props => [id, name, createdAt];
+  List<Object?> get props => [id, name, _createdAt];
 }

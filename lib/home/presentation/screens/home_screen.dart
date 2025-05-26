@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
 import 'package:flutter_comprinhas/shared/widgets/user_avatar.dart';
+
+class HomeScreenProvider extends StatelessWidget {
+  const HomeScreenProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => ListasBloc()..add(GetListsEvent()),
+      child: const HomeScreen(),
+    );
+  }
+}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,9 +25,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const List<Widget> _destinations = [
-    ListasScreen(),
-    Placeholder(child: Center(child: Text("Notas Fiscais"))),
+  static final List<Widget> _destinations = [
+    const ListasScreen(),
+    const Placeholder(child: Center(child: Text("Notas Fiscais"))),
   ];
 
   int _selectedIndex = 0;
@@ -34,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _onPageChanged(index);
     _pageController.animateToPage(
       index,
-      duration: Duration(milliseconds: 225),
+      duration: const Duration(milliseconds: 225),
       curve: Curves.ease,
     );
   }
@@ -56,7 +71,16 @@ class _HomeScreenState extends State<HomeScreen> {
           _selectedIndex == 0
               ? FloatingActionButton(
                 onPressed:
-                    () => Navigator.of(context).pushNamed('/listas/nova_lista'),
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => BlocProvider.value(
+                              value: context.read<ListasBloc>(),
+                              child: NovaListaScreen(),
+                            ),
+                      ),
+                    ),
                 child: const Icon(Icons.add),
               )
               : null,

@@ -1,38 +1,31 @@
 part of 'listas_bloc.dart';
 
 abstract class ListasState extends Equatable {
-  const ListasState();
+  final List<ListaCompra> lists;
+
+  const ListasState(this.lists);
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [lists];
 }
 
-class ListasInitial extends ListasState {}
+class ListasInitial extends ListasState {
+  ListasInitial() : super(List.empty());
+}
 
 class ListasLoading extends ListasState {
-  final List<ListaCompra> listas;
-
-  const ListasLoading(this.listas);
-
-  @override
-  List<Object?> get props => [listas];
+  const ListasLoading(super.lists);
 }
 
 class ListasLoaded extends ListasState {
-  final List<ListaCompra> listas;
-
-  const ListasLoaded(this.listas);
-
-  @override
-  List<Object?> get props => [listas];
+  const ListasLoaded(super.lists);
 }
 
 class ListasError extends ListasState {
-  final List<ListaCompra> listas;
   final String message;
 
-  const ListasError(this.listas, this.message);
+  const ListasError(super.lists, {required this.message});
 
   @override
-  List<Object?> get props => [listas, message];
+  List<Object?> get props => [lists, message];
 }
