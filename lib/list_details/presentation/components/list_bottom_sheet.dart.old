@@ -1,0 +1,76 @@
+import 'package:flutter/material.dart';
+
+class ListBottomSheet extends StatefulWidget {
+  const ListBottomSheet({super.key});
+
+  @override
+  State<ListBottomSheet> createState() => _ListBottomSheetState();
+}
+
+class _ListBottomSheetState extends State<ListBottomSheet>
+    with TickerProviderStateMixin {
+  late final AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController =
+        BottomSheet.createAnimationController(this)
+          ..duration = const Duration(milliseconds: 250)
+          ..reverseDuration = const Duration(milliseconds: 200);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomSheet(
+      animationController: _animationController,
+      showDragHandle: true,
+      enableDrag: true,
+      onClosing: () {},
+      onDragEnd: (details, {required isClosing}) {
+        if (isClosing) {
+          _animationController.reverse();
+        }
+      },
+      builder: (sheetContext) {
+        return Container(
+          width: double.infinity,
+          height: 100,
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  spacing: 16,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.shopping_cart, size: 40),
+                    Text(
+                      "Carrinho",
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    Expanded(
+                      child: Text(
+                        "0",
+                        style: Theme.of(context).textTheme.headlineMedium,
+                        textAlign: TextAlign.end,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}

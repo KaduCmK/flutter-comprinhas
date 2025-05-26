@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -47,5 +48,11 @@ class ListasRepositoryImpl implements ListasRepository {
       debugPrint(e.toString());
       rethrow;
     }
+  }
+
+  @override
+  Future<void> addItemToList(String listId, ListItem item) {
+    // TODO: implement addItemToList
+    throw UnimplementedError();
   }
 }
