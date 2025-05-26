@@ -33,6 +33,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
+  flutter_dotenv: ^5.2.1
   google_sign_in: ^6.3.0
   supabase_flutter: ^2.9.0
 
