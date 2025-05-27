@@ -21,7 +21,7 @@ class ListaCompra extends Equatable {
     return <String, dynamic>{
       'id': id,
       'name': name,
-      'createdAt': _createdAt.millisecondsSinceEpoch,
+      'createdAt': _createdAt.toString(),
     };
   }
 

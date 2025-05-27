@@ -1,0 +1,76 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
+import 'package:intl/intl.dart';
+
+class ListItemCard extends StatelessWidget {
+  final ListItem item;
+  const ListItemCard(this.item, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Column(
+                spacing: 2,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: '${item.amount}',
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                          text: ' x ',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleSmall!.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        TextSpan(
+                          text: item.name,
+                          style: Theme.of(context).textTheme.titleMedium!
+                              .copyWith(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    spacing: 2,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.network(
+                          item.createdBy.userMetadata?['picture'],
+                          height: 24,
+                          width: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.calendar_month),
+                      Text(DateFormat('dd/MM/yyyy').format(item.createdAt)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.add_shopping_cart, size: 30),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

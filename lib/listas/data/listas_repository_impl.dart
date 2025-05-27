@@ -13,8 +13,7 @@ class ListasRepositoryImpl implements ListasRepository {
   Future<List<ListaCompra>> getUserLists() async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
-      throw 'Usuário não autenticado';
-      // TODO: implement failure cases
+      throw 'Usuário não autenticado'; // TODO: implement failure cases
     }
 
     try {
@@ -35,15 +34,11 @@ class ListasRepositoryImpl implements ListasRepository {
   Future<void> createList(String name) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
-      throw 'Usuario nao autenticado';
-      // TODO: implement failure cases
+      throw 'Usuario nao autenticado'; // TODO: implement failure cases
     }
 
     try {
-      await _client.from('lists').insert({
-        'name': name,
-        'owner_id': userId,
-      });
+      await _client.from('lists').insert({'name': name, 'owner_id': userId});
     } catch (e) {
       debugPrint(e.toString());
       rethrow;
@@ -51,8 +46,45 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
-  Future<void> addItemToList(String listId, ListItem item) {
-    // TODO: implement addItemToList
-    throw UnimplementedError();
+  Future<List<ListItem>> getListItems(String listId) async {
+    try {
+      final response = await _client
+          .from('list_items')
+          .select(
+            'id, created_at, name, amount, list_id, created_by:created_by_id(*), unitId:unit_id',
+          )
+          .eq('list_id', listId);
+      final items = response.map((e) => ListItem.fromMap(e)).toList();
+      return items;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> addItemToList(
+    String listId,
+    String name,
+    num amount,
+    String unitId,
+  ) async {
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      throw 'Usuario nao autenticado';
+    }
+
+    final Map<String, dynamic> dbRecord = {
+      'name': name,
+      'amount': amount,
+      'list_id': listId,
+      'unit_id': unitId,
+    };
+
+    try {
+      await _client.from('list_items').insert(dbRecord);
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 }

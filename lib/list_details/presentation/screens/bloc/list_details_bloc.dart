@@ -20,10 +20,40 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   Future<void> _onLoadListItems(
     LoadListItemsEvent event,
     Emitter<ListDetailsState> emit,
-  ) async {}
+  ) async {
+    emit(ListDetailsLoading(list: state.list, items: state.items));
+    try {
+      final items = await _repository.getListItems(list.id);
+      emit(ListDetailsLoaded(list: state.list, items: items));
+    } catch (e) {
+      emit(
+        ListDetailsError(
+          list: state.list,
+          items: state.items,
+          message: e.toString(),
+        ),
+      );
+    }
+  }
 
   Future<void> _onAddItemToList(
     AddItemToListEvent event,
     Emitter<ListDetailsState> emit,
-  ) async {}
+  ) async {
+    emit(ListDetailsLoading(list: list, items: state.items));
+    try {
+      await _repository.addItemToList(
+        list.id,
+        event.itemName,
+        event.amount,
+        event.unitId,
+      );
+      final newItems = await _repository.getListItems(list.id);
+      emit(ListDetailsLoaded(list: list, items: newItems));
+    } catch (e) {
+      emit(
+        ListDetailsError(items: state.items, list: list, message: e.toString()),
+      );
+    }
+  }
 }

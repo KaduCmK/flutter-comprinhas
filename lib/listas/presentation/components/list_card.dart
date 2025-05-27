@@ -20,7 +20,10 @@ class ListCard extends StatelessWidget {
             MaterialPageRoute(
               builder:
                   (context) => BlocProvider(
-                    create: (context) => ListDetailsBloc(list: list),
+                    create:
+                        (context) =>
+                            ListDetailsBloc(list: list)
+                              ..add(LoadListItemsEvent()),
                     child: const ListDetailsScreen(),
                   ),
             ),

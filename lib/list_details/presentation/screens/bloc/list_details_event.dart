@@ -8,22 +8,25 @@ abstract class ListDetailsEvent extends Equatable {
 }
 
 class LoadListItemsEvent extends ListDetailsEvent {
-  final String listId;
-
-  const LoadListItemsEvent(this.listId);
+  const LoadListItemsEvent();
 
   @override
-  List<Object> get props => [listId];
+  List<Object> get props => [];
 }
 
 class AddItemToListEvent extends ListDetailsEvent {
-  final String listId;
   final String itemName;
+  final num amount;
+  final String unitId;
 
-  const AddItemToListEvent(this.listId, this.itemName);
+  const AddItemToListEvent({
+    required this.itemName,
+    required this.amount,
+    required this.unitId,
+  });
 
   @override
-  List<Object> get props => [listId, itemName];
+  List<Object> get props => [itemName, amount, unitId];
 }
 
 class DeleteItemFromListEvent extends ListDetailsEvent {
