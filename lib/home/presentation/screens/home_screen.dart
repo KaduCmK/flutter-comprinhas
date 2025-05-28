@@ -84,17 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: const Icon(Icons.add),
               )
               : null,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: PageView.builder(
-            itemCount: _destinations.length,
-            controller: _pageController,
-            onPageChanged: _onPageChanged,
-            itemBuilder: (context, index) {
-              return _destinations[index];
-            },
-          ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+        child: PageView.builder(
+          itemCount: _destinations.length,
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          itemBuilder: (context, index) {
+            return _destinations[index];
+          },
         ),
       ),
       bottomNavigationBar: NavigationBar(
