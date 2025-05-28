@@ -3,42 +3,52 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
-  const ListDetailsAppBar({super.key});
+  final double topCardHeight;
+  const ListDetailsAppBar({super.key, required this.topCardHeight});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ListDetailsBloc, ListDetailsState>(
       builder: (context, state) {
-        return SizedBox(
-          width: double.infinity,
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            color: Theme.of(context).colorScheme.surface,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceAround, // Para distribuir o espaço
-                children: [
-                  Text(
-                    state.list!.name,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).colorScheme.onSurface,
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: SizedBox(
+            height: topCardHeight,
+            child: Card(
+              elevation: 2,
+              color: Theme.of(context).colorScheme.primaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      state.list!.name,
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    "Sua lista de compras detalhada", // Placeholder
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<ListDetailsBloc>().add(
+                              AddItemToListEvent(
+                                itemName: "itemName",
+                                amount: 1,
+                                unitId: "b66405d7-f57a-4183-95e6-6bb9c9ba71dd",
+                              ),
+                            );
+                          },
+                          child: const Text("Adicionar"),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
