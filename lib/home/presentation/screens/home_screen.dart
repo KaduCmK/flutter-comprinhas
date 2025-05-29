@@ -67,6 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
         title: const Text("Comprinhas"),
         leading: const UserAvatar(),
       ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       floatingActionButton:
           _selectedIndex == 0
               ? FloatingActionButton(

@@ -26,6 +26,7 @@ class ListDetailsAppBar extends StatelessWidget {
                     Text(
                       state.list!.name,
                       style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

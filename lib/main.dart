@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/app_theme.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/splash_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
@@ -26,17 +27,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Comprinhas',
-      theme: ThemeData(
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: <TargetPlatform, PageTransitionsBuilder>{
-            TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
-          },
-        ),
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        bottomSheetTheme: BottomSheetThemeData(
-          backgroundColor: Colors.transparent
-        )
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
+      themeMode: ThemeMode.system,
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(),

@@ -55,7 +55,7 @@ class _ListBottomSheetState extends State<ListBottomSheet> {
       builder: (context, scrollController) {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
                 blurRadius: 16,
@@ -64,7 +64,7 @@ class _ListBottomSheetState extends State<ListBottomSheet> {
                 color: Colors.black12,
               ),
             ],
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(24),
               topRight: Radius.circular(24),

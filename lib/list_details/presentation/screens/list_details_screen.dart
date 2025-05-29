@@ -45,6 +45,7 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: BlocBuilder<ListDetailsBloc, ListDetailsState>(
         builder: (context, state) {
           return Stack(
