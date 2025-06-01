@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
@@ -25,7 +26,9 @@ class ListDetailsAppBar extends StatelessWidget {
                   children: [
                     Text(
                       state.list!.name,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                         fontWeight: FontWeight.bold,
                       ),
@@ -35,15 +38,16 @@ class ListDetailsAppBar extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ElevatedButton(
-                          onPressed: () {
-                            context.read<ListDetailsBloc>().add(
-                              AddItemToListEvent(
-                                itemName: "itemName",
-                                amount: 1,
-                                unitId: "b66405d7-f57a-4183-95e6-6bb9c9ba71dd",
+                          onPressed:
+                              () => showDialog(
+                                context: context,
+                                builder: (_) {
+                                  return BlocProvider.value(
+                                    value: context.read<ListDetailsBloc>(),
+                                    child: NewItemDialog(),
+                                  );
+                                },
                               ),
-                            );
-                          },
                           child: const Text("Adicionar"),
                         ),
                       ],

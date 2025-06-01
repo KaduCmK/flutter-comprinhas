@@ -35,7 +35,7 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
     if (_controller.hasClients) {
       final offset = _controller.offset;
       setState(() {
-        _topCardParallaxOffset = -offset * 0.25;
+        _topCardParallaxOffset = -offset * 0.20;
       });
     }
   }

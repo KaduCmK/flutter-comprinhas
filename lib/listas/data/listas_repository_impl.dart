@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ListasRepositoryImpl implements ListasRepository {
@@ -24,6 +25,18 @@ class ListasRepositoryImpl implements ListasRepository {
 
       final lists = response.map((list) => ListaCompra.fromMap(list)).toList();
       return lists;
+    } catch (e) {
+      debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Unit>> getUnits() async {
+    try {
+      final response = await _client.from('units').select();
+      final units = response.map((unit) => Unit.fromMap(unit)).toList();
+      return units;
     } catch (e) {
       debugPrint(e.toString());
       rethrow;

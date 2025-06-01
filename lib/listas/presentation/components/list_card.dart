@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
+import 'package:flutter_comprinhas/shared/entities/unit.dart';
 
 class ListCard extends StatelessWidget {
   final ListaCompra list;
+  final List<Unit> units;
 
-  const ListCard(this.list, {super.key});
+  const ListCard({super.key, required this.list, required this.units});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class ListCard extends StatelessWidget {
                   (context) => BlocProvider(
                     create:
                         (context) =>
-                            ListDetailsBloc(list: list)
+                            ListDetailsBloc(list: list, units: units)
                               ..add(LoadListItemsEvent()),
                     child: const ListDetailsScreen(),
                   ),

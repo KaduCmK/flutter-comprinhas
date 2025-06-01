@@ -2,27 +2,29 @@ part of 'list_details_bloc.dart';
 
 abstract class ListDetailsState extends Equatable {
   final ListaCompra? list;
+  final List<Unit>? units;
   final List<ListItem> items;
 
-  const ListDetailsState({this.list, required this.items});
+  const ListDetailsState({this.list, this.units, required this.items});
 
   @override
-  List<Object?> get props => [list, items];
+  List<Object?> get props => [list, units, items];
 }
 
 class ListDetailsInitial extends ListDetailsState {
   final ListaCompra initialList;
+  final List<Unit> initialUnits;
 
-  const ListDetailsInitial(this.initialList)
-    : super(list: initialList, items: const []);
+  const ListDetailsInitial(this.initialList, this.initialUnits)
+    : super(list: initialList, units: initialUnits, items: const []);
 }
 
 class ListDetailsLoading extends ListDetailsState {
-  const ListDetailsLoading({super.list, required super.items});
+  const ListDetailsLoading({super.list, super.units, required super.items});
 }
 
 class ListDetailsLoaded extends ListDetailsState {
-  const ListDetailsLoaded({required super.list, required super.items});
+  const ListDetailsLoaded({required super.list, required super.units, required super.items});
 }
 
 class ListDetailsError extends ListDetailsState {
@@ -30,10 +32,11 @@ class ListDetailsError extends ListDetailsState {
 
   const ListDetailsError({
     super.list,
+    super.units,
     required super.items,
     required this.message,
   });
 
   @override
-  List<Object?> get props => [list, items, message];
+  List<Object?> get props => [list, units, items, message];
 }

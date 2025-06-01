@@ -27,7 +27,7 @@ class ListasScreen extends StatelessWidget {
               itemCount: state.lists.length,
               itemBuilder: (context, index) {
                 final list = state.lists[index];
-                return ListCard(list);
+                return ListCard(list: list, units: state.units);
               },
             );
           },

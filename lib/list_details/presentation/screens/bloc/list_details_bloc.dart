@@ -4,6 +4,7 @@ import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/shared/entities/unit.dart';
 
 part 'list_details_event.dart';
 part 'list_details_state.dart';
@@ -11,8 +12,10 @@ part 'list_details_state.dart';
 class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   final ListasRepository _repository = ListasRepositoryImpl();
   final ListaCompra list;
+  final List<Unit> units;
 
-  ListDetailsBloc({required this.list}) : super(ListDetailsInitial(list)) {
+  ListDetailsBloc({required this.list, required this.units})
+    : super(ListDetailsInitial(list, units)) {
     on<LoadListItemsEvent>(_onLoadListItems);
     on<AddItemToListEvent>(_onAddItemToList);
   }
@@ -24,7 +27,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     emit(ListDetailsLoading(list: state.list, items: state.items));
     try {
       final items = await _repository.getListItems(list.id);
-      emit(ListDetailsLoaded(list: state.list, items: items));
+      emit(ListDetailsLoaded(list: state.list, units: units, items: items));
     } catch (e) {
       emit(
         ListDetailsError(
@@ -49,7 +52,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
         event.unitId,
       );
       final newItems = await _repository.getListItems(list.id);
-      emit(ListDetailsLoaded(list: list, items: newItems));
+      emit(ListDetailsLoaded(list: list, units: units, items: newItems));
     } catch (e) {
       emit(
         ListDetailsError(items: state.items, list: list, message: e.toString()),

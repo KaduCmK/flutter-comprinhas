@@ -52,7 +52,7 @@ class Unit extends Equatable {
   factory Unit.fromMap(Map<String, dynamic> map) {
     return Unit(
       id: map['id'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(map['createdAt'] as int),
+      createdAt: DateTime.parse(map['created_at'] as String),
       name: map['name'] as String,
       abbreviation: map['abbreviation'] as String,
       category: map['category'] != null ? map['category'] as String : null,
