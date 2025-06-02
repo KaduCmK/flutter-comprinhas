@@ -10,11 +10,8 @@ class ListItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: Tween<Offset>(
-        begin: const Offset(0, -0.5),
-        end: Offset.zero,
-      ).animate(animation),
+    return SizeTransition(
+      sizeFactor: CurvedAnimation(parent: animation, curve: Curves.easeOut),
       child: FadeTransition(
         opacity: animation,
         child: ListTile(

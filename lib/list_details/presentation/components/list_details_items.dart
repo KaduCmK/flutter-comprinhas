@@ -32,14 +32,6 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
     }
   }
 
-  Widget _buildAnimatedItem(
-    BuildContext context,
-    int index,
-    Animation<double> animation,
-  ) {
-    return ListItemCard(item: _displayedItems[index], animation: animation);
-  }
-
   Widget _buildRemovedItemWidget(
     BuildContext context,
     ListItem item,
@@ -131,7 +123,11 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
             sliver: SliverAnimatedList(
               key: _listKey,
               initialItemCount: _displayedItems.length,
-              itemBuilder: _buildAnimatedItem,
+              itemBuilder:
+                  (context, index, animation) => ListItemCard(
+                    item: _displayedItems[index],
+                    animation: animation,
+                  ),
             ),
           ),
 
