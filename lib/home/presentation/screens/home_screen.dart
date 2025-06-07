@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/home/config/service_locator.dart';
+import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
 import 'package:flutter_comprinhas/shared/widgets/user_avatar.dart';
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 
 class HomeScreenProvider extends StatelessWidget {
   const HomeScreenProvider({super.key});
@@ -73,9 +75,19 @@ class _HomeScreenState extends State<HomeScreen> {
         leading: const UserAvatar(),
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      floatingActionButton:
-          _selectedIndex == 0
-              ? FloatingActionButton(
+      floatingActionButtonLocation: ExpandableFab.location,
+      floatingActionButton: ExpandableFab(
+        type: ExpandableFabType.up,
+        childrenAnimation: ExpandableFabAnimation.none,
+        distance: 70,
+        children: [
+          Row(
+            spacing: 4,
+            children: [
+              Text("Criar Lista"),
+              FloatingActionButton.small(
+                heroTag: null,
+                child: const Icon(Icons.add),
                 onPressed:
                     () => Navigator.push(
                       context,
@@ -87,9 +99,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                       ),
                     ),
-                child: const Icon(Icons.add),
-              )
-              : null,
+              ),
+            ],
+          ),
+          Row(
+            spacing: 4,
+            children: [
+              Text("Entrar em uma lista"),
+              FloatingActionButton.small(
+                heroTag: null,
+                child: const Icon(Icons.login),
+                onPressed:
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => BlocProvider.value(
+                              value: context.read<ListasBloc>(),
+                              child: JoinListScreen(),
+                            ),
+                      ),
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: PageView.builder(

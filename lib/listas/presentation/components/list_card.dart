@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/home/config/service_locator.dart';
+import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
