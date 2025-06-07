@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/home/config/service_locator.dart';
+import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
@@ -11,7 +13,10 @@ class HomeScreenProvider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ListasBloc()..add(GetListsEvent()),
+      create:
+          (context) =>
+              ListasBloc(repository: sl<ListasRepository>())
+                ..add(GetListsEvent()),
       child: const HomeScreen(),
     );
   }

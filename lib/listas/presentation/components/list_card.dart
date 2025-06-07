@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/home/config/service_locator.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
+import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 
 class ListCard extends StatelessWidget {
@@ -23,9 +25,11 @@ class ListCard extends StatelessWidget {
               builder:
                   (context) => BlocProvider(
                     create:
-                        (context) =>
-                            ListDetailsBloc(list: list, units: units)
-                              ..add(LoadListItemsEvent()),
+                        (context) => ListDetailsBloc(
+                          repository: sl<ListasRepository>(),
+                          list: list,
+                          units: units,
+                        )..add(LoadListItemsEvent()),
                     child: const ListDetailsScreen(),
                   ),
             ),

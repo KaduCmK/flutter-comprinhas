@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/listas/data/listas_repository_impl.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:equatable/equatable.dart';
@@ -10,12 +9,16 @@ part 'list_details_event.dart';
 part 'list_details_state.dart';
 
 class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
-  final ListasRepository _repository = ListasRepositoryImpl();
+  final ListasRepository _repository;
   final ListaCompra list;
   final List<Unit> units;
 
-  ListDetailsBloc({required this.list, required this.units})
-    : super(ListDetailsInitial(list, units)) {
+  ListDetailsBloc({
+    required ListasRepository repository,
+    required this.list,
+    required this.units,
+  }) : _repository = repository,
+       super(ListDetailsInitial(list, units)) {
     on<LoadListItemsEvent>(_onLoadListItems);
     on<AddItemToListEvent>(_onAddItemToList);
   }
