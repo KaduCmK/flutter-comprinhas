@@ -12,11 +12,7 @@ abstract class ListDetailsState extends Equatable {
 }
 
 class ListDetailsInitial extends ListDetailsState {
-  final ListaCompra initialList;
-  final List<Unit> initialUnits;
-
-  const ListDetailsInitial(this.initialList, this.initialUnits)
-    : super(list: initialList, units: initialUnits, items: const []);
+  const ListDetailsInitial() : super(items: const []);
 }
 
 class ListDetailsLoading extends ListDetailsState {
@@ -24,7 +20,11 @@ class ListDetailsLoading extends ListDetailsState {
 }
 
 class ListDetailsLoaded extends ListDetailsState {
-  const ListDetailsLoaded({required super.list, required super.units, required super.items});
+  const ListDetailsLoaded({
+    required super.list,
+    required super.units,
+    required super.items,
+  });
 }
 
 class ListDetailsError extends ListDetailsState {

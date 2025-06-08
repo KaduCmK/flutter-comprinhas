@@ -5,6 +5,8 @@ import 'package:flutter_comprinhas/shared/entities/unit.dart';
 abstract class ListasRepository {
   Future<List<ListaCompra>> getUserLists();
   Future<void> createList(String name);
+  Future<void> joinList(String listId);
+  Future<ListaCompra> getListById(String listId);
 
   Future<List<ListItem>> getListItems(String listId);
   Future<List<Unit>> getUnits();

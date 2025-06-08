@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/core/config/service_locator.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
-import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
+import 'package:go_router/go_router.dart';
 
 class ListCard extends StatelessWidget {
   final ListaCompra list;
@@ -19,21 +15,7 @@ class ListCard extends StatelessWidget {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) => BlocProvider(
-                    create:
-                        (context) => ListDetailsBloc(
-                          repository: sl<ListasRepository>(),
-                          list: list,
-                          units: units,
-                        )..add(LoadListItemsEvent()),
-                    child: const ListDetailsScreen(),
-                  ),
-            ),
-          );
+          context.push('/list/${list.id}');
         },
         borderRadius: BorderRadius.circular(10),
         child: Padding(

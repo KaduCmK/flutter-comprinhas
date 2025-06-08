@@ -20,13 +20,35 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       final response = await _client
           .from('lists')
-          .select()
-          .eq('owner_id', userId);
+          .select('*, list_members!inner(*)')
+          .eq('list_members.user_id', _client.auth.currentUser!.id);
 
       final lists = response.map((list) => ListaCompra.fromMap(list)).toList();
       return lists;
     } catch (e) {
       debugPrint(e.toString());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> joinList(String listId) async {
+    try {
+      await _client.functions.invoke('join-list', body: {'list_id': listId});
+    } catch (e) {
+      debugPrint('Erro ao chamar edge function join_list: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<ListaCompra> getListById(String listId) async {
+    try {
+      final response =
+          await _client.from('lists').select().eq('id', listId).single();
+      return ListaCompra.fromMap(response);
+    } catch (e) {
+      debugPrint('Erro ao buscar lista por id: $e');
       rethrow;
     }
   }
@@ -51,7 +73,7 @@ class ListasRepositoryImpl implements ListasRepository {
     }
 
     try {
-      await _client.from('lists').insert({'name': name, 'owner_id': userId});
+      await _client.rpc('create_new_list', params: {'list_name': name});
     } catch (e) {
       debugPrint(e.toString());
       rethrow;

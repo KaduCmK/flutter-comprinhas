@@ -7,12 +7,7 @@ abstract class ListDetailsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadListItemsEvent extends ListDetailsEvent {
-  const LoadListItemsEvent();
-
-  @override
-  List<Object> get props => [];
-}
+class LoadListDetailsEvent extends ListDetailsEvent {}
 
 class AddItemToListEvent extends ListDetailsEvent {
   final String itemName;

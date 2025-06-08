@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
+import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
@@ -24,14 +25,32 @@ class ListDetailsAppBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      state.list!.name,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.headlineMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          state.list?.name ?? '',
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineMedium?.copyWith(
+                            color:
+                                Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed:
+                              () => showDialog(
+                                context: context,
+                                builder:
+                                    (_) => QrCodeDialog(listId: state.list!.id),
+                              ),
+                          icon: Icon(Icons.qr_code),
+                        ),
+                      ],
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.max,

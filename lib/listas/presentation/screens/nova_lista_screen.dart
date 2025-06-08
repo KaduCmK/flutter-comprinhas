@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class NovaListaScreen extends StatelessWidget {
   final _nameController = TextEditingController();
@@ -34,7 +35,7 @@ class NovaListaScreen extends StatelessWidget {
                   context.read<ListasBloc>().add(
                     CreateListEvent(_nameController.text),
                   );
-                  Navigator.pop(context);
+                  context.pop(context);
                 },
                 child: Text("Criar Lista"),
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/main.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,9 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (session == null) {
-      Navigator.of(context).pushReplacementNamed('/login');
+      context.go('/login');
     } else {
-      Navigator.of(context).pushReplacementNamed('/home');
+      context.go('/home');
     }
   }
 

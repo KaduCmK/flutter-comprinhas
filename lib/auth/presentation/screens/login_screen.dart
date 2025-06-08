@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -33,7 +34,7 @@ class LoginScreen extends StatelessWidget {
       debugPrint("logado como ${response.user!.email}");
 
       if (context.mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
+        context.go('/home');
       }
     }
   }

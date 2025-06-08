@@ -3,11 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
-import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
-import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
 import 'package:flutter_comprinhas/shared/widgets/user_avatar.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreenProvider extends StatelessWidget {
   const HomeScreenProvider({super.key});
@@ -89,15 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 heroTag: null,
                 child: const Icon(Icons.add),
                 onPressed:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => BlocProvider.value(
-                              value: context.read<ListasBloc>(),
-                              child: NovaListaScreen(),
-                            ),
-                      ),
+                    () => context.push(
+                      '/nova-lista',
+                      extra: context.read<ListasBloc>(),
                     ),
               ),
             ],
@@ -110,15 +103,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 heroTag: null,
                 child: const Icon(Icons.login),
                 onPressed:
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (_) => BlocProvider.value(
-                              value: context.read<ListasBloc>(),
-                              child: JoinListScreen(),
-                            ),
-                      ),
+                    () => context.push(
+                      '/join-list',
+                      extra: context.read<ListasBloc>(),
                     ),
               ),
             ],
