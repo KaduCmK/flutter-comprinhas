@@ -24,25 +24,32 @@ class NewItemDialog extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              TextField(controller: _itemNameController),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(child: TextField(controller: _amountController)),
-                  DropdownMenu(
-                    controller: _unitController,
-                    initialSelection:
-                        units!.singleWhere((u) => u.abbreviation == "un").id,
-                    dropdownMenuEntries: List.generate(
-                      units.length,
-                      (index) => DropdownMenuEntry(
-                        value: units[index].id,
-                        label: units[index].name,
+                  SizedBox(
+                    width: 90,
+                    child: TextField(controller: _amountController),
+                  ),
+                  SizedBox(
+                    width: 128,
+                    child: DropdownMenu(
+                      expandedInsets: EdgeInsets.zero,
+                      controller: _unitController,
+                      initialSelection:
+                          units!.singleWhere((u) => u.abbreviation == "un").id,
+                      dropdownMenuEntries: List.generate(
+                        units.length,
+                        (index) => DropdownMenuEntry(
+                          value: units[index].id,
+                          label: units[index].name,
+                        ),
                       ),
                     ),
                   ),
                 ],
               ),
-              TextField(controller: _itemNameController),
             ],
           ),
           actions: [

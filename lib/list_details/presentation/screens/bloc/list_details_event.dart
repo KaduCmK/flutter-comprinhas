@@ -24,12 +24,11 @@ class AddItemToListEvent extends ListDetailsEvent {
   List<Object> get props => [itemName, amount, unitId];
 }
 
-class DeleteItemFromListEvent extends ListDetailsEvent {
-  final String listId;
+class RemoveItemFromListEvent extends ListDetailsEvent {
   final String itemId;
 
-  const DeleteItemFromListEvent(this.listId, this.itemId);
+  const RemoveItemFromListEvent(this.itemId);
 
   @override
-  List<Object> get props => [listId, itemId];
+  List<Object> get props => [itemId];
 }

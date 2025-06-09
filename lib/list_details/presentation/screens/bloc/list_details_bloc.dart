@@ -26,6 +26,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
 
     on<LoadListDetailsEvent>(_onLoadListDetails);
     on<AddItemToListEvent>(_onAddItemToList);
+    on<RemoveItemFromListEvent>(_onRemoveItemFromList);
   }
 
   @override
@@ -49,6 +50,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
       final list = await _repository.getListById(listId);
       final units = await _repository.getUnits();
       final items = await _repository.getListItems(listId);
+      debugPrint('items: ${items.length}');
       emit(ListDetailsLoaded(list: list, units: units, items: items));
     } catch (e) {
       emit(
@@ -66,6 +68,13 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     AddItemToListEvent event,
     Emitter<ListDetailsState> emit,
   ) async {
+    emit(
+      ListDetailsLoading(
+        items: state.items,
+        list: state.list,
+        units: state.units,
+      ),
+    );
     try {
       await _repository.addItemToList(
         listId,
@@ -78,6 +87,31 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
         ListDetailsError(
           items: state.items,
           list: state.list,
+          message: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onRemoveItemFromList(
+    RemoveItemFromListEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    emit(
+      ListDetailsLoading(
+        list: state.list,
+        units: state.units,
+        items: state.items,
+      ),
+    );
+    try {
+      await _repository.removeItemFromList(event.itemId);
+    } catch (e) {
+      emit(
+        ListDetailsError(
+          items: state.items,
+          list: state.list,
+          units: state.units,
           message: e.toString(),
         ),
       );

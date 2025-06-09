@@ -16,4 +16,5 @@ abstract class ListasRepository {
     num amount,
     String unitId,
   );
+  Future<void> removeItemFromList(String itemId);
 }

@@ -56,6 +56,18 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                 right: 0,
                 child: ListDetailsAppBar(topCardHeight: topCardHeight),
               ),
+              Positioned(
+                top: topCardHeight + statusBarHeight + 2,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child:
+                      state is ListDetailsLoading
+                          ? const LinearProgressIndicator()
+                          : const SizedBox(height: 4),
+                ),
+              ),
               ListDetailsItems(
                 controller: _controller,
                 topCardHeight: topCardHeight + statusBarHeight,

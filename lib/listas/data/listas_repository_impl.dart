@@ -122,4 +122,14 @@ class ListasRepositoryImpl implements ListasRepository {
       debugPrint(e.toString());
     }
   }
+
+  @override
+  Future<void> removeItemFromList(String itemId) async {
+    try {
+      await _client.from('list_items').delete().eq('id', itemId);
+    } catch (e) {
+      debugPrint('Erro ao deletar item: $e');
+      rethrow;
+    }
+  }
 }

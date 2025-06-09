@@ -1,4 +1,3 @@
-// list_details_items.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
@@ -21,80 +20,51 @@ class ListDetailsItems extends StatefulWidget {
 
 class _ListDetailsItemsState extends State<ListDetailsItems> {
   final _listKey = GlobalKey<SliverAnimatedListState>();
-  List<ListItem> _displayedItems = [];
+  // A lista local que controla a animação
+  final List<ListItem> _items = [];
 
-  @override
-  void initState() {
-    super.initState();
-    final initialState = BlocProvider.of<ListDetailsBloc>(context).state;
-    if (initialState.items.isNotEmpty) {
-      _displayedItems = List.from(initialState.items);
-    }
+  // NÂO precisa mais de initState pra popular a lista
+
+  void _addItem(ListItem item, int index) {
+    // Insere na posição correta pra manter a ordem
+    _items.insert(index, item);
+    _listKey.currentState?.insertItem(index);
   }
 
-  Widget _buildRemovedItemWidget(
-    BuildContext context,
-    ListItem item,
-    Animation<double> animation,
-  ) {
-    return FadeTransition(
-      opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-      child: SizeTransition(
-        sizeFactor: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: ListItemCard(item: item, animation: kAlwaysCompleteAnimation),
-      ),
+  void _removeItem(ListItem item, int index) {
+    // Remove o item e anima a saída dele
+    _listKey.currentState?.removeItem(
+      index,
+      (context, animation) => const SizedBox.shrink(),
     );
-  }
-
-  void _updateListAndAnimate(List<ListItem> newItemsFromBloc) {
-    for (int i = _displayedItems.length - 1; i >= 0; i--) {
-      final currentItem = _displayedItems[i];
-      if (!newItemsFromBloc.any((newItem) => newItem.id == currentItem.id)) {
-        final ListItem itemToRemove = _displayedItems.removeAt(
-          i,
-        ); // Remove from our local list
-        _listKey.currentState?.removeItem(
-          i,
-          (context, animation) =>
-              _buildRemovedItemWidget(context, itemToRemove, animation),
-          duration: const Duration(
-            milliseconds: 200,
-          ), // Removal animation duration
-        );
-      }
-    }
-
-    for (
-      int targetIndex = 0;
-      targetIndex < newItemsFromBloc.length;
-      targetIndex++
-    ) {
-      final newItem = newItemsFromBloc[targetIndex];
-      if (targetIndex >= _displayedItems.length) {
-        _displayedItems.add(newItem); // Add to our local list
-        _listKey.currentState?.insertItem(
-          targetIndex,
-          duration: const Duration(milliseconds: 300),
-        );
-      } else if (_displayedItems[targetIndex].id != newItem.id) {
-        _displayedItems.insert(
-          targetIndex,
-          newItem,
-        ); // Insert into our local list
-        _listKey.currentState?.insertItem(
-          targetIndex,
-          duration: const Duration(milliseconds: 300),
-        );
-      }
-    }
+    _items.remove(item);
+    context.read<ListDetailsBloc>().add(RemoveItemFromListEvent(item.id));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ListDetailsBloc, ListDetailsState>(
+      // Escuta apenas quando a lista for carregada com sucesso
+      listenWhen: (previous, current) => current is ListDetailsLoaded,
       listener: (context, state) {
-        if (state is ListDetailsLoaded) {
-          _updateListAndAnimate(List<ListItem>.from(state.items));
+        final newItems = state.items;
+
+        // 1. REMOÇÕES: Itera de trás pra frente pra não bugar os índices
+        for (int i = _items.length - 1; i >= 0; i--) {
+          final currentItem = _items[i];
+          // Se o item da UI não existe na nova lista do BLoC, remove ele
+          if (!newItems.contains(currentItem)) {
+            _removeItem(currentItem, i);
+          }
+        }
+
+        // 2. ADIÇÕES: Itera na nova lista do BLoC
+        for (int i = 0; i < newItems.length; i++) {
+          final newItem = newItems[i];
+          // Se o item do BLoC não existe na nossa lista da UI, adiciona ele
+          if (!_items.contains(newItem)) {
+            _addItem(newItem, i);
+          }
         }
       },
       child: CustomScrollView(
@@ -102,36 +72,30 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
         controller: widget.controller,
         slivers: [
           SliverPadding(
-            padding: EdgeInsets.only(top: widget.topCardHeight + 8),
+            padding: EdgeInsets.only(top: widget.topCardHeight + 10),
           ),
-
           DecoratedSliver(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceDim,
-              borderRadius: BorderRadius.all(Radius.circular(16)),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.shadow.withValues(alpha: 0.3),
-                  spreadRadius: 0.2,
-                  blurRadius: 10,
-                  offset: const Offset(0, -2),
-                ),
-              ],
+              borderRadius: const BorderRadius.all(Radius.circular(16)),
             ),
             sliver: SliverAnimatedList(
               key: _listKey,
-              initialItemCount: _displayedItems.length,
-              itemBuilder:
-                  (context, index, animation) => ListItemCard(
-                    item: _displayedItems[index],
-                    animation: animation,
-                  ),
+              // O count inicial é 0, o listener vai popular a lista
+              initialItemCount: _items.length,
+              itemBuilder: (context, index, animation) {
+                final item = _items[index];
+                return ListItemCard(
+                  item: item,
+                  animation: animation,
+                  onDismiss: (item) {
+                    _removeItem(item, index);
+                  },
+                );
+              },
             ),
           ),
-
-          SliverPadding(padding: const EdgeInsets.only(bottom: 150)),
+          const SliverPadding(padding: EdgeInsets.only(bottom: 150)),
         ],
       ),
     );
