@@ -8,7 +8,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class ListasRepositoryImpl implements ListasRepository {
   late final SupabaseClient _client;
 
-  ListasRepositoryImpl() : _client = Supabase.instance.client;
+  ListasRepositoryImpl({SupabaseClient? client})
+    : _client = client ?? Supabase.instance.client;
 
   @override
   Future<List<ListaCompra>> getUserLists() async {

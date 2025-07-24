@@ -23,8 +23,6 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
   // A lista local que controla a animação
   final List<ListItem> _items = [];
 
-  // NÂO precisa mais de initState pra popular a lista
-
   void _addItem(ListItem item, int index) {
     // Insere na posição correta pra manter a ordem
     _items.insert(index, item);
@@ -44,7 +42,6 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ListDetailsBloc, ListDetailsState>(
-      // Escuta apenas quando a lista for carregada com sucesso
       listenWhen: (previous, current) => current is ListDetailsLoaded,
       listener: (context, state) {
         final newItems = state.items;
@@ -81,7 +78,6 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
             ),
             sliver: SliverAnimatedList(
               key: _listKey,
-              // O count inicial é 0, o listener vai popular a lista
               initialItemCount: _items.length,
               itemBuilder: (context, index, animation) {
                 final item = _items[index];
