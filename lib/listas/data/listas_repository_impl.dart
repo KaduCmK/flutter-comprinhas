@@ -1,15 +1,16 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ListasRepositoryImpl implements ListasRepository {
   late final SupabaseClient _client;
 
-  ListasRepositoryImpl({SupabaseClient? client})
-    : _client = client ?? Supabase.instance.client;
+  ListasRepositoryImpl({required SupabaseClient client}) : _client = client;
 
   @override
   Future<List<ListaCompra>> getUserLists() async {
@@ -17,6 +18,13 @@ class ListasRepositoryImpl implements ListasRepository {
     if (userId == null) {
       throw 'Usuário não autenticado'; // TODO: implement failure cases
     }
+
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    debugPrint("fcm token: $fcmToken");
+    await supabase
+        .from('users')
+        .update({'fcm_token': fcmToken})
+        .eq('id', supabase.auth.currentUser!.id);
 
     try {
       final response = await _client
