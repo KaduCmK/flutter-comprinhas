@@ -1,3 +1,4 @@
+import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
@@ -17,4 +18,10 @@ abstract class ListasRepository {
     String unitId,
   );
   Future<void> removeItemFromList(String itemId);
+
+  // funcionalidades de carrinho
+  Future<List<CartItem>> getCartItems(String listId);
+  Future<void> addItemToCart(String listItemId);
+  Future<void> removeItemFromCart(String cartItemId);
+  Future<void> setCartMode(String listId, CartMode mode);
 }

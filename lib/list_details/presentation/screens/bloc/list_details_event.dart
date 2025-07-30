@@ -32,3 +32,23 @@ class RemoveItemFromListEvent extends ListDetailsEvent {
   @override
   List<Object> get props => [itemId];
 }
+
+class AddToCartEvent extends ListDetailsEvent {
+  final String listItemId;
+
+  const AddToCartEvent(this.listItemId);
+
+  @override
+  List<Object> get props => [listItemId];
+}
+
+class RemoveFromCartEvent extends ListDetailsEvent {
+  final String listItemId;
+
+  const RemoveFromCartEvent(this.listItemId);
+
+  @override
+  List<Object> get props => [listItemId];
+}
+
+class ToggleCartModeEvent extends ListDetailsEvent {}

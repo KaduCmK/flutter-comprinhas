@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
@@ -138,6 +139,65 @@ class ListasRepositoryImpl implements ListasRepository {
       await _client.from('list_items').delete().eq('id', itemId);
     } catch (e) {
       debugPrint('Erro ao deletar item: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<CartItem>> getCartItems(String listId) async {
+    try {
+      final response = await _client.rpc(
+        'get_cart_items_for_list',
+        params: {'list_id_param': listId},
+      );
+      final items =
+          (response as List<dynamic>)
+              .map((itemMap) => CartItem.fromMap(itemMap))
+              .toList();
+      return items;
+    } catch (e) {
+      debugPrint('erro ao buscar itens do carrinho: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> addItemToCart(String listItemId) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) {
+      throw 'Usuario nao autenticado';
+    }
+
+    try {
+      await _client.from('cart_items').insert({
+        'list_item_id': listItemId,
+        'user_id': userId,
+      });
+    } catch (e) {
+      debugPrint('Erro ao adicionar item ao carrinho: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> removeItemFromCart(String cartItemId) async {
+    try {
+      await _client.from('cart_items').delete().eq('id', cartItemId);
+    } catch (e) {
+      debugPrint('Erro ao remover item do carrinho: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> setCartMode(String listId, CartMode mode) async {
+    try {
+      await _client
+          .from('lists')
+          .update({'cart_mode': mode.name})
+          .eq('id', listId);
+    } catch (e) {
+      debugPrint('Erro ao atualizar modo do carrinho: $e');
       rethrow;
     }
   }
