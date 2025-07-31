@@ -50,6 +50,7 @@ final _router = GoRouter(
         return BlocProvider(
           create:
               (context) => ListDetailsBloc(
+                client: supabase,
                 repository: sl<ListasRepository>(),
                 listId: listId,
               )..add(LoadListDetailsEvent()),

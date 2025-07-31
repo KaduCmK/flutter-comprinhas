@@ -1,14 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
-import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
-import 'package:equatable/equatable.dart';
+import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
-import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
+import 'package:equatable/equatable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'list_details_event.dart';
@@ -17,13 +15,21 @@ part 'list_details_state.dart';
 class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   final ListasRepository _repository;
   final String listId;
+  final SupabaseClient _client;
+
+  // Getter para a lista original, antes do filtro do carrinho
+  List<ListItem> originalItems = [];
 
   late final RealtimeChannel _itemChannel;
   late final RealtimeChannel _cartChannel;
 
-  ListDetailsBloc({required ListasRepository repository, required this.listId})
-    : _repository = repository,
-      super(ListDetailsInitial()) {
+  ListDetailsBloc({
+    required ListasRepository repository,
+    required this.listId,
+    required SupabaseClient client,
+  })  : _repository = repository,
+        _client = client,
+        super(const ListDetailsInitial()) {
     _setupRealtime();
 
     on<LoadListDetailsEvent>(_onLoadListDetails);
@@ -55,13 +61,16 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     );
     try {
       final list = await _repository.getListById(listId);
-      final items = await _repository.getListItems(listId);
       final units = await _repository.getUnits();
+      final allItems = await _repository.getListItems(listId);
       final cartItems = await _repository.getCartItems(listId);
 
-      final cartItemIds = cartItems.map((item) => item.listItemId).toSet();
-      final itemsToBuy =
-          items.where((item) => !cartItemIds.contains(item.id)).toList();
+      // Guarda a lista completa antes de filtrar
+      originalItems = allItems;
+
+      // Filtra os itens que já estão no carrinho para não exibi-los na lista principal
+      final cartItemIds = cartItems.map((cartItem) => cartItem.listItemId).toSet();
+      final itemsToBuy = allItems.where((item) => !cartItemIds.contains(item.id)).toList();
 
       emit(
         ListDetailsLoaded(
@@ -86,19 +95,39 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     }
   }
 
+  Future<void> _onAddToCart(
+    AddToCartEvent event, Emitter<ListDetailsState> emit) async {
+    try {
+      await _repository.addItemToCart(event.listItemId);
+    } catch (e) {
+      // Opcional: Tratar erro, talvez emitindo um estado de erro específico.
+    }
+  }
+
+  Future<void> _onRemoveFromCart(
+    RemoveFromCartEvent event, Emitter<ListDetailsState> emit) async {
+    try {
+      await _repository.removeItemFromCart(event.cartItemId);
+    } catch (e) {
+       // Opcional: Tratar erro.
+    }
+  }
+
+  Future<void> _onToggleCartMode(
+    ToggleCartModeEvent event, Emitter<ListDetailsState> emit) async {
+    final newMode = state.cartMode == CartMode.shared
+        ? CartMode.individual
+        : CartMode.shared;
+    try {
+      await _repository.setCartMode(listId, newMode);
+      // O Realtime irá disparar um novo LoadListDetailsEvent automaticamente.
+    } catch (e) {
+       // Opcional: Tratar erro.
+    }
+  }
+
   Future<void> _onAddItemToList(
-    AddItemToListEvent event,
-    Emitter<ListDetailsState> emit,
-  ) async {
-    emit(
-      ListDetailsLoading(
-        items: state.items,
-        list: state.list,
-        units: state.units,
-        cartItems: state.cartItems,
-        cartMode: state.cartMode,
-      ),
-    );
+    AddItemToListEvent event, Emitter<ListDetailsState> emit) async {
     try {
       await _repository.addItemToList(
         listId,
@@ -107,115 +136,21 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
         event.unitId,
       );
     } catch (e) {
-      emit(
-        ListDetailsError(
-          items: state.items,
-          list: state.list,
-          units: state.units,
-          cartItems: state.cartItems,
-          cartMode: state.cartMode,
-          message: e.toString(),
-        ),
-      );
+      // ... tratamento de erro
     }
   }
 
   Future<void> _onRemoveItemFromList(
-    RemoveItemFromListEvent event,
-    Emitter<ListDetailsState> emit,
-  ) async {
-    emit(
-      ListDetailsLoading(
-        list: state.list,
-        units: state.units,
-        items: state.items,
-        cartItems: state.cartItems,
-        cartMode: state.cartMode,
-      ),
-    );
+    RemoveItemFromListEvent event, Emitter<ListDetailsState> emit) async {
     try {
       await _repository.removeItemFromList(event.itemId);
     } catch (e) {
-      emit(
-        ListDetailsError(
-          items: state.items,
-          list: state.list,
-          units: state.units,
-          cartItems: state.cartItems,
-          cartMode: state.cartMode,
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  Future<void> _onAddToCart(
-    AddToCartEvent event,
-    Emitter<ListDetailsState> emit,
-  ) async {
-    try {
-      await _repository.addItemToCart(event.listItemId);
-    } catch (e) {
-      emit(
-        ListDetailsError(
-          items: state.items,
-          list: state.list,
-          units: state.units,
-          cartItems: state.cartItems,
-          cartMode: state.cartMode,
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  Future<void> _onRemoveFromCart(
-    RemoveFromCartEvent event,
-    Emitter<ListDetailsState> emit,
-  ) async {
-    try {
-      await _repository.removeItemFromCart(event.cartItemId);
-    } catch (e) {
-      emit(
-        ListDetailsError(
-          items: state.items,
-          list: state.list,
-          units: state.units,
-          cartItems: state.cartItems,
-          cartMode: state.cartMode,
-          message: e.toString(),
-        ),
-      );
-    }
-  }
-
-  Future<void> _onToggleCartMode(
-    ToggleCartModeEvent event,
-    Emitter<ListDetailsState> emit,
-  ) async {
-    final newMode =
-        state.cartMode == CartMode.shared
-            ? CartMode.individual
-            : CartMode.shared;
-    try {
-      await _repository.setCartMode(listId, newMode);
-      add(LoadListDetailsEvent());
-    } catch (e) {
-      emit(
-        ListDetailsError(
-          items: state.items,
-          list: state.list,
-          units: state.units,
-          cartItems: state.cartItems,
-          cartMode: state.cartMode,
-          message: e.toString(),
-        ),
-      );
+      // ... tratamento de erro
     }
   }
 
   void _setupRealtime() {
-    _itemChannel = supabase.channel('public:list_items:list_id=eq.$listId')
+    _itemChannel = _client.channel('public:list_items:list_id=eq.$listId')
       ..onPostgresChanges(
         event: PostgresChangeEvent.all,
         schema: 'public',
@@ -226,30 +161,23 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
           value: listId,
         ),
         callback: (payload) {
-          debugPrint('>>> Realtime event received: ${payload.toString()}');
-          if (!isClosed) {
-            add(LoadListDetailsEvent());
-          }
+          if (!isClosed) add(LoadListDetailsEvent());
         },
       ).subscribe();
 
-    _cartChannel = supabase.channel('public:cart_items')
+    _cartChannel = _client.channel('public:cart_items')
       ..onPostgresChanges(
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: 'cart_items',
         callback: (payload) {
-          debugPrint('>>> Realtime carrinho event received: ${payload.toString()}');
           if (!isClosed) add(LoadListDetailsEvent());
         },
       ).subscribe();
-
-    debugPrint('>>> Realtime channel subscribed');
   }
 
   void _closeRealtime() {
-    _itemChannel.unsubscribe();
-    _cartChannel.unsubscribe();
-    debugPrint('>>> Realtime channel unsubscribed');
+    _client.removeChannel(_itemChannel);
+    _client.removeChannel(_cartChannel);
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/list_details/presentation/components/list_bottom_sheet.dart';
+import 'package:flutter_comprinhas/core/components/split_button.dart';
+import 'package:flutter_comprinhas/list_details/presentation/components/cart_bottom_sheet.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/list_details_app_bar.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/list_details_items.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
@@ -43,12 +44,58 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    final listDetailsBloc = context.read<ListDetailsBloc>();
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: BlocBuilder<ListDetailsBloc, ListDetailsState>(
-        builder: (context, state) {
-          return Stack(
+    return BlocBuilder<ListDetailsBloc, ListDetailsState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          // O SplitButton agora é o bottomNavigationBar para ficar fixo
+          bottomNavigationBar: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              final curvedAnimation = CurvedAnimation(
+                parent: animation,
+                curve: Curves.ease,
+              );
+              final slideAnimation = Tween<Offset>(
+                begin: const Offset(0, 2),
+                end: Offset.zero,
+              ).animate(curvedAnimation);
+              return SlideTransition(position: slideAnimation, child: child);
+            },
+            child: (state.cartItems.isNotEmpty)
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: 32.0), // Espaçamento inferior
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SplitButton(
+                          itemCount: state.cartItems.length,
+                          onPrimaryAction: () => showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            useSafeArea: true,
+                            backgroundColor: Colors.transparent,
+                            builder: (_) => BlocProvider.value(
+                              value: listDetailsBloc, // Passando o BLoC
+                              child: const CartBottomSheet(),
+                            ),
+                          ),
+                          onSecondaryAction: () =>
+                              ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Ação secundária'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(key: ValueKey('empty')),
+          ),
+          body: Stack(
             children: [
               Positioned(
                 top: statusBarHeight + _topCardParallaxOffset,
@@ -62,21 +109,19 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                 right: 0,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child:
-                      state is ListDetailsLoading
-                          ? const LinearProgressIndicator()
-                          : const SizedBox(height: 4),
+                  child: state is ListDetailsLoading
+                      ? const LinearProgressIndicator()
+                      : const SizedBox(height: 4),
                 ),
               ),
               ListDetailsItems(
                 controller: _controller,
                 topCardHeight: topCardHeight + statusBarHeight,
               ),
-              const ListBottomSheet(),
             ],
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -96,15 +96,10 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
                 return ListItemCard(
                   item: item,
                   animation: animation,
-                  // --- LÓGICA DO SWIPE CORRIGIDA ---
-                  // onDismiss agora chama a função de deleção real.
                   onDismiss: (item) {
                     _deleteItem(item, index);
                   },
-                  onAddToCart:
-                      (item) => context.read<ListDetailsBloc>().add(
-                        AddToCartEvent(item.id),
-                      ),
+                  inCart: false,
                 );
               },
             ),
