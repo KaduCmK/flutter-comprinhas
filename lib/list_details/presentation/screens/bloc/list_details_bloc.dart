@@ -39,7 +39,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     on<RemoveItemFromListEvent>(_onRemoveItemFromList);
     on<AddToCartEvent>(_onAddToCart);
     on<RemoveFromCartEvent>(_onRemoveFromCart);
-    on<ToggleCartModeEvent>(_onToggleCartMode);
+    on<SetCartModeEvent>(_onSetCartMode);
   }
 
   @override
@@ -121,14 +121,11 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     }
   }
 
-  Future<void> _onToggleCartMode(
-    ToggleCartModeEvent event,
+  Future<void> _onSetCartMode(
+    SetCartModeEvent event,
     Emitter<ListDetailsState> emit,
   ) async {
-    final newMode =
-        state.cartMode == CartMode.shared
-            ? CartMode.individual
-            : CartMode.shared;
+    final newMode = event.mode ?? CartMode.shared;
     try {
       await _repository.setCartMode(listId, newMode);
       add(LoadListDetailsEvent());

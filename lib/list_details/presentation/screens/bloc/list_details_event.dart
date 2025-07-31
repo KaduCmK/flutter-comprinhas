@@ -51,4 +51,11 @@ class RemoveFromCartEvent extends ListDetailsEvent {
   List<Object> get props => [cartItemId];
 }
 
-class ToggleCartModeEvent extends ListDetailsEvent {}
+class SetCartModeEvent extends ListDetailsEvent {
+  final CartMode? mode;
+
+  const SetCartModeEvent({this.mode});
+
+  @override
+  List<Object> get props => [mode ?? CartMode.shared];
+}

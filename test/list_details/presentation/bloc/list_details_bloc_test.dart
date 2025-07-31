@@ -144,7 +144,7 @@ void main() {
               cartItems: [],
               cartMode: CartMode.shared,
             ),
-        act: (bloc) => bloc.add(ToggleCartModeEvent()),
+        act: (bloc) => bloc.add(SetCartModeEvent()),
         verify: (_) {
           // Verifica se o método para mudar o modo no backend foi chamado com o valor correto
           verify(

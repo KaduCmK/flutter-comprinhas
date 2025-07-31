@@ -94,16 +94,25 @@ class CartBottomSheet extends StatelessWidget {
                         children: [
                           const Icon(Icons.shopping_cart, size: 32),
                           const SizedBox(width: 16),
-                          Text("Carrinho", style: textTheme.headlineSmall),
                           const Spacer(),
-                          Text(
-                            isIndividualMode ? "Individual" : "Compartilhado",
-                          ),
-                          Switch(
-                            value: isIndividualMode,
-                            onChanged:
-                                (_) =>
-                                    listDetailsBloc.add(ToggleCartModeEvent()),
+                          SegmentedButton(
+                            segments: [
+                              ButtonSegment(
+                                value: CartMode.shared,
+                                icon: const Icon(Icons.group),
+                                label: Text("Compartilhado"),
+                              ),
+                              ButtonSegment(
+                                value: CartMode.individual,
+                                icon: const Icon(Icons.person),
+                                label: Text("Individual"),
+                              ),
+                            ],
+                            selected: {state.cartMode},
+                            onSelectionChanged:
+                                (mode) => context.read<ListDetailsBloc>().add(
+                                  SetCartModeEvent(mode: mode.first),
+                                ),
                           ),
                         ],
                       ),
