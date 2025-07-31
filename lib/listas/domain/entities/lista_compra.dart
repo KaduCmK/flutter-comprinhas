@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
@@ -26,7 +25,7 @@ class ListaCompra extends Equatable {
       'id': id,
       'name': name,
       'createdAt': _createdAt.toString(),
-      'cartMode': cartMode.toString(),
+      'cart_mode': cartMode.toString(),
     };
   }
 
@@ -36,7 +35,7 @@ class ListaCompra extends Equatable {
       name: map['name'] as String,
       createdAt: DateTime.parse(map['created_at'] as String),
       cartMode: CartMode.values.firstWhere(
-        (e) => e.toString() == map['cartMode'],
+        (e) => e.name == map['cart_mode'],
         orElse: () => CartMode.shared,
       ),
     );

@@ -7,15 +7,17 @@ import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:equatable/equatable.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'list_details_event.dart';
 part 'list_details_state.dart';
 
 class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
+  final Logger _logger = Logger();
   final ListasRepository _repository;
-  final String listId;
   final SupabaseClient _client;
+  final String listId;
 
   // Getter para a lista original, antes do filtro do carrinho
   List<ListItem> originalItems = [];
@@ -27,9 +29,9 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     required ListasRepository repository,
     required this.listId,
     required SupabaseClient client,
-  })  : _repository = repository,
-        _client = client,
-        super(const ListDetailsInitial()) {
+  }) : _repository = repository,
+       _client = client,
+       super(const ListDetailsInitial()) {
     _setupRealtime();
 
     on<LoadListDetailsEvent>(_onLoadListDetails);
@@ -69,8 +71,10 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
       originalItems = allItems;
 
       // Filtra os itens que já estão no carrinho para não exibi-los na lista principal
-      final cartItemIds = cartItems.map((cartItem) => cartItem.listItemId).toSet();
-      final itemsToBuy = allItems.where((item) => !cartItemIds.contains(item.id)).toList();
+      final cartItemIds =
+          cartItems.map((cartItem) => cartItem.listItemId).toSet();
+      final itemsToBuy =
+          allItems.where((item) => !cartItemIds.contains(item.id)).toList();
 
       emit(
         ListDetailsLoaded(
@@ -96,7 +100,9 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   }
 
   Future<void> _onAddToCart(
-    AddToCartEvent event, Emitter<ListDetailsState> emit) async {
+    AddToCartEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
     try {
       await _repository.addItemToCart(event.listItemId);
     } catch (e) {
@@ -105,29 +111,46 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   }
 
   Future<void> _onRemoveFromCart(
-    RemoveFromCartEvent event, Emitter<ListDetailsState> emit) async {
+    RemoveFromCartEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
     try {
       await _repository.removeItemFromCart(event.cartItemId);
     } catch (e) {
-       // Opcional: Tratar erro.
+      // Opcional: Tratar erro.
     }
   }
 
   Future<void> _onToggleCartMode(
-    ToggleCartModeEvent event, Emitter<ListDetailsState> emit) async {
-    final newMode = state.cartMode == CartMode.shared
-        ? CartMode.individual
-        : CartMode.shared;
+    ToggleCartModeEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    final newMode =
+        state.cartMode == CartMode.shared
+            ? CartMode.individual
+            : CartMode.shared;
     try {
       await _repository.setCartMode(listId, newMode);
-      // O Realtime irá disparar um novo LoadListDetailsEvent automaticamente.
+      add(LoadListDetailsEvent());
     } catch (e) {
-       // Opcional: Tratar erro.
+      _logger.e('Erro ao alternar modo de carrinho: $e');
+      emit(
+        ListDetailsError(
+          list: state.list,
+          units: state.units,
+          items: state.items,
+          cartItems: state.cartItems,
+          cartMode: state.cartMode,
+          message: 'Erro ao alternar modo de carrinho: $e',
+        ),
+      );
     }
   }
 
   Future<void> _onAddItemToList(
-    AddItemToListEvent event, Emitter<ListDetailsState> emit) async {
+    AddItemToListEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
     try {
       await _repository.addItemToList(
         listId,
@@ -141,7 +164,9 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   }
 
   Future<void> _onRemoveItemFromList(
-    RemoveItemFromListEvent event, Emitter<ListDetailsState> emit) async {
+    RemoveItemFromListEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
     try {
       await _repository.removeItemFromList(event.itemId);
     } catch (e) {

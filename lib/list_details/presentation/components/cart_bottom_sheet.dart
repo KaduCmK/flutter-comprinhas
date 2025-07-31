@@ -32,7 +32,6 @@ class CartBottomSheet extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
         final textTheme = Theme.of(context).textTheme;
 
-        // Dados do estado
         final cartItems = state.cartItems;
         final allItems = listDetailsBloc.originalItems;
         final isIndividualMode = state.cartMode == CartMode.individual;

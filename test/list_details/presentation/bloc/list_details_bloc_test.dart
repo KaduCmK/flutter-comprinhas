@@ -88,6 +88,7 @@ void main() {
       ).thenAnswer((_) async {});
 
       listDetailsBloc = ListDetailsBloc(
+        client: Supabase.instance.client,
         repository: mockListasRepository,
         listId: listId,
       );
