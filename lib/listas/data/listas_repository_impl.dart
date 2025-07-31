@@ -6,9 +6,11 @@ import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
+import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ListasRepositoryImpl implements ListasRepository {
+  final _logger = Logger();
   late final SupabaseClient _client;
 
   ListasRepositoryImpl({required SupabaseClient client}) : _client = client;
@@ -21,7 +23,6 @@ class ListasRepositoryImpl implements ListasRepository {
     }
 
     final fcmToken = await FirebaseMessaging.instance.getToken();
-    debugPrint("fcm token: $fcmToken");
     await supabase
         .from('users')
         .update({'fcm_token': fcmToken})
@@ -83,7 +84,7 @@ class ListasRepositoryImpl implements ListasRepository {
     }
 
     try {
-      await _client.rpc('create_new_list', params: {'list_name': name});
+      await _client.from('lists').insert({'name': name});
     } catch (e) {
       debugPrint(e.toString());
       rethrow;
@@ -144,19 +145,25 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
-  Future<List<CartItem>> getCartItems(String listId) async {
+  Future<List<CartItem>> getCartItems(String? listId) async {
     try {
-      final response = await _client.rpc(
-        'get_cart_items_for_list',
-        params: {'list_id_param': listId},
-      );
+      var query = _client
+          .from('cart_items')
+          .select(
+            '*, user:users(*), list_items!inner(*, list:lists(*), created_by:users(*))',
+          );
+      if (listId != null) {
+        query = query.eq('list_items.list_id', listId);
+      }
+      final response = await query;
+
       final items =
           (response as List<dynamic>)
               .map((itemMap) => CartItem.fromMap(itemMap))
               .toList();
       return items;
     } catch (e) {
-      debugPrint('erro ao buscar itens do carrinho: $e');
+      _logger.e('erro ao buscar itens do carrinho: $e');
       rethrow;
     }
   }

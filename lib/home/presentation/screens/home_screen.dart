@@ -33,7 +33,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   static final List<Widget> _destinations = [
     const ListasScreen(),
-    const Placeholder(child: Center(child: Text("Notas Fiscais"))),
+    const Placeholder(child: Center(child: Text("Mercados"))),
   ];
 
   int _selectedIndex = 0;
@@ -129,8 +129,8 @@ class _HomeScreenState extends State<HomeScreen> {
         destinations: [
           NavigationDestination(icon: const Icon(Icons.list), label: "Listas"),
           NavigationDestination(
-            icon: const Icon(Icons.receipt_long),
-            label: "Notas Fiscais",
+            icon: const Icon(Icons.store),
+            label: "Mercados",
           ),
         ],
       ),

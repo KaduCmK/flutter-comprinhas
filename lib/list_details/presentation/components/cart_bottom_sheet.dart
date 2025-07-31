@@ -13,7 +13,7 @@ class CartBottomSheet extends StatelessWidget {
 
   // Função auxiliar para buscar os detalhes de um ListItem na lista original
   ListItem? _findListItemDetails(List<ListItem> allItems, CartItem cartItem) {
-    return allItems.firstWhereOrNull((item) => item.id == cartItem.listItemId);
+    return allItems.firstWhereOrNull((item) => item.id == cartItem.listItem!.id);
   }
 
   @override
@@ -91,21 +91,27 @@ class CartBottomSheet extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                       child: Row(
+                        spacing: 4,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.shopping_cart, size: 32),
-                          const SizedBox(width: 16),
+                          const Icon(Icons.shopping_basket, size: 32),
+                          Text(
+                            "Carrinho",
+                            style: textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const Spacer(),
+
                           SegmentedButton(
                             segments: [
                               ButtonSegment(
                                 value: CartMode.shared,
                                 icon: const Icon(Icons.group),
-                                label: Text("Compartilhado"),
                               ),
                               ButtonSegment(
                                 value: CartMode.individual,
                                 icon: const Icon(Icons.person),
-                                label: Text("Individual"),
                               ),
                             ],
                             selected: {state.cartMode},

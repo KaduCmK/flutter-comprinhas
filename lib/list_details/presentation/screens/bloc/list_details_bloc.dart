@@ -72,7 +72,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
 
       // Filtra os itens que já estão no carrinho para não exibi-los na lista principal
       final cartItemIds =
-          cartItems.map((cartItem) => cartItem.listItemId).toSet();
+          cartItems.map((cartItem) => cartItem.listItem.id).toSet();
       final itemsToBuy =
           allItems.where((item) => !cartItemIds.contains(item.id)).toList();
 

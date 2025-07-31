@@ -20,7 +20,7 @@ abstract class ListasRepository {
   Future<void> removeItemFromList(String itemId);
 
   // funcionalidades de carrinho
-  Future<List<CartItem>> getCartItems(String listId);
+  Future<List<CartItem>> getCartItems(String? listId);
   Future<void> addItemToCart(String listItemId);
   Future<void> removeItemFromCart(String cartItemId);
   Future<void> setCartMode(String listId, CartMode mode);

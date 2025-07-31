@@ -35,7 +35,7 @@ class ListCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Icon(Icons.calendar_today, size: 16),
-                  Text(list.createdAt),
+                  Text(list.createdAtFormatted),
                 ],
               ),
             ],

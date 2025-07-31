@@ -5,6 +5,8 @@ import 'package:flutter_comprinhas/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/splash_screen.dart';
 import 'package:flutter_comprinhas/core/config/firebase_config.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
+import 'package:flutter_comprinhas/global_cart/presentation/bloc/global_cart_bloc.dart';
+import 'package:flutter_comprinhas/global_cart/presentation/global_cart_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
@@ -39,9 +41,25 @@ final _router = GoRouter(
   routes: [
     GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreenProvider(),
+    ShellRoute(
+      builder: (context, state, child) {
+        return BlocProvider(
+          create:
+              (context) =>
+                  GlobalCartBloc(repository: sl())..add(LoadGlobalCartEvent()),
+          child: child,
+        );
+      },
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => const HomeScreenProvider(),
+        ),
+        GoRoute(
+          path: '/carrinho',
+          builder: (context, state) => const GlobalCartScreen(),
+        ),
+      ],
     ),
     GoRoute(
       path: '/list/:listId',
