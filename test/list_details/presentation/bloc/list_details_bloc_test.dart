@@ -12,6 +12,10 @@ import '../../../mocks.dart';
 class MockUser extends Mock implements User {}
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue(CartMode.shared);
+  });
+
   group('ListDetailsBloc', () {
     late MockListasRepository mockListasRepository;
     late ListDetailsBloc listDetailsBloc;

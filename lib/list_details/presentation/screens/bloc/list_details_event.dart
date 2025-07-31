@@ -43,12 +43,12 @@ class AddToCartEvent extends ListDetailsEvent {
 }
 
 class RemoveFromCartEvent extends ListDetailsEvent {
-  final String listItemId;
+  final String cartItemId;
 
-  const RemoveFromCartEvent(this.listItemId);
+  const RemoveFromCartEvent(this.cartItemId);
 
   @override
-  List<Object> get props => [listItemId];
+  List<Object> get props => [cartItemId];
 }
 
 class ToggleCartModeEvent extends ListDetailsEvent {}

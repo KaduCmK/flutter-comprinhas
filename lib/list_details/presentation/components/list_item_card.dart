@@ -6,12 +6,14 @@ class ListItemCard extends StatelessWidget {
   final ListItem item;
   final Animation<double> animation;
   final Function(ListItem item) onDismiss;
+  final Function(ListItem item) onAddToCart;
 
   const ListItemCard({
     super.key,
     required this.item,
     required this.animation,
     required this.onDismiss,
+    required this.onAddToCart,
   });
 
   @override
@@ -78,7 +80,7 @@ class ListItemCard extends StatelessWidget {
               ],
             ),
             trailing: IconButton(
-              onPressed: () {},
+              onPressed: () => onAddToCart(item),
               icon: Icon(Icons.add_shopping_cart, size: 30),
             ),
           ),

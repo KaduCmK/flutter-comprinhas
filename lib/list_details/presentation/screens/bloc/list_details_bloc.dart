@@ -174,7 +174,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     Emitter<ListDetailsState> emit,
   ) async {
     try {
-      await _repository.removeItemFromCart(event.listItemId);
+      await _repository.removeItemFromCart(event.cartItemId);
     } catch (e) {
       emit(
         ListDetailsError(
@@ -233,12 +233,13 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
         },
       ).subscribe();
 
-    _cartChannel = supabase.channel('public:cart_items:list_id=eq.$listId')
+    _cartChannel = supabase.channel('public:cart_items')
       ..onPostgresChanges(
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: 'cart_items',
         callback: (payload) {
+          debugPrint('>>> Realtime carrinho event received: ${payload.toString()}');
           if (!isClosed) add(LoadListDetailsEvent());
         },
       ).subscribe();

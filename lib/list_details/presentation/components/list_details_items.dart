@@ -29,13 +29,26 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
     _listKey.currentState?.insertItem(index);
   }
 
-  void _removeItem(ListItem item, int index) {
-    // Remove o item e anima a saída dele
+  // Esta função SÓ remove o item da UI, sem disparar eventos.
+  // Será usada pelo BlocListener quando um item for para o carrinho.
+  void _animateRemoval(ListItem item, int index) {
+    _listKey.currentState?.removeItem(
+      index,
+      // Usamos um SizedBox.shrink() porque a remoção já é gerenciada pelo estado
+      (context, animation) => const SizedBox.shrink(),
+    );
+    _items.remove(item);
+  }
+
+  // Esta função DELETA o item do banco de dados.
+  // Será usada pelo onDismiss (swipe) do ListItemCard.
+  void _deleteItem(ListItem item, int index) {
     _listKey.currentState?.removeItem(
       index,
       (context, animation) => const SizedBox.shrink(),
     );
     _items.remove(item);
+    // Dispara o evento para remover o item do banco de dados
     context.read<ListDetailsBloc>().add(RemoveItemFromListEvent(item.id));
   }
 
@@ -45,21 +58,20 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
       listenWhen: (previous, current) => current is ListDetailsLoaded,
       listener: (context, state) {
         final newItems = state.items;
-
-        // 1. REMOÇÕES: Itera de trás pra frente pra não bugar os índices
+        
         for (int i = _items.length - 1; i >= 0; i--) {
           final currentItem = _items[i];
-          // Se o item da UI não existe na nova lista do BLoC, remove ele
-          if (!newItems.contains(currentItem)) {
-            _removeItem(currentItem, i);
+          // Se o item da UI não existe mais na lista do BLoC...
+          if (!newItems.any((item) => item.id == currentItem.id)) {
+            // ...chame a função que SÓ anima, sem deletar.
+            _animateRemoval(currentItem, i);
           }
         }
 
-        // 2. ADIÇÕES: Itera na nova lista do BLoC
+        // A lógica de adição permanece a mesma
         for (int i = 0; i < newItems.length; i++) {
           final newItem = newItems[i];
-          // Se o item do BLoC não existe na nossa lista da UI, adiciona ele
-          if (!_items.contains(newItem)) {
+          if (!_items.any((item) => item.id == newItem.id)) {
             _addItem(newItem, i);
           }
         }
@@ -84,9 +96,15 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
                 return ListItemCard(
                   item: item,
                   animation: animation,
+                  // --- LÓGICA DO SWIPE CORRIGIDA ---
+                  // onDismiss agora chama a função de deleção real.
                   onDismiss: (item) {
-                    _removeItem(item, index);
+                    _deleteItem(item, index);
                   },
+                  onAddToCart:
+                      (item) => context.read<ListDetailsBloc>().add(
+                        AddToCartEvent(item.id),
+                      ),
                 );
               },
             ),
