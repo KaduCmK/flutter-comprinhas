@@ -50,51 +50,6 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
       builder: (context, state) {
         return Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
-          // O SplitButton agora é o bottomNavigationBar para ficar fixo
-          bottomNavigationBar: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (child, animation) {
-              final curvedAnimation = CurvedAnimation(
-                parent: animation,
-                curve: Curves.ease,
-              );
-              final slideAnimation = Tween<Offset>(
-                begin: const Offset(0, 2),
-                end: Offset.zero,
-              ).animate(curvedAnimation);
-              return SlideTransition(position: slideAnimation, child: child);
-            },
-            child: (state.cartItems.isNotEmpty)
-                ? Padding(
-                    padding: const EdgeInsets.only(bottom: 32.0), // Espaçamento inferior
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SplitButton(
-                          itemCount: state.cartItems.length,
-                          onPrimaryAction: () => showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            useSafeArea: true,
-                            backgroundColor: Colors.transparent,
-                            builder: (_) => BlocProvider.value(
-                              value: listDetailsBloc, // Passando o BLoC
-                              child: const CartBottomSheet(),
-                            ),
-                          ),
-                          onSecondaryAction: () =>
-                              ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Ação secundária'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(key: ValueKey('empty')),
-          ),
           body: Stack(
             children: [
               Positioned(
@@ -109,14 +64,69 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                 right: 0,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: state is ListDetailsLoading
-                      ? const LinearProgressIndicator()
-                      : const SizedBox(height: 4),
+                  child:
+                      state is ListDetailsLoading
+                          ? const LinearProgressIndicator()
+                          : const SizedBox(height: 4),
                 ),
               ),
               ListDetailsItems(
                 controller: _controller,
                 topCardHeight: topCardHeight + statusBarHeight,
+              ),
+
+              Positioned(
+                bottom: 48,
+                left: 0,
+                right: 0,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (child, animation) {
+                    final curvedAnimation = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.ease,
+                    );
+                    final slideAnimation = Tween<Offset>(
+                      begin: const Offset(0, 2),
+                      end: Offset.zero,
+                    ).animate(curvedAnimation);
+                    return SlideTransition(
+                      position: slideAnimation,
+                      child: child,
+                    );
+                  },
+                  child:
+                      (state.cartItems.isNotEmpty)
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SplitButton(
+                                itemCount: state.cartItems.length,
+                                onPrimaryAction:
+                                    () => showModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      useSafeArea: true,
+                                      backgroundColor: Colors.transparent,
+                                      builder:
+                                          (_) => BlocProvider.value(
+                                            value:
+                                                listDetailsBloc, // Passando o BLoC
+                                            child: const CartBottomSheet(),
+                                          ),
+                                    ),
+                                onSecondaryAction:
+                                    () =>
+                                        state is ListDetailsLoading
+                                            ? null
+                                            : context
+                                                .read<ListDetailsBloc>()
+                                                .add(ConfirmPurchaseEvent()),
+                              ),
+                            ],
+                          )
+                          : const SizedBox.shrink(key: ValueKey('empty')),
+                ),
               ),
             ],
           ),

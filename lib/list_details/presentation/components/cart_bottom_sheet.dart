@@ -93,10 +93,11 @@ class CartBottomSheet extends StatelessWidget {
                       child: Row(
                         spacing: 4,
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const Icon(Icons.shopping_basket, size: 32),
                           Text(
-                            "Carrinho",
+                            "Cesta",
                             style: textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),

@@ -40,6 +40,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     on<AddToCartEvent>(_onAddToCart);
     on<RemoveFromCartEvent>(_onRemoveFromCart);
     on<SetCartModeEvent>(_onSetCartMode);
+    on<ConfirmPurchaseEvent>(_onConfirmPurchase);
   }
 
   @override
@@ -52,6 +53,9 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     LoadListDetailsEvent event,
     Emitter<ListDetailsState> emit,
   ) async {
+    final testehist = await _repository.getPurchaseHistory(listId);
+    _logger.i(testehist);
+    
     emit(
       ListDetailsLoading(
         list: state.list,
@@ -139,6 +143,62 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
           cartItems: state.cartItems,
           cartMode: state.cartMode,
           message: 'Erro ao alternar modo de carrinho: $e',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onConfirmPurchase(
+    ConfirmPurchaseEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    emit(
+      ListDetailsLoading(
+        list: state.list,
+        items: state.items,
+        units: state.units,
+        cartItems: state.cartItems,
+        cartMode: state.cartMode,
+      ),
+    );
+    final currentUserId = _client.auth.currentUser?.id;
+    if (currentUserId == null) {
+      throw 'Usuario nao autenticado';
+    }
+
+    List<CartItem> itemsToConfirm;
+
+    // Lógica principal: decidir quais itens confirmar com base no modo do carrinho
+    if (state.cartMode == CartMode.individual) {
+      // Modo individual: pega apenas os itens que o usuário logado adicionou
+      itemsToConfirm =
+          state.cartItems
+              .where((item) => item.user.id == currentUserId)
+              .toList();
+    } else {
+      // Modo compartilhado: pega TODOS os itens da cesta
+      itemsToConfirm = state.cartItems;
+    }
+
+    final cartIdsToConfirm = itemsToConfirm.map((item) => item.id).toList();
+
+    // Se não tiver itens (ex: modo individual e o usuário não adicionou nada), não faz nada.
+    if (cartIdsToConfirm.isEmpty) return;
+
+    try {
+      await _repository.confirmPurchase(cartIdsToConfirm);
+      // Após confirmar, recarrega a tela para atualizar a lista de itens e o carrinho
+      add(LoadListDetailsEvent());
+    } catch (e) {
+      _logger.e('Erro ao confirmar compra no BLoC: $e');
+      emit(
+        ListDetailsError(
+          list: state.list,
+          units: state.units,
+          items: state.items,
+          cartItems: state.cartItems,
+          cartMode: state.cartMode,
+          message: 'Erro ao finalizar a compra. Tente novamente.',
         ),
       );
     }

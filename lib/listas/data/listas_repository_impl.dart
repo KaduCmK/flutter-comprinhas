@@ -5,6 +5,7 @@ import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/main.dart';
+import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -206,6 +207,48 @@ class ListasRepositoryImpl implements ListasRepository {
           .eq('id', listId);
     } catch (e) {
       _logger.e('Erro ao atualizar modo do carrinho: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> confirmPurchase(List<String> cartItemIds) async {
+    try {
+      await _client.functions.invoke(
+        'confirm-purchase',
+        body: {'cart_items_ids': cartItemIds},
+      );
+    } catch (e) {
+      _logger.e('Erro ao confirmar compra: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<PurchaseHistory>> getPurchaseHistory(String listId) async {
+    try {
+      // A mágica acontece aqui:
+      // 1. A gente seleciona da tabela 'purchase_history'.
+      // 2. Pede os dados do usuário que confirmou a compra ('users').
+      // 3. Pede os itens da compra ('purchase_history_items').
+      // 4. O '.eq('purchase_history_items.original_list_id', listId)' filtra
+      //    apenas os registros de compra que contenham itens da lista desejada.
+      final response = await _client
+          .from('purchase_history')
+          .select(
+            'id, created_at, users!inner(user_metadata), purchase_history_items!inner(*)',
+          )
+          .eq('purchase_history_items.list_id', listId)
+          .order('created_at', ascending: false);
+
+      final history =
+          (response as List<dynamic>)
+              .map((e) => PurchaseHistory.fromMap(e as Map<String, dynamic>))
+              .toList();
+
+      return history;
+    } catch (e) {
+      _logger.e('Erro ao buscar histórico da lista via API: $e');
       rethrow;
     }
   }

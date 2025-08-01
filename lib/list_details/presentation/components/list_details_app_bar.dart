@@ -99,7 +99,7 @@ class ListDetailsAppBar extends StatelessWidget {
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ElevatedButton(
                           onPressed:
@@ -114,6 +114,8 @@ class ListDetailsAppBar extends StatelessWidget {
                               ),
                           child: const Text("Adicionar"),
                         ),
+
+                        // IconButton(onPressed: () => context.read<ListDetailsBloc>().add(event), icon: Icon(Icons.history))
                       ],
                     ),
                   ],

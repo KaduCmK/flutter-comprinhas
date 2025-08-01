@@ -59,3 +59,5 @@ class SetCartModeEvent extends ListDetailsEvent {
   @override
   List<Object> get props => [mode ?? CartMode.shared];
 }
+
+class ConfirmPurchaseEvent extends ListDetailsEvent {}
