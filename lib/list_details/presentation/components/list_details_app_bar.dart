@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
@@ -41,14 +42,52 @@ class ListDetailsAppBar extends StatelessWidget {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        IconButton(
-                          onPressed:
-                              () => showDialog(
-                                context: context,
-                                builder:
-                                    (_) => QrCodeDialog(listId: state.list!.id),
+                        MenuAnchor(
+                          menuChildren: [
+                            MenuItemButton(
+                              leadingIcon: Icon(Icons.qr_code),
+                              child: Text("Gerar QR Code"),
+                              onPressed:
+                                  () => showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => QrCodeDialog(
+                                          listId: state.list!.id,
+                                        ),
+                                  ),
+                            ),
+                            MenuItemButton(
+                              leadingIcon: Icon(Icons.link),
+                              child: Text("Copiar ID"),
+                              onPressed:
+                                  () => Clipboard.setData(
+                                    ClipboardData(text: state.list!.id),
+                                  ).then((_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                            "ID da lista copiado para a área de transferência",
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }),
+                            ),
+                          ],
+                          builder:
+                              (context, controller, child) => IconButton(
+                                onPressed: () {
+                                  if (controller.isOpen) {
+                                    controller.close();
+                                  } else {
+                                    controller.open();
+                                  }
+                                },
+                                icon: Icon(Icons.share),
                               ),
-                          icon: Icon(Icons.qr_code),
                         ),
                       ],
                     ),

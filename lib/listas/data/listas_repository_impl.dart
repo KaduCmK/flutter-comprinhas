@@ -47,7 +47,7 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       await _client.functions.invoke('join-list', body: {'list_id': listId});
     } catch (e) {
-      debugPrint('Erro ao chamar edge function join_list: $e');
+      _logger.e('Erro ao chamar edge function join_list: $e');
       rethrow;
     }
   }
@@ -59,7 +59,7 @@ class ListasRepositoryImpl implements ListasRepository {
           await _client.from('lists').select().eq('id', listId).single();
       return ListaCompra.fromMap(response);
     } catch (e) {
-      debugPrint('Erro ao buscar lista por id: $e');
+      _logger.e('Erro ao buscar lista por id: $e');
       rethrow;
     }
   }
@@ -71,7 +71,7 @@ class ListasRepositoryImpl implements ListasRepository {
       final units = response.map((unit) => Unit.fromMap(unit)).toList();
       return units;
     } catch (e) {
-      debugPrint(e.toString());
+      _logger.e(e.toString());
       rethrow;
     }
   }
@@ -86,7 +86,7 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       await _client.from('lists').insert({'name': name});
     } catch (e) {
-      debugPrint(e.toString());
+      _logger.e(e.toString());
       rethrow;
     }
   }
@@ -102,10 +102,9 @@ class ListasRepositoryImpl implements ListasRepository {
           .eq('list_id', listId);
 
       final items = response.map((e) => ListItem.fromMap(e)).toList();
-      _logger.i(items);
       return items;
     } catch (e) {
-      debugPrint(e.toString());
+      _logger.e(e.toString());
       rethrow;
     }
   }
@@ -132,7 +131,7 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       await _client.from('list_items').insert(dbRecord);
     } catch (e) {
-      debugPrint(e.toString());
+      _logger.e(e.toString());
     }
   }
 
@@ -141,7 +140,7 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       await _client.from('list_items').delete().eq('id', itemId);
     } catch (e) {
-      debugPrint('Erro ao deletar item: $e');
+      _logger.e('Erro ao deletar item: $e');
       rethrow;
     }
   }
@@ -183,7 +182,7 @@ class ListasRepositoryImpl implements ListasRepository {
         'user_id': userId,
       });
     } catch (e) {
-      debugPrint('Erro ao adicionar item ao carrinho: $e');
+      _logger.e('Erro ao adicionar item ao carrinho: $e');
       rethrow;
     }
   }
@@ -193,7 +192,7 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       await _client.from('cart_items').delete().eq('id', cartItemId);
     } catch (e) {
-      debugPrint('Erro ao remover item do carrinho: $e');
+      _logger.e('Erro ao remover item do carrinho: $e');
       rethrow;
     }
   }
@@ -206,7 +205,7 @@ class ListasRepositoryImpl implements ListasRepository {
           .update({'cart_mode': mode.name})
           .eq('id', listId);
     } catch (e) {
-      debugPrint('Erro ao atualizar modo do carrinho: $e');
+      _logger.e('Erro ao atualizar modo do carrinho: $e');
       rethrow;
     }
   }

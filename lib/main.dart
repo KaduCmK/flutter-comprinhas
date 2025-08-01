@@ -84,7 +84,7 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
-      path: 'join-list',
+      path: '/join-list',
       builder: (context, state) {
         final listasBloc = state.extra as ListasBloc;
         return BlocProvider.value(value: listasBloc, child: JoinListScreen());
