@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
 class JoinListScreen extends StatefulWidget {
@@ -12,14 +13,42 @@ class _JoinListScreenState extends State<JoinListScreen> {
   final TextEditingController listIdController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _checkClipboard();
+  }
+
+  @override
   void dispose() {
     listIdController.dispose();
     super.dispose();
   }
 
+  void _checkClipboard() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final clipboardText = clipboardData?.text;
+
+    if (clipboardText != null &&
+        clipboardText.startsWith('comprinhas://join/') &&
+        mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            "Um código de lista foi colado da sua área de transferência.",
+          ),
+        ),
+      );
+      setState(() {
+        listIdController.text = clipboardText;
+      });
+    }
+  }
+
   void _joinListById() {
     debugPrint(listIdController.text);
-    context.replace('/join/${listIdController.text}');
+    final uri = Uri.parse(listIdController.text);
+    final encodedId = uri.pathSegments.last;
+    context.replace('/join/$encodedId');
   }
 
   @override

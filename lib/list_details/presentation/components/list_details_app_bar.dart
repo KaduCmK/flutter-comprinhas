@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -58,23 +60,27 @@ class ListDetailsAppBar extends StatelessWidget {
                             ),
                             MenuItemButton(
                               leadingIcon: Icon(Icons.link),
-                              child: Text("Copiar ID"),
-                              onPressed:
-                                  () => Clipboard.setData(
-                                    ClipboardData(text: state.list!.id),
-                                  ).then((_) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: const Text(
-                                            "ID da lista copiado para a área de transferência",
-                                          ),
+                              child: Text("Copiar código"),
+                              onPressed: () {
+                                final encodedListId = base64Url.encode(
+                                  utf8.encode(state.list!.id),
+                                );
+                                final listCode =
+                                    'comprinhas://join/$encodedListId';
+                                Clipboard.setData(
+                                  ClipboardData(text: listCode),
+                                ).then((_) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                          "Código copiado para a área de transferência",
                                         ),
-                                      );
-                                    }
-                                  }),
+                                      ),
+                                    );
+                                  }
+                                });
+                              },
                             ),
                           ],
                           builder:

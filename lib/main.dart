@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/app_theme.dart';
@@ -93,8 +95,9 @@ final _router = GoRouter(
     GoRoute(
       path: '/join/:listId',
       redirect: (context, state) async {
-        final listId = state.pathParameters['listId']!;
+        final encodedListId = state.pathParameters['listId']!;
         try {
+          final listId = utf8.decode(base64Url.decode(encodedListId));
           await sl<ListasRepository>().joinList(listId);
           return '/list/$listId';
         } catch (e) {

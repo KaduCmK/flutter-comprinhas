@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -8,7 +10,8 @@ class QrCodeDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final deepLink = 'comprinhas://join/$listId';
+    final encodedListId = base64Url.encode(utf8.encode(listId));
+    final deepLink = 'comprinhas://join/$encodedListId';
 
     return AlertDialog(
       title: const Text("Compartilhar Lista"),
