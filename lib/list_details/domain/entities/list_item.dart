@@ -9,7 +9,7 @@ class ListItem extends Equatable {
   final String unitId;
   final User createdBy;
   final DateTime createdAt;
-  final ListaCompra list; // MUDANÇA PRINCIPAL: De listId para um objeto ListaCompra
+  final ListaCompra list;
 
   const ListItem({
     required this.id,
@@ -18,20 +18,15 @@ class ListItem extends Equatable {
     required this.unitId,
     required this.createdBy,
     required this.createdAt,
-    required this.list, // MUDANÇA PRINCIPAL
+    required this.list
   });
 
   factory ListItem.fromMap(Map<String, dynamic> map) {
-    // Sua classe original já esperava um objeto 'created_by'
-    // O JSON que vc mandou só tem 'created_by_id'
-    // Pra fazer funcionar, sua query precisa buscar o usuário completo.
-    // Ex: .select('*, list_items(*, list:lists(*), created_by:users(*))')
-    
     return ListItem(
       id: map['id'] as String,
       name: map['name'] as String,
       amount: map['amount'] as num,
-      unitId: map['unit_id'] as String, // CORREÇÃO: snake_case
+      unitId: map['unitId'] as String? ?? map['unit_id'] as String, // TODO: denormalization
       createdBy: User.fromJson(map['created_by'] as Map<String, dynamic>)!,
       createdAt: DateTime.parse(map['created_at'] as String),
       // MUDANÇA PRINCIPAL: Mapeia o objeto aninhado 'list'

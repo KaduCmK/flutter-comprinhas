@@ -1,4 +1,4 @@
-package io.github.kaducmk.flutter_comprinhas
+package io.github.kaducmk.comprinhas
 
 import android.content.Intent
 import android.net.Uri

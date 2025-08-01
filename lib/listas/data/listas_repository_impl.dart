@@ -97,10 +97,12 @@ class ListasRepositoryImpl implements ListasRepository {
       final response = await _client
           .from('list_items')
           .select(
-            'id, created_at, name, amount, list_id, created_by:created_by_id(*), unitId:unit_id',
+            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), unitId:unit_id',
           )
           .eq('list_id', listId);
+
       final items = response.map((e) => ListItem.fromMap(e)).toList();
+      _logger.i(items);
       return items;
     } catch (e) {
       debugPrint(e.toString());

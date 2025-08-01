@@ -50,20 +50,20 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD5D0_BYmtnu7IiyfI1MMInbE6ahc-MkM8',
-    appId: '1:409916661575:android:bc47a8e2a7c7cd279b3662',
-    messagingSenderId: '409916661575',
-    projectId: 'comprinhas-73254',
-    storageBucket: 'comprinhas-73254.firebasestorage.app',
+    apiKey: 'AIzaSyD2mw4t28LIo8WBBhOSTLhG1HTG-H9p6Zw',
+    appId: '1:892316366568:android:8876988a7178fee83b7b5d',
+    messagingSenderId: '892316366568',
+    projectId: 'comprinhas-460819',
+    storageBucket: 'comprinhas-460819.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBwA9971lyzu1jw68MPiw-fJ2lzv8DY26Q',
-    appId: '1:409916661575:ios:a010e254313632159b3662',
-    messagingSenderId: '409916661575',
-    projectId: 'comprinhas-73254',
-    storageBucket: 'comprinhas-73254.firebasestorage.app',
-    androidClientId: '409916661575-5673bjmc1ue9uh71jus2ejncsg41nrf3.apps.googleusercontent.com',
+    apiKey: 'AIzaSyCnnrUpMyNkm1vDsD1mGMI-sk9EPPzA6io',
+    appId: '1:892316366568:ios:2378b9bb5a42cefd3b7b5d',
+    messagingSenderId: '892316366568',
+    projectId: 'comprinhas-460819',
+    storageBucket: 'comprinhas-460819.firebasestorage.app',
+    androidClientId: '892316366568-mpilie6gihqm2nmeoe6sd400n45bh64m.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterComprinhas',
   );
 }

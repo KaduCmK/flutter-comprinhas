@@ -1,33 +1,49 @@
 {
   "project_info": {
-    "project_number": "409916661575",
-    "project_id": "comprinhas-73254",
-    "storage_bucket": "comprinhas-73254.firebasestorage.app"
+    "project_number": "892316366568",
+    "project_id": "comprinhas-460819",
+    "storage_bucket": "comprinhas-460819.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:409916661575:android:bc47a8e2a7c7cd279b3662",
+        "mobilesdk_app_id": "1:892316366568:android:8876988a7178fee83b7b5d",
         "android_client_info": {
-          "package_name": "io.github.kaducmk.flutter_comprinhas"
+          "package_name": "io.github.kaducmk.comprinhas"
         }
       },
       "oauth_client": [
         {
-          "client_id": "409916661575-n8gbkvn98f9rtst955uv5qg8se40nvdi.apps.googleusercontent.com",
+          "client_id": "892316366568-mpilie6gihqm2nmeoe6sd400n45bh64m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.github.kaducmk.comprinhas",
+            "certificate_hash": "01d98ee8fcb612859c2fbe04333655a8e1b56d2c"
+          }
+        },
+        {
+          "client_id": "892316366568-pa9ffhs3ltn753i6afqulq1fmrs5ookl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "io.github.kaducmk.comprinhas",
+            "certificate_hash": "7189c349ea69a0b466f66dec04ac624ab69c0933"
+          }
+        },
+        {
+          "client_id": "892316366568-ujvphk2k7ggdmrd763d7qnv0opvrgbtd.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD5D0_BYmtnu7IiyfI1MMInbE6ahc-MkM8"
+          "current_key": "AIzaSyD2mw4t28LIo8WBBhOSTLhG1HTG-H9p6Zw"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "409916661575-n8gbkvn98f9rtst955uv5qg8se40nvdi.apps.googleusercontent.com",
+              "client_id": "892316366568-ujvphk2k7ggdmrd763d7qnv0opvrgbtd.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

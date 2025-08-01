@@ -13,7 +13,7 @@ class CartBottomSheet extends StatelessWidget {
 
   // Função auxiliar para buscar os detalhes de um ListItem na lista original
   ListItem? _findListItemDetails(List<ListItem> allItems, CartItem cartItem) {
-    return allItems.firstWhereOrNull((item) => item.id == cartItem.listItem!.id);
+    return allItems.firstWhereOrNull((item) => item.id == cartItem.listItem.id);
   }
 
   @override
