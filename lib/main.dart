@@ -12,6 +12,7 @@ import 'package:flutter_comprinhas/global_cart/presentation/global_cart_screen.d
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/list_history_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
@@ -75,6 +76,18 @@ final _router = GoRouter(
                 listId: listId,
               )..add(LoadListDetailsEvent()),
           child: const ListDetailsScreen(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/list/:listId/history',
+      builder: (context, state) {
+        final listId = state.pathParameters['listId']!;
+        final listDetailsBloc = state.extra as ListDetailsBloc;
+
+        return BlocProvider.value(
+          value: listDetailsBloc,
+          child: ListHistoryScreen(listId: listId,),
         );
       },
     ),

@@ -6,6 +6,7 @@ abstract class ListDetailsState extends Equatable {
   final List<ListItem> items;
   final List<CartItem> cartItems;
   final CartMode cartMode;
+  final List<PurchaseHistory> purchaseHistory;
 
   const ListDetailsState({
     this.list,
@@ -13,14 +14,22 @@ abstract class ListDetailsState extends Equatable {
     required this.items,
     required this.cartItems,
     this.cartMode = CartMode.shared,
+    this.purchaseHistory = const [],
   });
 
   @override
-  List<Object?> get props => [list, units, items, cartItems, cartMode];
+  List<Object?> get props => [
+    list,
+    units,
+    items,
+    cartItems,
+    cartMode,
+    purchaseHistory,
+  ];
 }
 
 class ListDetailsInitial extends ListDetailsState {
-  const ListDetailsInitial() : super(items: const [], cartItems: const []);
+  const ListDetailsInitial() : super(items: const [], cartItems: const [], purchaseHistory: const []);
 }
 
 class ListDetailsLoading extends ListDetailsState {
@@ -30,6 +39,7 @@ class ListDetailsLoading extends ListDetailsState {
     required super.items,
     required super.cartItems,
     required super.cartMode,
+    super.purchaseHistory,
   });
 }
 
@@ -40,6 +50,7 @@ class ListDetailsLoaded extends ListDetailsState {
     required super.items,
     required super.cartItems,
     required super.cartMode,
+    required super.purchaseHistory,
   });
 }
 
@@ -53,6 +64,7 @@ class ListDetailsError extends ListDetailsState {
     required super.cartItems,
     required super.cartMode,
     required this.message,
+    super.purchaseHistory,
   });
 
   @override

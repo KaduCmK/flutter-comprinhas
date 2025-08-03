@@ -5,6 +5,7 @@ import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:equatable/equatable.dart';
 import 'package:logger/logger.dart';
@@ -35,6 +36,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     _setupRealtime();
 
     on<LoadListDetailsEvent>(_onLoadListDetails);
+    on<LoadPurchaseHistoryEvent>(_onLoadPurchaseHistory);
     on<AddItemToListEvent>(_onAddItemToList);
     on<RemoveItemFromListEvent>(_onRemoveItemFromList);
     on<AddToCartEvent>(_onAddToCart);
@@ -53,9 +55,6 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     LoadListDetailsEvent event,
     Emitter<ListDetailsState> emit,
   ) async {
-    final testehist = await _repository.getPurchaseHistory(listId);
-    _logger.i(testehist);
-    
     emit(
       ListDetailsLoading(
         list: state.list,
@@ -87,6 +86,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
           items: itemsToBuy,
           cartItems: cartItems,
           cartMode: list.cartMode,
+          purchaseHistory: state.purchaseHistory,
         ),
       );
     } catch (e) {
@@ -228,6 +228,45 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
       await _repository.removeItemFromList(event.itemId);
     } catch (e) {
       // ... tratamento de erro
+    }
+  }
+
+  _onLoadPurchaseHistory(
+    LoadPurchaseHistoryEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    emit(
+      ListDetailsLoading(
+        items: state.items,
+        cartItems: state.cartItems,
+        cartMode: state.cartMode,
+        units: state.units,
+        list: state.list,
+        purchaseHistory: state.purchaseHistory,
+      ),
+    );
+    try {
+      final history = await _repository.getPurchaseHistory(listId);
+      _logger.i(history);
+      emit(
+        ListDetailsLoaded(
+          list: state.list,
+          units: state.units,
+          items: state.items,
+          cartItems: state.cartItems,
+          cartMode: state.cartMode,
+          purchaseHistory: history,
+        ),
+      );
+    } catch (e) {
+      emit(
+        ListDetailsError(
+          items: state.items,
+          cartItems: state.cartItems,
+          cartMode: state.cartMode,
+          message: e.toString(),
+        ),
+      );
     }
   }
 

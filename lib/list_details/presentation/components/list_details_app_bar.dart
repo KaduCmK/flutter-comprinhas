@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
   final double topCardHeight;
@@ -115,7 +116,14 @@ class ListDetailsAppBar extends StatelessWidget {
                           child: const Text("Adicionar"),
                         ),
 
-                        // IconButton(onPressed: () => context.read<ListDetailsBloc>().add(event), icon: Icon(Icons.history))
+                        IconButton(
+                          onPressed:
+                              () => context.push(
+                                '/list/${state.list!.id}/history',
+                                extra: context.read<ListDetailsBloc>(),
+                              ),
+                          icon: Icon(Icons.history),
+                        ),
                       ],
                     ),
                   ],
