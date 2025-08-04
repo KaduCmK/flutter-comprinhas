@@ -247,7 +247,6 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     );
     try {
       final history = await _repository.getPurchaseHistory(listId);
-      _logger.i(history);
       emit(
         ListDetailsLoaded(
           list: state.list,

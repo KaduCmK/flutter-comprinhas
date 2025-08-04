@@ -1,9 +1,10 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_comprinhas/shared/entities/unit.dart';
 
 class PurchaseHistoryItem extends Equatable {
   final String name;
   final num amount;
-  final String? unit;
+  final Unit? unit;
 
   const PurchaseHistoryItem({
     required this.name,
@@ -15,7 +16,7 @@ class PurchaseHistoryItem extends Equatable {
     return PurchaseHistoryItem(
       name: map['name'] as String,
       amount: map['amount'] as num,
-      unit: map['unit'] as String?,
+      unit: (Unit.fromMap(map['units'])) as Unit?,
     );
   }
 

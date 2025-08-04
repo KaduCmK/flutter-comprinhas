@@ -227,19 +227,15 @@ class ListasRepositoryImpl implements ListasRepository {
   @override
   Future<List<PurchaseHistory>> getPurchaseHistory(String listId) async {
     try {
-      // A mágica acontece aqui:
-      // 1. A gente seleciona da tabela 'purchase_history'.
-      // 2. Pede os dados do usuário que confirmou a compra ('users').
-      // 3. Pede os itens da compra ('purchase_history_items').
-      // 4. O '.eq('purchase_history_items.original_list_id', listId)' filtra
-      //    apenas os registros de compra que contenham itens da lista desejada.
       final response = await _client
           .from('purchase_history')
           .select(
-            'id, created_at, users!inner(user_metadata), purchase_history_items!inner(*)',
+            'id, created_at, users!inner(user_metadata), purchase_history_items!inner(*, units(*))',
           )
           .eq('purchase_history_items.list_id', listId)
           .order('created_at', ascending: false);
+
+      _logger.i(response);
 
       final history =
           (response as List<dynamic>)
