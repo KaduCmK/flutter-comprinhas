@@ -2,14 +2,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 
-class NewItemDialog extends StatelessWidget {
-  final TextEditingController _unitController = TextEditingController();
-  final TextEditingController _itemNameController = TextEditingController();
-  final TextEditingController _amountController = TextEditingController(
-    text: "1",
-  );
+class NewItemDialog extends StatefulWidget {
+  const NewItemDialog({super.key});
 
-  NewItemDialog({super.key});
+  @override
+  State<NewItemDialog> createState() => _NewItemDialogState();
+}
+
+class _NewItemDialogState extends State<NewItemDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _itemNameController = TextEditingController();
+  final _amountController = TextEditingController(text: "1");
+  final _unitController = TextEditingController();
+
+  String? _selectedUnitId;
+
+  @override
+  void dispose() {
+    _itemNameController.dispose();
+    _amountController.dispose();
+    _unitController.dispose();
+    super.dispose();
+  }
+
+  void _submitForm() {
+    if (_formKey.currentState?.validate() ?? false) {
+      if (_selectedUnitId == null) {
+        // Opcional: mostrar um snackbar se nenhuma unidade for selecionada
+        return;
+      }
+
+      context.read<ListDetailsBloc>().add(
+        AddItemToListEvent(
+          itemName: _itemNameController.text,
+          amount: num.parse(_amountController.text.replaceAll(',', '.')),
+          unitId: _selectedUnitId!,
+        ),
+      );
+      Navigator.of(context).pop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,64 +49,86 @@ class NewItemDialog extends StatelessWidget {
       builder: (context, state) {
         if (state is! ListDetailsLoaded) return const SizedBox.shrink();
 
-        final units = state.units;
+        final units = state.units ?? [];
+        final initialUnit = units.firstWhere(
+          (u) => u.abbreviation == "un",
+          orElse: () => units.first,
+        );
+
+        _selectedUnitId ??= initialUnit.id;
 
         return AlertDialog(
-          title: const Text("Novo Item"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(controller: _itemNameController),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 90,
-                    child: TextField(controller: _amountController),
-                  ),
-                  SizedBox(
-                    width: 128,
-                    child: DropdownMenu(
-                      expandedInsets: EdgeInsets.zero,
-                      controller: _unitController,
-                      initialSelection:
-                          units!.singleWhere((u) => u.abbreviation == "un").id,
-                      dropdownMenuEntries: List.generate(
-                        units.length,
-                        (index) => DropdownMenuEntry(
-                          value: units[index].id,
-                          label: units[index].name,
+          title: const Text("Adicionar Novo Item"),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _itemNameController,
+                  autofocus: true,
+                  decoration: const InputDecoration(labelText: "Nome do item"),
+                  validator:
+                      (value) =>
+                          (value?.isEmpty ?? true) ? "Campo obrigatório" : null,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: TextFormField(
+                        controller: _amountController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
+                        decoration: const InputDecoration(labelText: "Qtd."),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) return "Req.";
+                          if (num.tryParse(value.replaceAll(',', '.')) == null)
+                            return "Inválido";
+                          return null;
+                        },
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 3,
+                      child: DropdownMenu(
+                        controller: _unitController,
+                        initialSelection: initialUnit.id,
+                        label: const Text("Unidade"),
+                        expandedInsets: EdgeInsets.zero,
+                        dropdownMenuEntries:
+                            units
+                                .map(
+                                  (unit) => DropdownMenuEntry(
+                                    value: unit.id,
+                                    label: unit.name,
+                                  ),
+                                )
+                                .toList(),
+                        onSelected: (value) {
+                          if (value != null) {
+                            setState(() {
+                              _selectedUnitId = value;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               child: const Text("Cancelar"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            TextButton(
-              child: const Text("Salvar"),
-              onPressed: () {
-                final unit = state.units!.singleWhere(
-                  (u) => u.name == _unitController.text,
-                );
-                context.read<ListDetailsBloc>().add(
-                  AddItemToListEvent(
-                    itemName: _itemNameController.text,
-                    amount: num.parse(_amountController.text),
-                    unitId: unit.id,
-                  ),
-                );
-                Navigator.of(context).pop();
-              },
-            ),
+            FilledButton(onPressed: _submitForm, child: const Text("Salvar")),
           ],
         );
       },

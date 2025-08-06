@@ -96,11 +96,20 @@ class CartBottomSheet extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const Icon(Icons.shopping_basket, size: 32),
-                          Text(
-                            "Cesta",
-                            style: textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Cesta",
+                                style: textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                "${cartItems.length} ite${cartItems.length == 1 ? 'm' : 'ns'}",
+                                style: textTheme.bodyMedium,
+                              ),
+                            ],
                           ),
                           const Spacer(),
 
@@ -122,6 +131,17 @@ class CartBottomSheet extends StatelessWidget {
                                 ),
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 32),
+                    sliver: SliverToBoxAdapter(
+                      child: FilledButton.icon(
+                        onPressed: () {},
+                        icon: Icon(Icons.payments),
+                        label: const Text("Finalizar Compras"),
                       ),
                     ),
                   ),

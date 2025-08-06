@@ -22,9 +22,6 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
     Emitter<ListasState> emit,
   ) async {
     emit(ListasLoading(lists: state.lists, units: state.units));
-
-    
-
     try {
       final lists = await _repository.getUserLists();
       final units = await _repository.getUnits();

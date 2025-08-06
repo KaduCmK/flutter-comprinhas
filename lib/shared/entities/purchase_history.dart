@@ -16,7 +16,6 @@ class PurchaseHistory extends Equatable {
 
   factory PurchaseHistory.fromMap(Map<String, dynamic> map) {
     String? userName;
-    // Extrai o nome do usuário do campo 'raw_user_meta_data'
     if (map['users'] != null && map['users']['user_metadata'] != null) {
       userName = map['users']['user_metadata']['name'];
     }

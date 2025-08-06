@@ -239,7 +239,10 @@ class ListasRepositoryImpl implements ListasRepository {
 
       final history =
           (response as List<dynamic>)
-              .map((e) => PurchaseHistory.fromMap(e as Map<String, dynamic>))
+              .map((e) {
+                _logger.i(e);
+                return PurchaseHistory.fromMap(e as Map<String, dynamic>);
+              })
               .toList();
 
       return history;

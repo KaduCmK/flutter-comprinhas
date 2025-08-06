@@ -31,10 +31,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static final List<Widget> _destinations = [
-    const ListasScreen(),
-    const Placeholder(child: Center(child: Text("Mercados"))),
-  ];
+  static final List<Widget> _destinations = [];
 
   int _selectedIndex = 0;
   late final PageController _pageController;
@@ -42,6 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _destinations.addAll([
+      ListasScreen(),
+      const Placeholder(child: Center(child: Text("Mercados"))),
+    ]);
     _pageController = PageController(initialPage: _selectedIndex);
   }
 
