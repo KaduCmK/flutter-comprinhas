@@ -11,17 +11,24 @@ class NewItemDialog extends StatefulWidget {
 
 class _NewItemDialogState extends State<NewItemDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _itemNameController = TextEditingController();
-  final _amountController = TextEditingController(text: "1");
-  final _unitController = TextEditingController();
 
+  final _itemNameController = TextEditingController();
+  final _nameFocusNode = FocusNode();
+  
+  final _unitController = TextEditingController();
   String? _selectedUnitId;
+
+  final _amountController = TextEditingController(text: "1");
+  final _amountFocusNode = FocusNode();
+
 
   @override
   void dispose() {
     _itemNameController.dispose();
     _amountController.dispose();
     _unitController.dispose();
+    _nameFocusNode.dispose();
+    _amountFocusNode.dispose();
     super.dispose();
   }
 
@@ -34,7 +41,7 @@ class _NewItemDialogState extends State<NewItemDialog> {
 
       context.read<ListDetailsBloc>().add(
         AddItemToListEvent(
-          itemName: _itemNameController.text,
+          itemName: _itemNameController.text.trim(),
           amount: num.parse(_amountController.text.replaceAll(',', '.')),
           unitId: _selectedUnitId!,
         ),
@@ -64,15 +71,6 @@ class _NewItemDialogState extends State<NewItemDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
-                  controller: _itemNameController,
-                  autofocus: true,
-                  decoration: const InputDecoration(labelText: "Nome do item"),
-                  validator:
-                      (value) =>
-                          (value?.isEmpty ?? true) ? "Campo obrigatório" : null,
-                ),
-                const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -80,10 +78,14 @@ class _NewItemDialogState extends State<NewItemDialog> {
                       flex: 2,
                       child: TextFormField(
                         controller: _amountController,
+                        focusNode: _amountFocusNode,
+                        autofocus: true,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
+                        textInputAction: TextInputAction.next,
                         decoration: const InputDecoration(labelText: "Qtd."),
+                        onFieldSubmitted: (_) => _nameFocusNode.requestFocus(),
                         validator: (value) {
                           if (value == null || value.isEmpty) return "Req.";
                           if (num.tryParse(value.replaceAll(',', '.')) == null)
@@ -119,6 +121,18 @@ class _NewItemDialogState extends State<NewItemDialog> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _itemNameController,
+                  focusNode: _nameFocusNode,
+                  autocorrect: true,
+                  decoration: const InputDecoration(labelText: "Nome do item"),
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _submitForm(),
+                  validator:
+                      (value) =>
+                          (value?.isEmpty ?? true) ? "Campo obrigatório" : null,
                 ),
               ],
             ),
