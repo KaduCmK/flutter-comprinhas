@@ -9,24 +9,25 @@ class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
 
   Future<void> _signIn(BuildContext context) async {
-    final googleSignIn = GoogleSignIn(
+    final googleSignIn = GoogleSignIn.instance;
+    await googleSignIn.initialize(
       serverClientId: dotenv.get('GCLOUD_WEB_CLIENT_ID'),
     );
-    final googleUser = await googleSignIn.signIn();
-    final googleAuth = await googleUser!.authentication;
 
-    final accessToken = googleAuth.accessToken;
+    final googleUser = await googleSignIn.authenticate();
+    final googleAuth = googleUser.authentication;
+
+    // final accessToken = googleAuth.accessToken;
     final idToken = googleAuth.idToken;
 
-    if (accessToken == null) {
-      throw 'Access token não encontrado';
-    }
+    // if (accessToken == null) {
+    //   throw 'Access token não encontrado';
+    // }
     if (idToken == null) {
       throw 'ID token não encontrado';
     }
     final response = await supabase.auth.signInWithIdToken(
       provider: OAuthProvider.google,
-      accessToken: accessToken,
       idToken: idToken,
     );
 
