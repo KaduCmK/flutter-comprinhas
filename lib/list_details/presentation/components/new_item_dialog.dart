@@ -41,7 +41,7 @@ class _NewItemDialogState extends State<NewItemDialog> {
 
       context.read<ListDetailsBloc>().add(
         AddItemToListEvent(
-          itemName: _itemNameController.text,
+          itemName: _itemNameController.text.trim(),
           amount: num.parse(_amountController.text.replaceAll(',', '.')),
           unitId: _selectedUnitId!,
         ),
