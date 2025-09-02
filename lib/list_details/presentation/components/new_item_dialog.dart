@@ -64,15 +64,6 @@ class _NewItemDialogState extends State<NewItemDialog> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
-                  controller: _itemNameController,
-                  autofocus: true,
-                  decoration: const InputDecoration(labelText: "Nome do item"),
-                  validator:
-                      (value) =>
-                          (value?.isEmpty ?? true) ? "Campo obrigatório" : null,
-                ),
-                const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -80,6 +71,7 @@ class _NewItemDialogState extends State<NewItemDialog> {
                       flex: 2,
                       child: TextFormField(
                         controller: _amountController,
+                        autofocus: true,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
@@ -119,6 +111,15 @@ class _NewItemDialogState extends State<NewItemDialog> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _itemNameController,
+                  autocorrect: true,
+                  decoration: const InputDecoration(labelText: "Nome do item"),
+                  validator:
+                      (value) =>
+                          (value?.isEmpty ?? true) ? "Campo obrigatório" : null,
                 ),
               ],
             ),
