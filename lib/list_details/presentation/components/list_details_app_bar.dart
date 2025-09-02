@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
   final double topCardHeight;
+
   const ListDetailsAppBar({super.key, required this.topCardHeight});
 
   @override
@@ -33,16 +34,20 @@ class ListDetailsAppBar extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          state.list?.name ?? '',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.headlineMedium?.copyWith(
-                            color:
-                                Theme.of(
-                                  context,
-                                ).colorScheme.onPrimaryContainer,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            state.list?.name ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.headlineMedium?.copyWith(
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         MenuAnchor(
