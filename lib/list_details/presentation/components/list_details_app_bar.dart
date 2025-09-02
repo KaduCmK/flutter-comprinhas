@@ -10,10 +10,14 @@ import 'package:go_router/go_router.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
   final double topCardHeight;
+
   const ListDetailsAppBar({super.key, required this.topCardHeight});
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return BlocBuilder<ListDetailsBloc, ListDetailsState>(
       builder: (context, state) {
         return Padding(
@@ -22,7 +26,7 @@ class ListDetailsAppBar extends StatelessWidget {
             height: topCardHeight,
             child: Card(
               elevation: 2,
-              color: Theme.of(context).colorScheme.primaryContainer,
+              color: colorScheme.primaryContainer,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -33,16 +37,15 @@ class ListDetailsAppBar extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          state.list?.name ?? '',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.headlineMedium?.copyWith(
-                            color:
-                                Theme.of(
-                                  context,
-                                ).colorScheme.onPrimaryContainer,
-                            fontWeight: FontWeight.bold,
+                        Expanded(
+                          child: Text(
+                            state.list?.name ?? '',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.headlineMedium?.copyWith(
+                              color:colorScheme.onPrimaryContainer,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         MenuAnchor(
@@ -116,13 +119,43 @@ class ListDetailsAppBar extends StatelessWidget {
                           child: const Text("Adicionar"),
                         ),
 
-                        IconButton(
-                          onPressed:
-                              () => context.push(
-                                '/list/${state.list!.id}/history',
-                                extra: context.read<ListDetailsBloc>(),
-                              ),
-                          icon: Icon(Icons.history),
+                        Row(
+                          spacing: 4,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            MenuAnchor(
+                              menuChildren: [
+                                MenuItemButton(
+                                  leadingIcon: Icon(Icons.sort_by_alpha),
+                                  child: Text("Alfabético"),
+                                  onPressed: () => context
+                                      .read<ListDetailsBloc>()
+                                      .add(SortListEvent(SortOption.name)),
+                                ),
+                                MenuItemButton(
+                                  leadingIcon: Icon(Icons.event),
+                                  child: Text("Quantidade", style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),),
+                                  onPressed: () => context
+                                      .read<ListDetailsBloc>()
+                                      .add(SortListEvent(SortOption.date)),
+                                ),
+                              ],
+                              builder:
+                                  (context, controller, child) => IconButton(
+                                    onPressed: () => controller.open(),
+                                    icon: Icon(Icons.sort),
+                                  ),
+                            ),
+                            IconButton(
+                              onPressed:
+                                  () => context.push(
+                                    '/list/${state.list!.id}/history',
+                                    extra: context.read<ListDetailsBloc>(),
+                                  ),
+                              tooltip: "Histórico",
+                              icon: Icon(Icons.history),
+                            ),
+                          ],
                         ),
                       ],
                     ),

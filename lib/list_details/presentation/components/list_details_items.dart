@@ -20,59 +20,91 @@ class ListDetailsItems extends StatefulWidget {
 
 class _ListDetailsItemsState extends State<ListDetailsItems> {
   final _listKey = GlobalKey<SliverAnimatedListState>();
-  // A lista local que controla a animação
   final List<ListItem> _items = [];
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Inicializa a lista de itens com o estado atual do BLoC
+    final state = context.watch<ListDetailsBloc>().state;
+    if (state is ListDetailsLoaded) {
+      _items.clear();
+      _items.addAll(state.items);
+    }
+  }
+
   void _addItem(ListItem item, int index) {
-    // Insere na posição correta pra manter a ordem
     _items.insert(index, item);
     _listKey.currentState?.insertItem(index);
   }
 
-  // Esta função SÓ remove o item da UI, sem disparar eventos.
-  // Será usada pelo BlocListener quando um item for para o carrinho.
   void _animateRemoval(ListItem item, int index) {
     _listKey.currentState?.removeItem(
       index,
-      // Usamos um SizedBox.shrink() porque a remoção já é gerenciada pelo estado
-      (context, animation) => const SizedBox.shrink(),
+      // Usamos o próprio card para uma animação de saída suave
+      (context, animation) => ListItemCard(
+        item: item,
+        animation: animation,
+      ),
     );
     _items.remove(item);
   }
 
-  // Esta função DELETA o item do banco de dados.
-  // Será usada pelo onDismiss (swipe) do ListItemCard.
   void _deleteItem(ListItem item, int index) {
+    final removedItem = _items.removeAt(index);
     _listKey.currentState?.removeItem(
       index,
-      (context, animation) => const SizedBox.shrink(),
+      (context, animation) => ListItemCard(
+        item: removedItem,
+        animation: animation,
+      ),
     );
-    _items.remove(item);
-    // Dispara o evento para remover o item do banco de dados
     context.read<ListDetailsBloc>().add(RemoveItemFromListEvent(item.id));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ListDetailsBloc, ListDetailsState>(
-      listenWhen: (previous, current) => current is ListDetailsLoaded,
+      listenWhen: (previous, current) =>
+          previous is ListDetailsLoading ||
+          (previous is ListDetailsLoaded &&
+              current is ListDetailsLoaded &&
+              previous.items != current.items),
       listener: (context, state) {
-        final newItems = state.items;
+        if (state is! ListDetailsLoaded) return;
         
+        final newItems = state.items;
+
+        // Lógica de Sincronização (Diffing)
+        // 1. Remove os itens que não existem mais
         for (int i = _items.length - 1; i >= 0; i--) {
           final currentItem = _items[i];
-          // Se o item da UI não existe mais na lista do BLoC...
           if (!newItems.any((item) => item.id == currentItem.id)) {
-            // ...chame a função que SÓ anima, sem deletar.
             _animateRemoval(currentItem, i);
           }
         }
 
-        // A lógica de adição permanece a mesma
+        // 2. Adiciona ou move os itens para suas posições corretas
         for (int i = 0; i < newItems.length; i++) {
           final newItem = newItems[i];
-          if (!_items.any((item) => item.id == newItem.id)) {
-            _addItem(newItem, i);
+          if (i >= _items.length || _items[i].id != newItem.id) {
+            // Se o item já existe na lista, mas em outro lugar, é uma movimentação
+            final oldIndex = _items.indexWhere((item) => item.id == newItem.id);
+            if (oldIndex != -1) {
+              final itemToMove = _items.removeAt(oldIndex);
+              // Anima a remoção da posição antiga (sem widget visível)
+              _listKey.currentState?.removeItem(
+                oldIndex,
+                (context, animation) => const SizedBox.shrink(),
+                duration: const Duration(milliseconds: 150),
+              );
+              // Anima a inserção na nova posição
+              _items.insert(i, itemToMove);
+              _listKey.currentState?.insertItem(i, duration: const Duration(milliseconds: 150));
+            } else {
+              // Se é um item completamente novo, apenas insere
+              _addItem(newItem, i);
+            }
           }
         }
       },

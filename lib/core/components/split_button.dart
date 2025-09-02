@@ -47,7 +47,7 @@ class SplitButton extends StatelessWidget {
               spacing: 8,
               children: [
                 Icon(
-                  Icons.shopping_cart,
+                  Icons.shopping_basket,
                   color: colorScheme.onPrimary,
                   size: 32,
                 ),
@@ -80,7 +80,7 @@ class SplitButton extends StatelessWidget {
               elevation: 0,
             ),
             child: Icon(
-              Icons.shopping_cart_checkout,
+              Icons.payments,
               color: colorScheme.onPrimary,
               size: 32,
             ),
