@@ -98,7 +98,7 @@ class ListasRepositoryImpl implements ListasRepository {
       final response = await _client
           .from('list_items')
           .select(
-            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), unitId:unit_id',
+            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), units(*)',
           )
           .eq('list_id', listId);
 
@@ -152,7 +152,7 @@ class ListasRepositoryImpl implements ListasRepository {
       var query = _client
           .from('cart_items')
           .select(
-            '*, user:users(*), list_items!inner(*, list:lists(*), created_by:users(*))',
+            '*, user:users(*), list_items!inner(*, list:lists(*), created_by:users(*), units(*))',
           );
       if (listId != null) {
         query = query.eq('list_items.list_id', listId);

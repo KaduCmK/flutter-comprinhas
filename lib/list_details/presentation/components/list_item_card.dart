@@ -6,18 +6,18 @@ import 'package:intl/intl.dart';
 
 class ListItemCard extends StatelessWidget {
   final ListItem item;
-  final Animation<double>? animation; // Agora é opcional
-  final Function(ListItem item)? onDismiss; // Agora é opcional
+  final Animation<double>? animation;
+  final Function(ListItem item)? onDismiss;
   
-  final bool inCart; // Novo: para saber se está no carrinho
-  final String? cartItemId; // Novo: ID do item no carrinho (se aplicável)
+  final bool inCart;
+  final String? cartItemId;
 
   const ListItemCard({
     super.key,
     required this.item,
     this.animation,
     this.onDismiss,
-    this.inCart = false, // Valor padrão é 'false'
+    this.inCart = false,
     this.cartItemId,
   });
 
@@ -32,6 +32,12 @@ class ListItemCard extends StatelessWidget {
                     text: '${item.amount}',
                     style: Theme.of(context).textTheme.titleMedium!.copyWith(
                       fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextSpan(
+                    text: item.unit.abbreviation,
+                    style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   TextSpan(

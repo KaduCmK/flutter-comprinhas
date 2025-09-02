@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 
@@ -6,7 +7,7 @@ class ListItem extends Equatable {
   final String id;
   final String name;
   final num amount;
-  final String unitId;
+  final Unit unit;
   final User createdBy;
   final DateTime createdAt;
   final ListaCompra list;
@@ -15,10 +16,10 @@ class ListItem extends Equatable {
     required this.id,
     required this.name,
     required this.amount,
-    required this.unitId,
+    required this.unit,
     required this.createdBy,
     required this.createdAt,
-    required this.list
+    required this.list,
   });
 
   factory ListItem.fromMap(Map<String, dynamic> map) {
@@ -26,7 +27,7 @@ class ListItem extends Equatable {
       id: map['id'] as String,
       name: map['name'] as String,
       amount: map['amount'] as num,
-      unitId: map['unitId'] as String? ?? map['unit_id'] as String, // TODO: denormalization
+      unit: Unit.fromMap(map['units'] as Map<String, dynamic>),
       createdBy: User.fromJson(map['created_by'] as Map<String, dynamic>)!,
       createdAt: DateTime.parse(map['created_at'] as String),
       // MUDANÇA PRINCIPAL: Mapeia o objeto aninhado 'list'
@@ -39,12 +40,20 @@ class ListItem extends Equatable {
     return <String, dynamic>{
       'name': name,
       'amount': amount,
-      'unit_id': unitId,
+      'unit_id': unit.id,
       'list_id': list.id,
       'created_by_id': createdBy.id,
     };
   }
 
   @override
-  List<Object?> get props => [id, name, amount, unitId, createdBy, createdAt, list];
+  List<Object?> get props => [
+    id,
+    name,
+    amount,
+    unit,
+    createdBy,
+    createdAt,
+    list,
+  ];
 }
