@@ -36,6 +36,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     _setupRealtime();
 
     on<LoadListDetailsEvent>(_onLoadListDetails);
+    on<SortListEvent>(_onSortList);
     on<LoadPurchaseHistoryEvent>(_onLoadPurchaseHistory);
     on<AddItemToListEvent>(_onAddItemToList);
     on<RemoveItemFromListEvent>(_onRemoveItemFromList);
@@ -51,6 +52,25 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     return super.close();
   }
 
+  List<ListItem> _sortItems(List<ListItem> items, SortOption option) {
+    final sortedList = List<ListItem>.from(
+      items,
+    ); // Crie uma cópia para não modificar a original
+    switch (option) {
+      case SortOption.name:
+        sortedList.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
+        break;
+      case SortOption.date:
+        sortedList.sort(
+          (a, b) => b.createdAt.compareTo(a.createdAt),
+        ); // Mais novo primeiro
+        break;
+    }
+    return sortedList;
+  }
+
   Future<void> _onLoadListDetails(
     LoadListDetailsEvent event,
     Emitter<ListDetailsState> emit,
@@ -62,6 +82,8 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
         items: state.items,
         cartItems: state.cartItems,
         cartMode: state.cartMode,
+        purchaseHistory: state.purchaseHistory,
+        sortOption: state.sortOption,
       ),
     );
     try {
@@ -79,11 +101,13 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
       final itemsToBuy =
           allItems.where((item) => !cartItemIds.contains(item.id)).toList();
 
+      final sortedItems = _sortItems(itemsToBuy, state.sortOption);
+
       emit(
         ListDetailsLoaded(
           list: list,
           units: units,
-          items: itemsToBuy,
+          items: sortedItems,
           cartItems: cartItems,
           cartMode: list.cartMode,
           purchaseHistory: state.purchaseHistory,
@@ -97,7 +121,30 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
           items: state.items,
           cartItems: state.cartItems,
           cartMode: state.cartMode,
+          sortOption: state.sortOption,
           message: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onSortList(
+    SortListEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    if (state is ListDetailsLoaded) {
+      final currentState = state as ListDetailsLoaded;
+      final sortedItems = _sortItems(currentState.items, event.sortOption);
+
+      emit(
+        ListDetailsLoaded(
+          list: currentState.list,
+          units: currentState.units,
+          items: sortedItems,
+          cartItems: currentState.cartItems,
+          cartMode: currentState.cartMode,
+          sortOption: event.sortOption,
+          purchaseHistory: currentState.purchaseHistory,
         ),
       );
     }
@@ -121,7 +168,17 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     try {
       await _repository.removeItemFromCart(event.cartItemId);
     } catch (e) {
-      // Opcional: Tratar erro.
+      _logger.e(e);
+      emit(
+        ListDetailsError(
+          list: state.list,
+          units: state.units,
+          items: state.items,
+          cartItems: state.cartItems,
+          cartMode: state.cartMode,
+          message: e.toString(),
+        ),
+      );
     }
   }
 

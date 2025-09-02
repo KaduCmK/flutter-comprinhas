@@ -9,6 +9,15 @@ abstract class ListDetailsEvent extends Equatable {
 
 class LoadListDetailsEvent extends ListDetailsEvent {}
 
+class SortListEvent extends ListDetailsEvent {
+  final SortOption sortOption;
+
+  const SortListEvent(this.sortOption);
+
+  @override
+  List<Object> get props => [sortOption];
+}
+
 class AddItemToListEvent extends ListDetailsEvent {
   final String itemName;
   final num amount;

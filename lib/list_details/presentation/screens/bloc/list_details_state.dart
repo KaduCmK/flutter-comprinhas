@@ -1,5 +1,7 @@
 part of 'list_details_bloc.dart';
 
+enum SortOption { name, date }
+
 abstract class ListDetailsState extends Equatable {
   final ListaCompra? list;
   final List<Unit>? units;
@@ -7,6 +9,7 @@ abstract class ListDetailsState extends Equatable {
   final List<CartItem> cartItems;
   final CartMode cartMode;
   final List<PurchaseHistory> purchaseHistory;
+  final SortOption sortOption;
 
   const ListDetailsState({
     this.list,
@@ -15,6 +18,7 @@ abstract class ListDetailsState extends Equatable {
     required this.cartItems,
     this.cartMode = CartMode.shared,
     this.purchaseHistory = const [],
+    this.sortOption = SortOption.name,
   });
 
   @override
@@ -25,11 +29,13 @@ abstract class ListDetailsState extends Equatable {
     cartItems,
     cartMode,
     purchaseHistory,
+    sortOption,
   ];
 }
 
 class ListDetailsInitial extends ListDetailsState {
-  const ListDetailsInitial() : super(items: const [], cartItems: const [], purchaseHistory: const []);
+  const ListDetailsInitial()
+    : super(items: const [], cartItems: const [], purchaseHistory: const []);
 }
 
 class ListDetailsLoading extends ListDetailsState {
@@ -40,6 +46,7 @@ class ListDetailsLoading extends ListDetailsState {
     required super.cartItems,
     required super.cartMode,
     super.purchaseHistory,
+    super.sortOption,
   });
 }
 
@@ -51,7 +58,19 @@ class ListDetailsLoaded extends ListDetailsState {
     required super.cartItems,
     required super.cartMode,
     required super.purchaseHistory,
+    super.sortOption,
   });
+
+  @override
+  List<Object?> get props => [
+    list,
+    units,
+    items,
+    cartItems,
+    cartMode,
+    purchaseHistory,
+    sortOption,
+  ];
 }
 
 class ListDetailsError extends ListDetailsState {
@@ -65,8 +84,18 @@ class ListDetailsError extends ListDetailsState {
     required super.cartMode,
     required this.message,
     super.purchaseHistory,
+    super.sortOption,
   });
 
   @override
-  List<Object?> get props => [list, units, items, cartItems, cartMode, message];
+  List<Object?> get props => [
+    list,
+    units,
+    items,
+    cartItems,
+    cartMode,
+    message,
+    purchaseHistory,
+    sortOption,
+  ];
 }
