@@ -288,7 +288,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     }
   }
 
-  _onLoadPurchaseHistory(
+  Future<void> _onLoadPurchaseHistory(
     LoadPurchaseHistoryEvent event,
     Emitter<ListDetailsState> emit,
   ) async {

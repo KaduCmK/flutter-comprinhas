@@ -17,6 +17,7 @@ import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/enviar_nota_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -123,6 +124,7 @@ final _router = GoRouter(
           (context, state) =>
               const Scaffold(body: Center(child: Text('Carregando...'))),
     ),
+    GoRoute(path: '/enviar-nfe', builder: (context, state) => const EnviarNotaScreen()),
   ],
 );
 
