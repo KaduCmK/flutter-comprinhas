@@ -17,7 +17,23 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
       _logger.d('Enviando NF-E | ${event.nfe}');
       emit(SendingNfe());
       try {
-        // await _repository.sendNfe(event.nfe);
+        // extraindo chave da URL
+        final uri = Uri.tryParse(event.nfe);
+        if (uri == null || !uri.host.contains('fazenda.rj.gov.br'))
+          throw Exception('Nota fiscal inválida');
+
+        final accessKey = uri
+            .toString()
+            .split('?')[1]
+            .split('|')[0]
+            .substring(0, 44);
+
+            _logger.i('accessKey: $accessKey');
+
+        if (accessKey.length != 44 || BigInt.tryParse(accessKey) == null)
+          throw Exception('Chave de acesso inválida');
+
+        await _repository.sendNfe(accessKey);
         _logger.i('NF-E enviada com sucesso');
         emit(NfeSent());
       } catch (e) {

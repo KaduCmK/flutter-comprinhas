@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/home/presentation/components/home_fab.dart';
-import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_comprinhas/mercado/presentation/mercado_screen.dart';
 import 'package:flutter_comprinhas/shared/widgets/user_avatar.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
@@ -14,11 +14,14 @@ class HomeScreenProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create:
-          (context) =>
-              ListasBloc(repository: sl<ListasRepository>())
-                ..add(GetListsEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create:
+              (context) => ListasBloc(repository: sl())..add(GetListsEvent()),
+        ),
+        BlocProvider(create: (_) => MercadoBloc(mercadoRepository: sl())),
+      ],
       child: const HomeScreen(),
     );
   }
@@ -40,10 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _destinations.addAll([
-      ListasScreen(),
-      MercadoScreen(),
-    ]);
+    _destinations.addAll([ListasScreen(), MercadoScreen()]);
     _pageController = PageController(initialPage: _selectedIndex);
   }
 

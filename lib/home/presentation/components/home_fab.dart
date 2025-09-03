@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
+import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:go_router/go_router.dart';
 
 class HomeFab extends StatelessWidget {
   final int selectedIndex;
-  
+
   const HomeFab({super.key, required this.selectedIndex});
 
   @override
@@ -57,10 +58,14 @@ class HomeFab extends StatelessWidget {
                     FloatingActionButton.small(
                       heroTag: null,
                       child: const Icon(Icons.qr_code_2),
-                      onPressed: () => context.push('/enviar-nfe'),
+                      onPressed:
+                          () => context.push(
+                            '/enviar-nfe',
+                            extra: context.read<MercadoBloc>(),
+                          ),
                     ),
                   ],
-                )
+                ),
               ],
     );
   }
