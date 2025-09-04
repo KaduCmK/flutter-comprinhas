@@ -23,21 +23,12 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                pinned: true,
-                automaticallyImplyLeading: false,
-                expandedHeight: 128,
+                snap: true,
+                floating: true,
+                automaticallyImplyLeading: true,
+                expandedHeight: 160,
                 flexibleSpace: FlexibleSpaceBar(
                   background: ListDetailsAppBar(),
-                ),
-              ),
-
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickyHeaderDelegate(
-                  height: 4,
-                  child: state is ListDetailsLoading
-                    ? const LinearProgressIndicator()
-                    : SizedBox.shrink()
                 ),
               ),
 
@@ -58,32 +49,5 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
         },
       ),
     );
-  }
-}
-
-class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
-  const _StickyHeaderDelegate({required this.child, required this.height});
-
-  final Widget child;
-  final double height;
-
-  @override
-  double get minExtent => height;
-
-  @override
-  double get maxExtent => height;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return SizedBox.expand(child: child);
-  }
-
-  @override
-  bool shouldRebuild(_StickyHeaderDelegate oldDelegate) {
-    return oldDelegate.child != child || oldDelegate.height != height;
   }
 }

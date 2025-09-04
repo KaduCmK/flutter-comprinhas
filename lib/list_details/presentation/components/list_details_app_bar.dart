@@ -18,157 +18,162 @@ class ListDetailsAppBar extends StatelessWidget {
     return BlocBuilder<ListDetailsBloc, ListDetailsState>(
       builder: (context, state) {
         return SafeArea(
-          child: SizedBox(
-            child: Card(
-              elevation: 2,
-              color: colorScheme.primaryContainer,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 8,
-                  horizontal: 16,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+          child: Card(
+            elevation: 2,
+            color: colorScheme.primaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: Text(
-                            state.list?.name ?? '',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: textTheme.headlineMedium?.copyWith(
-                              color: colorScheme.onPrimaryContainer,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.center,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                state.list?.name ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: textTheme.headlineMedium?.copyWith(
+                                  color: colorScheme.onPrimaryContainer,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text("Total estimado: R\$ --,--", style: textTheme.titleMedium,),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          onPressed:
-                              () => showDialog(
-                                context: context,
-                                builder: (_) {
-                                  return BlocProvider.value(
-                                    value: context.read<ListDetailsBloc>(),
-                                    child: NewItemDialog(),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed:
+                            () => showDialog(
+                              context: context,
+                              builder: (_) {
+                                return BlocProvider.value(
+                                  value: context.read<ListDetailsBloc>(),
+                                  child: NewItemDialog(),
+                                );
+                              },
+                            ),
+                        child: const Text("Adicionar"),
+                      ),
+
+                      Row(
+                        spacing: 4,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          MenuAnchor(
+                            menuChildren: [
+                              MenuItemButton(
+                                leadingIcon: Icon(Icons.sort_by_alpha),
+                                child: Text("Alfabético"),
+                                onPressed:
+                                    () => context.read<ListDetailsBloc>().add(
+                                      SortListEvent(SortOption.name),
+                                    ),
+                              ),
+                              MenuItemButton(
+                                leadingIcon: Icon(Icons.event),
+                                child: Text(
+                                  "Quantidade",
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                onPressed:
+                                    () => context.read<ListDetailsBloc>().add(
+                                      SortListEvent(SortOption.date),
+                                    ),
+                              ),
+                            ],
+                            builder:
+                                (context, controller, child) => IconButton(
+                                  onPressed: () => controller.open(),
+                                  icon: Icon(Icons.sort),
+                                ),
+                          ),
+                          IconButton(
+                            onPressed:
+                                () => context.push(
+                                  '/list/${state.list!.id}/history',
+                                  extra: context.read<ListDetailsBloc>(),
+                                ),
+                            tooltip: "Histórico",
+                            icon: Icon(Icons.history),
+                          ),
+                          MenuAnchor(
+                            menuChildren: [
+                              MenuItemButton(
+                                leadingIcon: Icon(Icons.qr_code),
+                                child: Text("Gerar QR Code"),
+                                onPressed:
+                                    () => showDialog(
+                                      context: context,
+                                      builder:
+                                          (_) => QrCodeDialog(
+                                            listId: state.list!.id,
+                                          ),
+                                    ),
+                              ),
+                              MenuItemButton(
+                                leadingIcon: Icon(Icons.link),
+                                child: Text("Copiar código"),
+                                onPressed: () {
+                                  final encodedListId = base64Url.encode(
+                                    utf8.encode(state.list!.id),
                                   );
+                                  final listCode =
+                                      'comprinhas://join/$encodedListId';
+                                  Clipboard.setData(
+                                    ClipboardData(text: listCode),
+                                  ).then((_) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                            "Código copiado para a área de transferência",
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  });
                                 },
                               ),
-                          child: const Text("Adicionar"),
-                        ),
-
-                        Row(
-                          spacing: 4,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            MenuAnchor(
-                              menuChildren: [
-                                MenuItemButton(
-                                  leadingIcon: Icon(Icons.sort_by_alpha),
-                                  child: Text("Alfabético"),
-                                  onPressed:
-                                      () => context.read<ListDetailsBloc>().add(
-                                        SortListEvent(SortOption.name),
-                                      ),
-                                ),
-                                MenuItemButton(
-                                  leadingIcon: Icon(Icons.event),
-                                  child: Text(
-                                    "Quantidade",
-                                    style: textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  onPressed:
-                                      () => context.read<ListDetailsBloc>().add(
-                                        SortListEvent(SortOption.date),
-                                      ),
-                                ),
-                              ],
-                              builder:
-                                  (context, controller, child) => IconButton(
-                                    onPressed: () => controller.open(),
-                                    icon: Icon(Icons.sort),
-                                  ),
-                            ),
-                            IconButton(
-                              onPressed:
-                                  () => context.push(
-                                    '/list/${state.list!.id}/history',
-                                    extra: context.read<ListDetailsBloc>(),
-                                  ),
-                              tooltip: "Histórico",
-                              icon: Icon(Icons.history),
-                            ),
-                            MenuAnchor(
-                              menuChildren: [
-                                MenuItemButton(
-                                  leadingIcon: Icon(Icons.qr_code),
-                                  child: Text("Gerar QR Code"),
-                                  onPressed:
-                                      () => showDialog(
-                                        context: context,
-                                        builder:
-                                            (_) => QrCodeDialog(
-                                              listId: state.list!.id,
-                                            ),
-                                      ),
-                                ),
-                                MenuItemButton(
-                                  leadingIcon: Icon(Icons.link),
-                                  child: Text("Copiar código"),
+                            ],
+                            builder:
+                                (context, controller, child) => IconButton(
                                   onPressed: () {
-                                    final encodedListId = base64Url.encode(
-                                      utf8.encode(state.list!.id),
-                                    );
-                                    final listCode =
-                                        'comprinhas://join/$encodedListId';
-                                    Clipboard.setData(
-                                      ClipboardData(text: listCode),
-                                    ).then((_) {
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: const Text(
-                                              "Código copiado para a área de transferência",
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    });
+                                    if (controller.isOpen) {
+                                      controller.close();
+                                    } else {
+                                      controller.open();
+                                    }
                                   },
+                                  icon: Icon(Icons.share),
                                 ),
-                              ],
-                              builder:
-                                  (context, controller, child) => IconButton(
-                                    onPressed: () {
-                                      if (controller.isOpen) {
-                                        controller.close();
-                                      } else {
-                                        controller.open();
-                                      }
-                                    },
-                                    icon: Icon(Icons.share),
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  state is ListDetailsLoading
+                      ? const LinearProgressIndicator()
+                      : SizedBox(height: 4),
+                ],
               ),
             ),
           ),
