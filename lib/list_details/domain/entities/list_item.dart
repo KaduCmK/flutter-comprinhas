@@ -11,6 +11,7 @@ class ListItem extends Equatable {
   final User createdBy;
   final DateTime createdAt;
   final ListaCompra list;
+  final num? precoSugerido;
 
   const ListItem({
     required this.id,
@@ -20,6 +21,7 @@ class ListItem extends Equatable {
     required this.createdBy,
     required this.createdAt,
     required this.list,
+    this.precoSugerido,
   });
 
   factory ListItem.fromMap(Map<String, dynamic> map) {
@@ -30,8 +32,8 @@ class ListItem extends Equatable {
       unit: Unit.fromMap(map['units'] as Map<String, dynamic>),
       createdBy: User.fromJson(map['created_by'] as Map<String, dynamic>)!,
       createdAt: DateTime.parse(map['created_at'] as String),
-      // MUDANÇA PRINCIPAL: Mapeia o objeto aninhado 'list'
       list: ListaCompra.fromMap(map['list'] as Map<String, dynamic>),
+      precoSugerido: map['preco_sugerido'] as num?,
     );
   }
 
@@ -43,6 +45,7 @@ class ListItem extends Equatable {
       'unit_id': unit.id,
       'list_id': list.id,
       'created_by_id': createdBy.id,
+      'preco_sugerido': precoSugerido
     };
   }
 
@@ -55,5 +58,6 @@ class ListItem extends Equatable {
     createdBy,
     createdAt,
     list,
+    precoSugerido
   ];
 }

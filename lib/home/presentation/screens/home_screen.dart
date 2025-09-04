@@ -1,23 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
-import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/home/presentation/components/home_fab.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
+import 'package:flutter_comprinhas/mercado/presentation/mercado_screen.dart';
 import 'package:flutter_comprinhas/shared/widgets/user_avatar.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
-import 'package:go_router/go_router.dart';
 
 class HomeScreenProvider extends StatelessWidget {
   const HomeScreenProvider({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create:
-          (context) =>
-              ListasBloc(repository: sl<ListasRepository>())
-                ..add(GetListsEvent()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create:
+              (context) => ListasBloc(repository: sl())..add(GetListsEvent()),
+        ),
+        BlocProvider(create: (_) => MercadoBloc(mercadoRepository: sl())),
+      ],
       child: const HomeScreen(),
     );
   }
@@ -39,10 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _destinations.addAll([
-      ListasScreen(),
-      const Placeholder(child: Center(child: Text("Mercados"))),
-    ]);
+    _destinations.addAll([ListasScreen(), MercadoScreen()]);
     _pageController = PageController(initialPage: _selectedIndex);
   }
 
@@ -76,43 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       floatingActionButtonLocation: ExpandableFab.location,
-      floatingActionButton: ExpandableFab(
-        type: ExpandableFabType.up,
-        childrenAnimation: ExpandableFabAnimation.none,
-        distance: 70,
-        children: [
-          Row(
-            spacing: 4,
-            children: [
-              Text("Criar Lista"),
-              FloatingActionButton.small(
-                heroTag: null,
-                child: const Icon(Icons.add),
-                onPressed:
-                    () => context.push(
-                      '/nova-lista',
-                      extra: context.read<ListasBloc>(),
-                    ),
-              ),
-            ],
-          ),
-          Row(
-            spacing: 4,
-            children: [
-              Text("Entrar em uma lista"),
-              FloatingActionButton.small(
-                heroTag: null,
-                child: const Icon(Icons.login),
-                onPressed:
-                    () => context.push(
-                      '/join-list',
-                      extra: context.read<ListasBloc>(),
-                    ),
-              ),
-            ],
-          ),
-        ],
-      ),
+      floatingActionButton: HomeFab(selectedIndex: _selectedIndex),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
         child: PageView.builder(
