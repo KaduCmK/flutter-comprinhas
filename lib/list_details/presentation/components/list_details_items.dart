@@ -5,14 +5,8 @@ import 'package:flutter_comprinhas/list_details/presentation/components/list_ite
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
 
 class ListDetailsItems extends StatefulWidget {
-  final ScrollController controller;
-  final double topCardHeight;
 
-  const ListDetailsItems({
-    super.key,
-    required this.controller,
-    required this.topCardHeight,
-  });
+  const ListDetailsItems({super.key});
 
   @override
   State<ListDetailsItems> createState() => _ListDetailsItemsState();
@@ -42,10 +36,7 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
     _listKey.currentState?.removeItem(
       index,
       // Usamos o próprio card para uma animação de saída suave
-      (context, animation) => ListItemCard(
-        item: item,
-        animation: animation,
-      ),
+      (context, animation) => ListItemCard(item: item, animation: animation),
     );
     _items.remove(item);
   }
@@ -54,10 +45,8 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
     final removedItem = _items.removeAt(index);
     _listKey.currentState?.removeItem(
       index,
-      (context, animation) => ListItemCard(
-        item: removedItem,
-        animation: animation,
-      ),
+      (context, animation) =>
+          ListItemCard(item: removedItem, animation: animation),
     );
     context.read<ListDetailsBloc>().add(RemoveItemFromListEvent(item.id));
   }
@@ -65,14 +54,15 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ListDetailsBloc, ListDetailsState>(
-      listenWhen: (previous, current) =>
-          previous is ListDetailsLoading ||
-          (previous is ListDetailsLoaded &&
-              current is ListDetailsLoaded &&
-              previous.items != current.items),
+      listenWhen:
+          (previous, current) =>
+              previous is ListDetailsLoading ||
+              (previous is ListDetailsLoaded &&
+                  current is ListDetailsLoaded &&
+                  previous.items != current.items),
       listener: (context, state) {
         if (state is! ListDetailsLoaded) return;
-        
+
         final newItems = state.items;
 
         // Lógica de Sincronização (Diffing)
@@ -100,7 +90,10 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
               );
               // Anima a inserção na nova posição
               _items.insert(i, itemToMove);
-              _listKey.currentState?.insertItem(i, duration: const Duration(milliseconds: 150));
+              _listKey.currentState?.insertItem(
+                i,
+                duration: const Duration(milliseconds: 150),
+              );
             } else {
               // Se é um item completamente novo, apenas insere
               _addItem(newItem, i);
@@ -110,11 +103,8 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
       },
       child: CustomScrollView(
         hitTestBehavior: HitTestBehavior.translucent,
-        controller: widget.controller,
         slivers: [
-          SliverPadding(
-            padding: EdgeInsets.only(top: widget.topCardHeight + 10),
-          ),
+          SliverPadding(padding: EdgeInsets.only(top: 10)),
           DecoratedSliver(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surfaceDim,
