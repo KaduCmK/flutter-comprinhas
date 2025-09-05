@@ -35,6 +35,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
        super(const ListDetailsInitial()) {
     _setupRealtime();
 
+    on<TogglePriceForecastEvent>(_onTogglePriceForecast);
     on<LoadListDetailsEvent>(_onLoadListDetails);
     on<SortListEvent>(_onSortList);
     on<LoadPurchaseHistoryEvent>(_onLoadPurchaseHistory);
@@ -317,6 +318,37 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     } catch (e) {
       emit(
         ListDetailsError(
+          items: state.items,
+          cartItems: state.cartItems,
+          cartMode: state.cartMode,
+          message: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onTogglePriceForecast(
+    TogglePriceForecastEvent event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    emit(
+      ListDetailsLoading(
+        list: state.list,
+        units: state.units,
+        items: state.items,
+        cartItems: state.cartItems,
+        cartMode: state.cartMode,
+      ),
+    );
+    final previousValue = state.list!.priceForecastEnabled;
+    try {
+      await _repository.togglePriceForecast(listId, previousValue);
+      add(LoadListDetailsEvent());
+    } catch (e) {
+      emit(
+        ListDetailsError(
+          list: state.list,
+          units: state.units,
           items: state.items,
           cartItems: state.cartItems,
           cartMode: state.cartMode,

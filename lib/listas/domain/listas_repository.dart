@@ -9,6 +9,7 @@ abstract class ListasRepository {
   Future<void> createList(String name);
   Future<void> joinList(String listId);
   Future<ListaCompra> getListById(String listId);
+  Future<void> togglePriceForecast(String listId, bool previousValue);
 
   Future<List<ListItem>> getListItems(String listId);
   Future<List<Unit>> getUnits();

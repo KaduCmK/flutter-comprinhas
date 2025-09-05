@@ -72,3 +72,5 @@ class SetCartModeEvent extends ListDetailsEvent {
 class ConfirmPurchaseEvent extends ListDetailsEvent {}
 
 class LoadPurchaseHistoryEvent extends ListDetailsEvent {}
+
+final class TogglePriceForecastEvent extends ListDetailsEvent {}

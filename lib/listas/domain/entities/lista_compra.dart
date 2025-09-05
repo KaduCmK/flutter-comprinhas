@@ -9,6 +9,7 @@ class ListaCompra extends Equatable {
   final String ownerId;
   final DateTime createdAt;
   final CartMode cartMode;
+  final bool priceForecastEnabled;
 
   const ListaCompra({
     required this.id,
@@ -16,6 +17,7 @@ class ListaCompra extends Equatable {
     required this.ownerId,
     required this.createdAt,
     this.cartMode = CartMode.shared,
+    this.priceForecastEnabled = false,
   });
 
   String get createdAtFormatted => DateFormat('dd/MM/yyyy').format(createdAt);
@@ -30,6 +32,7 @@ class ListaCompra extends Equatable {
         (e) => e.name == map['cart_mode'],
         orElse: () => CartMode.shared,
       ),
+      priceForecastEnabled: map['price_forecast_enabled'] as bool? ?? false,
     );
   }
 
@@ -38,10 +41,18 @@ class ListaCompra extends Equatable {
     return <String, dynamic>{
       'name': name,
       'owner_id': ownerId,
-      'cart_mode': cartMode.name, // CORREÇÃO: Usar .name ao invés de .toString()
+      'cart_mode': cartMode.name,
+      'price_forecast_enabled': priceForecastEnabled,
     };
   }
 
   @override
-  List<Object?> get props => [id, name, ownerId, createdAt, cartMode];
+  List<Object?> get props => [
+    id,
+    name,
+    ownerId,
+    createdAt,
+    cartMode,
+    priceForecastEnabled,
+  ];
 }
