@@ -17,10 +17,12 @@ class HomeScreenProvider extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (context) => ListasBloc(repository: sl())..add(GetListsEvent()),
+          create: (context) =>
+              ListasBloc(repository: sl())..add(GetListsEvent()),
         ),
-        BlocProvider(create: (_) => MercadoBloc(mercadoRepository: sl())),
+        BlocProvider(
+            create: (_) => MercadoBloc(
+                mercadoRepository: sl(), notificationService: sl())),
       ],
       child: const HomeScreen(),
     );
@@ -43,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _destinations.addAll([ListasScreen(), MercadoScreen()]);
+    _destinations.addAll([const ListasScreen(), const MercadoScreen()]);
     _pageController = PageController(initialPage: _selectedIndex);
   }
 
@@ -70,35 +72,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Comprinhas"),
-        leading: const UserAvatar(),
-      ),
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      floatingActionButtonLocation: ExpandableFab.location,
-      floatingActionButton: HomeFab(selectedIndex: _selectedIndex),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-        child: PageView.builder(
-          itemCount: _destinations.length,
-          controller: _pageController,
-          onPageChanged: _onPageChanged,
-          itemBuilder: (context, index) {
-            return _destinations[index];
-          },
+    return BlocListener<MercadoBloc, MercadoState>(
+      listener: (context, state) {
+        if (state is NfeSent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Nota fiscal enviada com sucesso!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Comprinhas"),
+          leading: const UserAvatar(),
         ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onDestinationSelected,
-        destinations: [
-          NavigationDestination(icon: const Icon(Icons.list), label: "Listas"),
-          NavigationDestination(
-            icon: const Icon(Icons.store),
-            label: "Mercados",
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        floatingActionButtonLocation: ExpandableFab.location,
+        floatingActionButton: HomeFab(selectedIndex: _selectedIndex),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: PageView.builder(
+            itemCount: _destinations.length,
+            controller: _pageController,
+            onPageChanged: _onPageChanged,
+            itemBuilder: (context, index) {
+              return _destinations[index];
+            },
           ),
-        ],
+        ),
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onDestinationSelected,
+          destinations: const [
+            NavigationDestination(icon: Icon(Icons.list), label: "Listas"),
+            NavigationDestination(
+              icon: Icon(Icons.store),
+              label: "Mercados",
+            ),
+          ],
+        ),
       ),
     );
   }

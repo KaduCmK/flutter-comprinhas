@@ -1,3 +1,4 @@
+import 'package:flutter_comprinhas/core/config/notification_service.dart';
 import 'package:flutter_comprinhas/listas/data/listas_repository_impl.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
@@ -13,4 +14,6 @@ void configureServiceLocator() {
   sl.registerLazySingleton<MercadoRepository>(
     () => MercadoRepository(client: Supabase.instance.client),
   );
+
+  sl.registerLazySingleton<NotificationService>(() => NotificationService());
 }
