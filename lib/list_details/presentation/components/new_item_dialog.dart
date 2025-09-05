@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 
 class NewItemDialog extends StatefulWidget {
   const NewItemDialog({super.key});
@@ -40,7 +40,7 @@ class _NewItemDialogState extends State<NewItemDialog> {
       }
 
       context.read<ListDetailsBloc>().add(
-        AddItemToListEvent(
+        AddItemToList(
           itemName: _itemNameController.text.trim(),
           amount: num.parse(_amountController.text.replaceAll(',', '.')),
           unitId: _selectedUnitId!,
@@ -54,8 +54,6 @@ class _NewItemDialogState extends State<NewItemDialog> {
   Widget build(BuildContext context) {
     return BlocBuilder<ListDetailsBloc, ListDetailsState>(
       builder: (context, state) {
-        if (state is! ListDetailsLoaded) return const SizedBox.shrink();
-
         final units = state.units ?? [];
         final initialUnit = units.firstWhere(
           (u) => u.abbreviation == "un",

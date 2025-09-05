@@ -165,7 +165,7 @@ class ListasRepositoryImpl implements ListasRepository {
               .toList();
       return items;
     } catch (e) {
-      _logger.e('erro ao buscar itens do carrinho: $e');
+      _logger.e(e);
       rethrow;
     }
   }
@@ -238,16 +238,27 @@ class ListasRepositoryImpl implements ListasRepository {
       _logger.i(response);
 
       final history =
-          (response as List<dynamic>)
-              .map((e) {
-                _logger.i(e);
-                return PurchaseHistory.fromMap(e as Map<String, dynamic>);
-              })
-              .toList();
+          (response as List<dynamic>).map((e) {
+            _logger.i(e);
+            return PurchaseHistory.fromMap(e as Map<String, dynamic>);
+          }).toList();
 
       return history;
     } catch (e) {
       _logger.e('Erro ao buscar histórico da lista via API: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> togglePriceForecast(String listId, bool previousValue) async {
+    try {
+      await _client
+          .from('lists')
+          .update({'price_forecast_enabled': !previousValue})
+          .eq('id', listId);
+    } catch (e) {
+      _logger.e('Erro ao atualizar previsão de preco: $e');
       rethrow;
     }
   }

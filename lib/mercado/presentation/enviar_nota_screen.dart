@@ -22,6 +22,50 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
     super.dispose();
   }
 
+  void _validateAndSend(String code) {
+    if (isProcessing) return;
+
+    final uri = Uri.tryParse(code);
+    if (uri == null || !uri.host.contains('fazenda.rj.gov.br')) {
+      _showErrorSnackBar('QR Code inválido.');
+      return;
+    }
+
+    // Lógica de extração corrigida
+    final accessKey = uri.queryParameters['p']?.split('|').first;
+
+    if (accessKey == null ||
+        accessKey.length != 44 ||
+        BigInt.tryParse(accessKey) == null) {
+      _showErrorSnackBar('Chave de acesso inválida no QR Code.');
+      return;
+    }
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    // Sai da tela
+    context.pop();
+
+    // Mostra a snackbar de sucesso na tela anterior
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('QR Code lido com sucesso! Enviando nota...'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+
+    // Envia a chave JÁ VALIDADA para o BLoC
+    context.read<MercadoBloc>().add(SendNfe(accessKey));
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
@@ -38,16 +82,10 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
             controller: _controller,
             scanWindow: scanWindow,
             onDetect: (barcodes) {
-              if (isProcessing) return;
-
               final String? code = barcodes.barcodes.first.rawValue;
-              if (code == null) return;
-
-              setState(() {
-                isProcessing = true;
-              });
-              context.pop();
-              context.read<MercadoBloc>().add(SendNfe(code));
+              if (code != null) {
+                _validateAndSend(code);
+              }
             },
           ),
           CustomPaint(painter: ScannerOverlay(scanWindow)),
@@ -62,7 +100,7 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.5),
+                  color: Colors.black.withAlpha(128),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Text(
@@ -79,12 +117,9 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
             child: Center(
               child: IconButton(
                 onPressed: () => _controller.toggleTorch(),
-                icon: Icon(
-                  _controller.torchEnabled ? Icons.flash_off : Icons.flash_on,
-                  color: Colors.white,
-                ),
+                icon: Icon(Icons.flash_off, color: Colors.white),
                 style: IconButton.styleFrom(
-                  backgroundColor: Colors.black.withValues(alpha: 0.5),
+                  backgroundColor: Colors.black.withAlpha(128),
                 ),
               ),
             ),
