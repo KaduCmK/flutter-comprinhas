@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class ListDetailsAppbarActions extends StatelessWidget {
@@ -23,7 +24,7 @@ class ListDetailsAppbarActions extends StatelessWidget {
       children: [
         IconButton(
           onPressed: () => context.read<ListDetailsBloc>().add(
-                TogglePriceForecastEvent(),
+                TogglePriceForecast(),
           ),
           icon: Icon(
             Icons.currency_exchange,
@@ -39,7 +40,7 @@ class ListDetailsAppbarActions extends StatelessWidget {
               child: Text("Alfabético"),
               onPressed:
                   () => context.read<ListDetailsBloc>().add(
-                    SortListEvent(SortOption.name),
+                    SortList(SortOption.name),
                   ),
             ),
             MenuItemButton(
@@ -52,7 +53,7 @@ class ListDetailsAppbarActions extends StatelessWidget {
               ),
               onPressed:
                   () => context.read<ListDetailsBloc>().add(
-                    SortListEvent(SortOption.date),
+                    SortList(SortOption.date),
                   ),
             ),
           ],
@@ -66,7 +67,7 @@ class ListDetailsAppbarActions extends StatelessWidget {
           onPressed:
               () => context.push(
                 '/list/${state.list!.id}/history',
-                extra: context.read<ListDetailsBloc>(),
+                extra: context.read<HistoryBloc>(),
               ),
           tooltip: "Histórico",
           icon: Icon(Icons.history),

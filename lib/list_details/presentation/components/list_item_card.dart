@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/preco_sugerido_chip.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
 import 'package:intl/intl.dart';
 
 class ListItemCard extends StatelessWidget {
@@ -87,17 +87,17 @@ class ListItemCard extends StatelessWidget {
               size: 30,
             ),
             onPressed: () {
-              final bloc = context.read<ListDetailsBloc>();
+              final bloc = context.read<CartBloc>();
               if (inCart) {
                 // Se está no carrinho, deve ter um cartItemId para poder ser removido
                 assert(
                   cartItemId != null,
                   'cartItemId não pode ser nulo se inCart for true',
                 );
-                bloc.add(RemoveFromCartEvent(cartItemId!));
+                bloc.add(RemoveFromCart(cartItemId!));
               } else {
                 // Se não está no carrinho, adiciona
-                bloc.add(AddToCartEvent(item.id));
+                bloc.add(AddToCart(item.id));
               }
             },
           ),

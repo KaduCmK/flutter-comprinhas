@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,7 +18,7 @@ void main() {
 
   group('ListDetailsBloc', () {
     late MockListasRepository mockListasRepository;
-    late ListDetailsBloc listDetailsBloc;
+    late CartBloc listDetailsBloc;
     late ListaCompra mockList;
     late List<ListItem> mockItems;
     late User mockUser;
@@ -87,7 +87,7 @@ void main() {
         () => mockListasRepository.removeItemFromCart(any()),
       ).thenAnswer((_) async {});
 
-      listDetailsBloc = ListDetailsBloc(
+      listDetailsBloc = CartBloc(
         client: Supabase.instance.client,
         repository: mockListasRepository,
         listId: listId,
@@ -98,7 +98,7 @@ void main() {
       expect(listDetailsBloc.state, isA<ListDetailsInitial>());
     });
 
-    blocTest<ListDetailsBloc, ListDetailsState>(
+    blocTest<CartBloc, ListDetailsState>(
       'deve emitir ListDetailsLoaded',
       build: () => listDetailsBloc,
       act: (bloc) => bloc.add(LoadListDetailsEvent()),
@@ -112,7 +112,7 @@ void main() {
 
     // bateria de testes para funcionalidade do carrinho
     group('Funcionalidade do Carrinho', () {
-      blocTest<ListDetailsBloc, ListDetailsState>(
+      blocTest<CartBloc, ListDetailsState>(
         'deve chamar o repositório para adicionar item ao carrinho',
         build: () => listDetailsBloc,
         act: (bloc) => bloc.add(const AddToCartEvent('item-1')),
@@ -121,7 +121,7 @@ void main() {
         },
       );
 
-      blocTest<ListDetailsBloc, ListDetailsState>(
+      blocTest<CartBloc, ListDetailsState>(
         'deve chamar o repositório para remover o item do carrinho',
         build: () => listDetailsBloc,
         act: (bloc) => bloc.add(const RemoveFromCartEvent('cart-item-1')),
@@ -132,7 +132,7 @@ void main() {
         },
       );
 
-      blocTest<ListDetailsBloc, ListDetailsState>(
+      blocTest<CartBloc, ListDetailsState>(
         'deve alternar o modo do carrinho de compartilhado para individual',
         build: () => listDetailsBloc,
         // Estado inicial simulado
@@ -154,7 +154,7 @@ void main() {
       );
 
       // Teste crucial da regra de negócio
-      blocTest<ListDetailsBloc, ListDetailsState>(
+      blocTest<CartBloc, ListDetailsState>(
         'deve remover um item da lista de compras quando ele está no carrinho',
         setUp: () {
           // Arrange: Prepara um cenário específico para este teste

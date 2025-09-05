@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/list_item_card.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 
 class ListDetailsItems extends StatefulWidget {
-
   const ListDetailsItems({super.key});
 
   @override
@@ -21,10 +20,8 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
     super.didChangeDependencies();
     // Inicializa a lista de itens com o estado atual do BLoC
     final state = context.watch<ListDetailsBloc>().state;
-    if (state is ListDetailsLoaded) {
-      _items.clear();
-      _items.addAll(state.items);
-    }
+    _items.clear();
+    _items.addAll(state.items);
   }
 
   void _addItem(ListItem item, int index) {
@@ -48,21 +45,15 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
       (context, animation) =>
           ListItemCard(item: removedItem, animation: animation),
     );
-    context.read<ListDetailsBloc>().add(RemoveItemFromListEvent(item.id));
+    context.read<ListDetailsBloc>().add(RemoveItemFromList(item.id));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<ListDetailsBloc, ListDetailsState>(
       listenWhen:
-          (previous, current) =>
-              previous is ListDetailsLoading ||
-              (previous is ListDetailsLoaded &&
-                  current is ListDetailsLoaded &&
-                  previous.items != current.items),
+          (previous, current) => previous.items != current.items,
       listener: (context, state) {
-        if (state is! ListDetailsLoaded) return;
-
         final newItems = state.items;
 
         // Lógica de Sincronização (Diffing)

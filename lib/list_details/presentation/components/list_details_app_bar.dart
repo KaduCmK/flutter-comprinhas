@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/list_details_appbar_actions.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 
 class ListDetailsAppBar extends StatelessWidget {
   const ListDetailsAppBar({super.key});
@@ -73,7 +73,7 @@ class ListDetailsAppBar extends StatelessWidget {
                       ListDetailsAppbarActions(state: state),
                     ],
                   ),
-                  state is ListDetailsLoading
+                  state.isLoading
                       ? const LinearProgressIndicator()
                       : SizedBox(height: 4),
                 ],
