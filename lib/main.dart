@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/app_theme.dart';
@@ -15,6 +17,11 @@ import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_d
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_history_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
+import 'package:flutter_comprinhas/mercado/presentation/enviar_nota_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -105,7 +112,44 @@ final _router = GoRouter(
         );
       },
     ),
-    // ... (resto das rotas)
+    GoRoute(
+      path: '/nova-lista',
+      builder: (context, state) {
+        final listasBloc = state.extra as ListasBloc;
+        return BlocProvider.value(value: listasBloc, child: NovaListaScreen());
+      },
+    ),
+    GoRoute(
+      path: '/join-list',
+      builder: (context, state) {
+        final listasBloc = state.extra as ListasBloc;
+        return BlocProvider.value(value: listasBloc, child: JoinListScreen());
+      },
+    ),
+    GoRoute(
+      path: '/join/:listId',
+      redirect: (context, state) async {
+        final encodedListId = state.pathParameters['listId']!;
+        try {
+          final listId = utf8.decode(base64Url.decode(encodedListId));
+          await sl<ListasRepository>().joinList(listId);
+          return '/list/$listId';
+        } catch (e) {
+          debugPrint('Erro ao entrar na lista: $e');
+          return '/home';
+        }
+      },
+      builder:
+          (context, state) =>
+              const Scaffold(body: Center(child: Text('Carregando...'))),
+    ),
+    GoRoute(
+      path: '/enviar-nfe',
+      builder: (context, state) {
+        final bloc = state.extra as MercadoBloc;
+        return BlocProvider.value(value: bloc, child: const EnviarNotaScreen());
+      },
+    ),
   ],
 );
 
