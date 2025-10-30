@@ -17,3 +17,13 @@ class CreateListEvent extends ListasEvent {
   @override
   List<Object> get props => [name];
 }
+
+class DeleteListEvent extends ListasEvent {
+  final String listId;
+
+  const DeleteListEvent(this.listId);
+
+  @override
+  List<Object> get props => [listId];
+}
+

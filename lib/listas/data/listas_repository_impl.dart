@@ -93,6 +93,16 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
+  Future<void> deleteList(String listId) async {
+    try {
+      await _client.from("lists").delete().eq('id', 'listId');
+    } catch (e) {
+      _logger.e(e);
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<ListItem>> getListItems(String listId) async {
     try {
       final response = await _client

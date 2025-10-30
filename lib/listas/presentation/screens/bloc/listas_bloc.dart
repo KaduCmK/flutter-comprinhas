@@ -15,6 +15,7 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
       super(ListasInitial()) {
     on<GetListsEvent>(_onGetLists);
     on<CreateListEvent>(_onCreateList);
+    on<DeleteListEvent>(_onDeleteList);
   }
 
   Future<void> _onGetLists(
@@ -53,6 +54,28 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
           lists: state.lists,
           units: state.units,
           message: e.toString(),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDeleteList(
+    DeleteListEvent event,
+    Emitter<ListasState> emit,
+  ) async {
+    emit(ListasLoading(lists: state.lists, units: state.units));
+
+    try {
+      await _repository.deleteList(event.listId);
+      final newLists = await _repository.getUserLists();
+      emit(ListasLoaded(lists: newLists, units: state.units));
+    } catch (e) {
+      //TODO: Log error
+      emit(
+        ListasError(
+          lists: state.lists,
+          units: state.units,
+          message: "Não foi possível apagar a lista",
         ),
       );
     }
