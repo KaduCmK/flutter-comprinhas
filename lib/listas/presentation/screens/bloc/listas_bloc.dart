@@ -14,7 +14,7 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
     : _repository = repository,
       super(ListasInitial()) {
     on<GetListsEvent>(_onGetLists);
-    on<CreateListEvent>(_onCreateList);
+    on<UpsertListEvent>(_onUpsertList);
     on<DeleteListEvent>(_onDeleteList);
   }
 
@@ -38,14 +38,14 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
     }
   }
 
-  Future<void> _onCreateList(
-    CreateListEvent event,
+  Future<void> _onUpsertList(
+    UpsertListEvent event,
     Emitter<ListasState> emit,
   ) async {
     emit(ListasLoading(lists: state.lists, units: state.units));
 
     try {
-      _repository.createList(event.name);
+      _repository.upsertList(event.name);
       final newLists = await _repository.getUserLists();
       emit(ListasLoaded(lists: newLists, units: state.units));
     } catch (e) {

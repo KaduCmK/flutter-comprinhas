@@ -4,18 +4,19 @@ abstract class ListasEvent extends Equatable {
   const ListasEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class GetListsEvent extends ListasEvent {}
 
-class CreateListEvent extends ListasEvent {
+class UpsertListEvent extends ListasEvent {
   final String name;
+  final String? listId;
 
-  const CreateListEvent(this.name);
+  const UpsertListEvent(this.name, {this.listId});
 
   @override
-  List<Object> get props => [name];
+  List<Object?> get props => [name, listId];
 }
 
 class DeleteListEvent extends ListasEvent {
@@ -26,4 +27,3 @@ class DeleteListEvent extends ListasEvent {
   @override
   List<Object> get props => [listId];
 }
-

@@ -13,6 +13,9 @@ class ListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return MenuAnchor(
       builder: (context, controller, child) {
         return Card(
@@ -20,6 +23,12 @@ class ListCard extends StatelessWidget {
           child: InkWell(
             onTap: () {
               context.push('/list/${list.id}');
+            },
+            onLongPress: () {
+              if (controller.isOpen)
+                controller.close();
+              else
+                controller.open();
             },
             borderRadius: BorderRadius.circular(10),
             child: Padding(
@@ -30,7 +39,7 @@ class ListCard extends StatelessWidget {
                 children: [
                   Text(
                     list.name,
-                    style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    style: textTheme.titleLarge!.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -50,21 +59,18 @@ class ListCard extends StatelessWidget {
       },
       menuChildren: [
         MenuItemButton(
-          leadingIcon: const Icon(Icons.edit),
-          child: const Text("Editar"),
+          leadingIcon: Icon(Icons.edit, color: colorScheme.primary),
+          child: Text("Editar", style: TextStyle(color: colorScheme.primary)),
           onPressed: () {
-            // TODO: implementar dialogo de edição
+            context.push(
+              'nova-lista',
+              extra: {'bloc': context.read<ListasBloc>(), 'list': list},
+            );
           },
         ),
         MenuItemButton(
-          leadingIcon: Icon(
-            Icons.delete,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          child: Text(
-            "Deletar",
-            style: TextStyle(color: Theme.of(context).colorScheme.error),
-          ),
+          leadingIcon: Icon(Icons.delete, color: colorScheme.error),
+          child: Text("Deletar", style: TextStyle(color: colorScheme.error)),
           onPressed: () {
             context.read<ListasBloc>().add(DeleteListEvent(list.id));
           },

@@ -16,6 +16,7 @@ import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/histor
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_history_screen.dart';
+import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
@@ -115,8 +116,14 @@ final _router = GoRouter(
     GoRoute(
       path: '/nova-lista',
       builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>;
         final listasBloc = state.extra as ListasBloc;
-        return BlocProvider.value(value: listasBloc, child: NovaListaScreen());
+        final listaToEdit = extra['list'] as ListaCompra?;
+
+        return BlocProvider.value(
+          value: listasBloc,
+          child: NovaListaScreen(listToEdit: listaToEdit),
+        );
       },
     ),
     GoRoute(

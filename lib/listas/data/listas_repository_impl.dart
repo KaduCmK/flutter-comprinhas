@@ -78,14 +78,18 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
-  Future<void> createList(String name) async {
+  Future<void> upsertList(String name, {String? listId}) async {
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
-      throw 'Usuario nao autenticado'; // TODO: implement failure cases
+      throw 'Usuario nao autenticado';
     }
 
     try {
-      await _client.from('lists').insert({'name': name});
+      if (listId == null) {
+        await _client.from('lists').insert({'name': name});
+      } else {
+        await _client.from('lists').update({'name': name}).eq('id', listId);
+      }
     } catch (e) {
       _logger.e(e.toString());
       rethrow;
@@ -95,7 +99,7 @@ class ListasRepositoryImpl implements ListasRepository {
   @override
   Future<void> deleteList(String listId) async {
     try {
-      await _client.from("lists").delete().eq('id', 'listId');
+      await _client.from("lists").delete().eq('id', listId);
     } catch (e) {
       _logger.e(e);
       rethrow;
