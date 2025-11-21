@@ -45,7 +45,7 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
     emit(ListasLoading(lists: state.lists, units: state.units));
 
     try {
-      _repository.upsertList(event.name);
+      _repository.upsertList(event.name, listId: event.listId);
       final newLists = await _repository.getUserLists();
       emit(ListasLoaded(lists: newLists, units: state.units));
     } catch (e) {

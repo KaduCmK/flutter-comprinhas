@@ -116,8 +116,9 @@ final _router = GoRouter(
     GoRoute(
       path: '/nova-lista',
       builder: (context, state) {
+        debugPrint(state.extra.toString());
         final extra = state.extra as Map<String, dynamic>;
-        final listasBloc = state.extra as ListasBloc;
+        final listasBloc = extra['bloc'] as ListasBloc;
         final listaToEdit = extra['list'] as ListaCompra?;
 
         return BlocProvider.value(
