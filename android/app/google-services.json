@@ -45,6 +45,13 @@
             {
               "client_id": "892316366568-ujvphk2k7ggdmrd763d7qnv0opvrgbtd.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "892316366568-lp97isk1vkqoqnqkv0qg3vpedav49fio.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "io.github.kaducmk.comprinhassssss"
+              }
             }
           ]
         }
