@@ -35,11 +35,8 @@ class _EditListDialogState extends State<EditListDialog> {
       return;
     }
     context.read<ListasBloc>().add(
-          UpsertListEvent(
-            newName,
-            listId: widget.list.id,
-          ),
-        );
+      UpsertListEvent(newName, listId: widget.list.id),
+    );
     context.pop();
   }
 
@@ -53,31 +50,40 @@ class _EditListDialogState extends State<EditListDialog> {
     final colorScheme = Theme.of(context).colorScheme;
     return AlertDialog(
       title: const Text('Editar Lista'),
-      content: TextField(
-        controller: _nameController,
-        decoration: const InputDecoration(
-          labelText: 'Nome da lista',
-          border: OutlineInputBorder(),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Nome da lista',
+                border: OutlineInputBorder(),
+              ),
+              onSubmitted: (_) => _save(),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
+              ),
+              child: const Text('Salvar'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: _delete,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colorScheme.error,
+                side: BorderSide(color: colorScheme.error),
+              ),
+              child: const Text('Excluir'),
+            ),
+          ],
         ),
-        onSubmitted: (_) => _save(),
       ),
-      actions: [
-        TextButton(
-          onPressed: _delete,
-          child: Text(
-            'Excluir',
-            style: TextStyle(color: colorScheme.error),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: _save,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
-          ),
-          child: const Text('Salvar'),
-        ),
-      ],
     );
   }
 }
