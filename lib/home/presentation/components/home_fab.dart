@@ -29,7 +29,7 @@ class HomeFab extends StatelessWidget {
                       onPressed:
                           () => context.push(
                             '/nova-lista',
-                            extra: context.read<ListasBloc>(),
+                            extra: {'bloc': context.read<ListasBloc>()},
                           ),
                     ),
                   ],
