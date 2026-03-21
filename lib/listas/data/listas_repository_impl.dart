@@ -2,6 +2,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/main.dart';
@@ -156,6 +157,37 @@ class ListasRepositoryImpl implements ListasRepository {
       await _client.from('list_items').delete().eq('id', itemId);
     } catch (e) {
       _logger.e('Erro ao deletar item: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> updatePrecoSugerido(String itemId, num price) async {
+    try {
+      await _client
+          .from('list_items')
+          .update({'preco_sugerido': price})
+          .eq('id', itemId);
+    } catch (e) {
+      _logger.e('Erro ao atualizar preço sugerido: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<ProductMatch>> getProductMatches(String listItemId) async {
+    try {
+      final response = await _client
+          .from('list_item_product_matches')
+          .select('similarity_score, produtos(nome, valor_unitario)')
+          .eq('list_item_id', listItemId)
+          .order('similarity_score', ascending: false);
+
+      return (response as List<dynamic>)
+          .map((e) => ProductMatch.fromMap(e as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      _logger.e('Erro ao buscar matches de produtos: $e');
       rethrow;
     }
   }

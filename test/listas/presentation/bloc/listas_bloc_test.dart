@@ -11,8 +11,8 @@ void main() {
     late MockListasRepository mockListasRepository;
 
     final mockListas = [
-      ListaCompra(id: '1', name: 'Lista 1', createdAt: DateTime.now()),
-      ListaCompra(id: '2', name: 'Lista 2', createdAt: DateTime.now()),
+      ListaCompra(id: '1', name: 'Lista 1', ownerId: 'user-1', createdAt: DateTime.now()),
+      ListaCompra(id: '2', name: 'Lista 2', ownerId: 'user-1', createdAt: DateTime.now()),
     ];
     final mockUnits = [
       Unit(id: '1', name: 'kg', abbreviation: 'kg', createdAt: DateTime.now())
@@ -20,11 +20,12 @@ void main() {
 
     setUp(() {
       mockListasRepository = MockListasRepository();
+      
       when(() => mockListasRepository.getUserLists())
           .thenAnswer((_) async => mockListas);
       when(() => mockListasRepository.getUnits())
           .thenAnswer((_) async => mockUnits);
-      when(() => mockListasRepository.createList(any()))
+      when(() => mockListasRepository.upsertList(any(), listId: any(named: 'listId')))
           .thenAnswer((_) async {});
     });
 
@@ -47,15 +48,15 @@ void main() {
     );
 
     blocTest<ListasBloc, ListasState>(
-      'deve emitir [ListasLoading, ListasLoaded] quando CreateListEvent é adicionado.',
+      'deve emitir [ListasLoading, ListasLoaded] quando UpsertListEvent é adicionado.',
       build: () => ListasBloc(repository: mockListasRepository),
-      act: (bloc) => bloc.add(const CreateListEvent('Nova Lista')),
+      act: (bloc) => bloc.add(const UpsertListEvent('Nova Lista')),
       expect: () => [
         isA<ListasLoading>(),
         isA<ListasLoaded>(),
       ],
       verify: (_) {
-        verify(() => mockListasRepository.createList('Nova Lista')).called(1);
+        verify(() => mockListasRepository.upsertList('Nova Lista')).called(1);
         verify(() => mockListasRepository.getUserLists()).called(1);
       },
     );

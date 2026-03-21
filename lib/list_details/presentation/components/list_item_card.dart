@@ -95,7 +95,10 @@ class ListItemCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (item.precoSugerido != null)
-              PrecoSugeridoChip(precoSugerido: item.precoSugerido),
+              PrecoSugeridoChip(
+                listItemId: item.id,
+                precoSugerido: item.precoSugerido,
+              ),
             const SizedBox(width: 4),
             IconButton(
               icon: Icon(

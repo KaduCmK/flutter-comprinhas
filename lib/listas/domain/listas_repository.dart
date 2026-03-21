@@ -1,5 +1,6 @@
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
@@ -21,6 +22,10 @@ abstract class ListasRepository {
     String unitId,
   );
   Future<void> removeItemFromList(String itemId);
+
+  Future<void> updatePrecoSugerido(String itemId, num price);
+
+  Future<List<ProductMatch>> getProductMatches(String listItemId);
 
   // funcionalidades de carrinho
   Future<List<CartItem>> getCartItems(String? listId);
