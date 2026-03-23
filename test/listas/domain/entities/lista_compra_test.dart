@@ -46,7 +46,14 @@ void main() {
     test('deve suportar igualdade de valores', () {
       expect(
         ListaCompra(id: '1', name: 'Teste', ownerId: 'user-1', createdAt: date),
-        equals(ListaCompra(id: '1', name: 'Teste', ownerId: 'user-1', createdAt: date)),
+        equals(
+          ListaCompra(
+            id: '1',
+            name: 'Teste',
+            ownerId: 'user-1',
+            createdAt: date,
+          ),
+        ),
       );
     });
   });

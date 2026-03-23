@@ -22,9 +22,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     required ListasRepository repository,
     required SupabaseClient client,
     required this.listId,
-  })  : _repository = repository,
-        _client = client,
-        super(const CartState()) {
+  }) : _repository = repository,
+       _client = client,
+       super(const CartState()) {
     _setupRealtime();
     on<LoadCart>(_onLoadCart);
     on<AddToCart>(_onAddToCart);
@@ -62,7 +62,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     }
   }
 
-  Future<void> _onSetCartMode(SetCartMode event, Emitter<CartState> emit) async {
+  Future<void> _onSetCartMode(
+    SetCartMode event,
+    Emitter<CartState> emit,
+  ) async {
     try {
       await _repository.setCartMode(listId, event.mode);
       emit(state.copyWith(cartMode: event.mode));
@@ -78,16 +81,16 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(state.copyWith(isLoading: true));
     final currentUserId = _client.auth.currentUser?.id;
     if (currentUserId == null) {
-      emit(state.copyWith(
-          isLoading: false, error: 'Usuário não autenticado'));
+      emit(state.copyWith(isLoading: false, error: 'Usuário não autenticado'));
       return;
     }
 
     List<CartItem> itemsToConfirm;
     if (state.cartMode == CartMode.individual) {
-      itemsToConfirm = state.cartItems
-          .where((item) => item.user.id == currentUserId)
-          .toList();
+      itemsToConfirm =
+          state.cartItems
+              .where((item) => item.user.id == currentUserId)
+              .toList();
     } else {
       itemsToConfirm = state.cartItems;
     }
@@ -98,14 +101,18 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     }
 
     try {
-      await _repository.confirmPurchase(itemsToConfirm.map((e) => e.id).toList());
+      await _repository.confirmPurchase(
+        itemsToConfirm.map((e) => e.id).toList(),
+      );
       add(LoadCart()); // Recarrega o carrinho
     } catch (e) {
       _logger.e('Erro ao confirmar compra no BLoC: $e');
-      emit(state.copyWith(
-        isLoading: false,
-        error: 'Erro ao finalizar a compra. Tente novamente.',
-      ));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          error: 'Erro ao finalizar a compra. Tente novamente.',
+        ),
+      );
     }
   }
 

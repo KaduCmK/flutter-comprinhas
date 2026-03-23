@@ -29,9 +29,14 @@ class PurchaseHistory extends Equatable {
       confirmedAt: DateTime.parse(map['created_at'] as String),
       confirmedBy: userName ?? 'Desconhecido',
       valorTotal: (map['valor_total'] as num).toDouble(),
-      items: (map['itens_nota_fiscal'] as List<dynamic>?)
-              ?.map((item) => PurchaseHistoryItem.fromMap(item as Map<String, dynamic>))
-              .toList() ?? [],
+      items:
+          (map['itens_nota_fiscal'] as List<dynamic>?)
+              ?.map(
+                (item) =>
+                    PurchaseHistoryItem.fromMap(item as Map<String, dynamic>),
+              )
+              .toList() ??
+          [],
     );
   }
 

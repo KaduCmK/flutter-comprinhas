@@ -29,10 +29,7 @@ class SplitButton extends StatelessWidget {
           ElevatedButton(
             onPressed: onPrimaryAction,
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 48,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
               backgroundColor: colorScheme.primary,
               foregroundColor: colorScheme.onPrimary,
               shape: RoundedRectangleBorder(
@@ -61,14 +58,11 @@ class SplitButton extends StatelessWidget {
               ],
             ),
           ),
-        
+
           ElevatedButton(
             onPressed: onSecondaryAction,
             style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               backgroundColor: colorScheme.primary,
               foregroundColor: colorScheme.onPrimary,
               shape: RoundedRectangleBorder(
@@ -79,11 +73,7 @@ class SplitButton extends StatelessWidget {
               ),
               elevation: 0,
             ),
-            child: Icon(
-              Icons.payments,
-              color: colorScheme.onPrimary,
-              size: 32,
-            ),
+            child: Icon(Icons.payments, color: colorScheme.onPrimary, size: 32),
           ),
         ],
       ),

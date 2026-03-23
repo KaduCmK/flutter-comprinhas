@@ -26,12 +26,13 @@ class CartBottomSheet extends StatelessWidget {
         final isIndividualMode = state.cartMode == CartMode.individual;
 
         // Agrupa por usuário se for modo individual
-        final groupedItems = isIndividualMode
-            ? groupBy(
-                cartItems,
-                (CartItem item) => item.user.email ?? 'Anônimo',
-              )
-            : <String, List<CartItem>>{};
+        final groupedItems =
+            isIndividualMode
+                ? groupBy(
+                  cartItems,
+                  (CartItem item) => item.user.email ?? 'Anônimo',
+                )
+                : <String, List<CartItem>>{};
 
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
@@ -112,9 +113,10 @@ class CartBottomSheet extends StatelessWidget {
                               ),
                             ],
                             selected: {state.cartMode},
-                            onSelectionChanged: (mode) => context
-                                .read<CartBloc>()
-                                .add(SetCartMode(mode.first)),
+                            onSelectionChanged:
+                                (mode) => context.read<CartBloc>().add(
+                                  SetCartMode(mode.first),
+                                ),
                           ),
                         ],
                       ),
@@ -122,12 +124,15 @@ class CartBottomSheet extends StatelessWidget {
                   ),
 
                   SliverPadding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 32),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 32,
+                    ),
                     sliver: SliverToBoxAdapter(
                       child: FilledButton.icon(
-                        onPressed: () =>
-                            context.read<CartBloc>().add(ConfirmPurchase()),
+                        onPressed:
+                            () =>
+                                context.read<CartBloc>().add(ConfirmPurchase()),
                         icon: const Icon(Icons.payments),
                         label: const Text("Finalizar Compras"),
                       ),

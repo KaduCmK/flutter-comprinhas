@@ -21,6 +21,10 @@ abstract class ListasRepository {
     num amount,
     String unitId,
   );
+  Future<Map<String, dynamic>> parseNaturalLanguageItem(
+    String query,
+    List<Unit> units,
+  );
   Future<void> removeItemFromList(String itemId);
 
   Future<void> updatePrecoSugerido(String itemId, num price);

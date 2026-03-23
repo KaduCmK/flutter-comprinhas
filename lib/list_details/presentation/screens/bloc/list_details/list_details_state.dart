@@ -1,9 +1,10 @@
 part of 'list_details_bloc.dart';
 
-enum SortOption { name, date}
+enum SortOption { name, date }
 
 class ListDetailsState extends Equatable {
   final bool isLoading;
+  final bool isParsingNlp;
   final String? error;
   final ListaCompra? list;
   final List<Unit>? units;
@@ -12,6 +13,7 @@ class ListDetailsState extends Equatable {
 
   const ListDetailsState({
     this.isLoading = false,
+    this.isParsingNlp = false,
     this.error,
     this.list,
     this.units,
@@ -25,6 +27,7 @@ class ListDetailsState extends Equatable {
 
   ListDetailsState copyWith({
     bool? isLoading,
+    bool? isParsingNlp,
     String? error,
     ListaCompra? list,
     List<Unit>? units,
@@ -33,6 +36,7 @@ class ListDetailsState extends Equatable {
   }) {
     return ListDetailsState(
       isLoading: isLoading ?? this.isLoading,
+      isParsingNlp: isParsingNlp ?? this.isParsingNlp,
       error: error,
       list: list ?? this.list,
       units: units ?? this.units,
@@ -43,11 +47,12 @@ class ListDetailsState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isLoading,
-        error,
-        list,
-        units,
-        items,
-        sortOption,
-      ];
+    isLoading,
+    isParsingNlp,
+    error,
+    list,
+    units,
+    items,
+    sortOption,
+  ];
 }

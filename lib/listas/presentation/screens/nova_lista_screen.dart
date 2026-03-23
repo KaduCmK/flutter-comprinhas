@@ -61,7 +61,8 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
               Text("Nome da Lista:"),
               TextField(
                 controller: _nameController,
-                decoration: const InputDecoration(border: OutlineInputBorder()), onSubmitted: (_) => _submit(),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                onSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 16),
               Text("Imagem de fundo (opcional):"),

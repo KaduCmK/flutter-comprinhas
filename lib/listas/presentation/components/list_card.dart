@@ -25,10 +25,11 @@ class ListCard extends StatelessWidget {
         onLongPress: () {
           showDialog(
             context: context,
-            builder: (_) => BlocProvider.value(
-              value: context.read<ListasBloc>(),
-              child: EditListDialog(list: list),
-            ),
+            builder:
+                (_) => BlocProvider.value(
+                  value: context.read<ListasBloc>(),
+                  child: EditListDialog(list: list),
+                ),
           );
         },
         borderRadius: BorderRadius.circular(10),

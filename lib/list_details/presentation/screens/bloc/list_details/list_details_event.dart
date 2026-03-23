@@ -31,6 +31,15 @@ class AddItemToList extends ListDetailsEvent {
   List<Object> get props => [itemName, amount, unitId];
 }
 
+class AddNaturalLanguageItemToList extends ListDetailsEvent {
+  final String query;
+
+  const AddNaturalLanguageItemToList(this.query);
+
+  @override
+  List<Object> get props => [query];
+}
+
 class RemoveItemFromList extends ListDetailsEvent {
   final String itemId;
   const RemoveItemFromList(this.itemId);

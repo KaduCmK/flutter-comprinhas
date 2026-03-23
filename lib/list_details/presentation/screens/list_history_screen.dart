@@ -33,8 +33,7 @@ class _ListHistoryScreenState extends State<ListHistoryScreen> {
             itemBuilder: (context, index) {
               final historyEntry = state.purchaseHistory[index];
               return Card(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -49,7 +48,8 @@ class _ListHistoryScreenState extends State<ListHistoryScreen> {
                         (item) => ListTile(
                           title: Text(item.name),
                           trailing: Text(
-                              '${item.amount} ${item.unit?.abbreviation ?? ''}'),
+                            '${item.amount} ${item.unit?.abbreviation ?? ''}',
+                          ),
                         ),
                       ),
                     ],

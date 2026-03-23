@@ -45,7 +45,7 @@ class ListItem extends Equatable {
       'unit_id': unit.id,
       'list_id': list.id,
       'created_by_id': createdBy.id,
-      'preco_sugerido': precoSugerido
+      'preco_sugerido': precoSugerido,
     };
   }
 
@@ -58,6 +58,6 @@ class ListItem extends Equatable {
     createdBy,
     createdAt,
     list,
-    precoSugerido
+    precoSugerido,
   ];
 }

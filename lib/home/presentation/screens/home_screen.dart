@@ -17,12 +17,16 @@ class HomeScreenProvider extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-              ListasBloc(repository: sl())..add(GetListsEvent()),
+          create:
+              (context) => ListasBloc(repository: sl())..add(GetListsEvent()),
         ),
         BlocProvider(
-            create: (_) => MercadoBloc(
-                mercadoRepository: sl(), notificationService: sl())),
+          create:
+              (_) => MercadoBloc(
+                mercadoRepository: sl(),
+                notificationService: sl(),
+              ),
+        ),
       ],
       child: const HomeScreen(),
     );
@@ -107,10 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onDestinationSelected: _onDestinationSelected,
           destinations: const [
             NavigationDestination(icon: Icon(Icons.list), label: "Listas"),
-            NavigationDestination(
-              icon: Icon(Icons.store),
-              label: "Mercados",
-            ),
+            NavigationDestination(icon: Icon(Icons.store), label: "Mercados"),
           ],
         ),
       ),

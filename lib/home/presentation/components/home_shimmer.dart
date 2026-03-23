@@ -52,20 +52,20 @@ class HomeShimmer extends StatelessWidget {
             ),
           ),
           SliverPadding(
-             padding: const EdgeInsets.only(bottom: 12),
-             sliver: SliverToBoxAdapter(
-               child: Align(
-                 alignment: Alignment.centerLeft,
-                 child: Container(
-                   width: 150,
-                   height: 32,
-                   decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                 ),
-               ),
-             ),
+            padding: const EdgeInsets.only(bottom: 12),
+            sliver: SliverToBoxAdapter(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  width: 150,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+            ),
           ),
           SliverGrid.builder(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -78,7 +78,8 @@ class HomeShimmer extends StatelessWidget {
               return Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
@@ -97,7 +98,7 @@ class HomeShimmer extends StatelessWidget {
                       Container(
                         width: 80,
                         height: 16,
-                         decoration: BoxDecoration(
+                        decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(4),
                         ),

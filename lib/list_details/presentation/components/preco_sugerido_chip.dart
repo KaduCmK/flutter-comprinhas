@@ -36,8 +36,10 @@ class PrecoSugeridoChip extends StatelessWidget {
         return AlertDialog(
           title: Row(
             children: [
-              Icon(Icons.auto_awesome,
-                  color: Theme.of(context).colorScheme.primary),
+              Icon(
+                Icons.auto_awesome,
+                color: Theme.of(context).colorScheme.primary,
+              ),
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
@@ -67,7 +69,8 @@ class PrecoSugeridoChip extends StatelessWidget {
 
                 if (matches.isEmpty) {
                   return const Text(
-                      "Nenhum produto similar encontrado para estimar o preço.");
+                    "Nenhum produto similar encontrado para estimar o preço.",
+                  );
                 }
 
                 return Column(
@@ -77,18 +80,16 @@ class PrecoSugeridoChip extends StatelessWidget {
                     Text(
                       "Selecione um produto para definir o preço aproximado:",
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Flexible(
                       child: ListView.separated(
                         shrinkWrap: true,
                         itemCount: matches.length,
-                        separatorBuilder: (context, index) => const Divider(
-                          height: 1,
-                        ),
+                        separatorBuilder:
+                            (context, index) => const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final match = matches[index];
                           return ListTile(
@@ -111,24 +112,26 @@ class PrecoSugeridoChip extends StatelessWidget {
                                 color: Theme.of(context).colorScheme.primary,
                               ),
                             ),
-                            onTap: match.price == null
-                                ? null
-                                : () async {
-                                    await repository.updatePrecoSugerido(
-                                      listItemId,
-                                      match.price!,
-                                    );
-                                    if (context.mounted) {
-                                      Navigator.of(context).pop();
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text("Preço atualizado!"),
-                                          duration: Duration(seconds: 1),
-                                        ),
+                            onTap:
+                                match.price == null
+                                    ? null
+                                    : () async {
+                                      await repository.updatePrecoSugerido(
+                                        listItemId,
+                                        match.price!,
                                       );
-                                    }
-                                  },
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop();
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text("Preço atualizado!"),
+                                            duration: Duration(seconds: 1),
+                                          ),
+                                        );
+                                      }
+                                    },
                           );
                         },
                       ),

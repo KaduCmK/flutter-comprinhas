@@ -18,7 +18,11 @@ class QrCodeDialog extends StatelessWidget {
       content: SizedBox(
         width: 300,
         height: 300,
-        child: QrImageView(data: deepLink, version: QrVersions.auto, backgroundColor: Colors.white,),
+        child: QrImageView(
+          data: deepLink,
+          version: QrVersions.auto,
+          backgroundColor: Colors.white,
+        ),
       ),
       actions: [
         TextButton(

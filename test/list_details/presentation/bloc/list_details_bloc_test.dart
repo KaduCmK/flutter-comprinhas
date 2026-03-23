@@ -49,11 +49,13 @@ void main() {
 
       final mockChannel = MockRealtimeChannel();
       when(() => mockChannel.subscribe(any())).thenReturn(mockChannel);
-      
+
       when(() => mockSupabaseClient.auth).thenReturn(mockGotrueClient);
       when(() => mockGotrueClient.currentUser).thenReturn(mockUser);
       when(() => mockSupabaseClient.channel(any())).thenReturn(mockChannel);
-      when(() => mockSupabaseClient.removeChannel(any())).thenAnswer((_) async => 'OK');
+      when(
+        () => mockSupabaseClient.removeChannel(any()),
+      ).thenAnswer((_) async => 'OK');
 
       mockList = ListaCompra(
         id: listId,
@@ -125,10 +127,17 @@ void main() {
       'deve emitir itens carregados',
       build: () => listDetailsBloc,
       act: (bloc) => bloc.add(LoadListDetails()),
-      expect: () => [
-        isA<ListDetailsState>().having((s) => s.isLoading, 'isLoading', true),
-        isA<ListDetailsState>().having((s) => s.isLoading, 'isLoading', false).having((s) => s.list, 'list', mockList),
-      ],
+      expect:
+          () => [
+            isA<ListDetailsState>().having(
+              (s) => s.isLoading,
+              'isLoading',
+              true,
+            ),
+            isA<ListDetailsState>()
+                .having((s) => s.isLoading, 'isLoading', false)
+                .having((s) => s.list, 'list', mockList),
+          ],
       verify: (_) {
         verify(() => mockListasRepository.getListById(listId)).called(1);
         verify(() => mockListasRepository.getListItems(listId)).called(1);
@@ -160,9 +169,10 @@ void main() {
             unit: mockUnit,
           );
 
-          when(() => mockListasRepository.getListItems(any()))
-              .thenAnswer((_) async => [itemInCart, itemInList]);
-          
+          when(
+            () => mockListasRepository.getListItems(any()),
+          ).thenAnswer((_) async => [itemInCart, itemInList]);
+
           // Simula que o CartBloc tem o item-1 no carrinho
           when(() => mockListasRepository.getCartItems(any())).thenAnswer(
             (_) async => [
@@ -181,17 +191,20 @@ void main() {
           bloc.add(LoadListDetails());
         },
         skip: 2, // Pula carregamento inicial do cart e loading do details
-        expect: () => [
-          isA<ListDetailsState>().having(
-            (s) => s.items.length,
-            'deve ter apenas 1 item (o que não está no carrinho)',
-            1,
-          ).having(
-            (s) => s.items.first.id,
-            'o item deve ser o item-2',
-            'item-2',
-          ),
-        ],
+        expect:
+            () => [
+              isA<ListDetailsState>()
+                  .having(
+                    (s) => s.items.length,
+                    'deve ter apenas 1 item (o que não está no carrinho)',
+                    1,
+                  )
+                  .having(
+                    (s) => s.items.first.id,
+                    'o item deve ser o item-2',
+                    'item-2',
+                  ),
+            ],
       );
     });
   });

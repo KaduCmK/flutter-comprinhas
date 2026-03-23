@@ -23,9 +23,8 @@ class ListDetailsAppbarActions extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IconButton(
-          onPressed: () => context.read<ListDetailsBloc>().add(
-                TogglePriceForecast(),
-          ),
+          onPressed:
+              () => context.read<ListDetailsBloc>().add(TogglePriceForecast()),
           icon: Icon(
             Icons.currency_exchange,
             color: colorScheme.primary.withValues(

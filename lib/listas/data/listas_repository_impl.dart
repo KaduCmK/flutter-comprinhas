@@ -152,6 +152,28 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> parseNaturalLanguageItem(
+    String query,
+    List<Unit> units,
+  ) async {
+    try {
+      final response = await _client.functions.invoke(
+        'parse-item-nlp',
+        body: {'query': query, 'units': units.map((u) => u.toMap()).toList()},
+      );
+
+      if (response.status != 200) {
+        throw 'Erro ao parsear item com IA: ${response.status}';
+      }
+
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('Erro ao processar linguagem natural: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> removeItemFromList(String itemId) async {
     try {
       await _client.from('list_items').delete().eq('id', itemId);

@@ -1,6 +1,7 @@
 import 'package:flex_color_scheme/flex_color_scheme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
 /// The [AppTheme] defines light and dark themes for the app.
 ///
 /// Theme setup for FlexColorScheme package v8.
@@ -42,8 +43,7 @@ abstract final class AppTheme {
       navigationRailUseIndicator: true,
     ),
     // ColorScheme seed generation configuration for light mode.
-    keyColors: const FlexKeyColors(
-    ),
+    keyColors: const FlexKeyColors(),
     // Direct ThemeData properties.
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),
@@ -79,8 +79,7 @@ abstract final class AppTheme {
       navigationRailUseIndicator: true,
     ),
     // ColorScheme seed configuration setup for dark mode.
-    keyColors: const FlexKeyColors(
-    ),
+    keyColors: const FlexKeyColors(),
     // Direct ThemeData properties.
     visualDensity: FlexColorScheme.comfortablePlatformDensity,
     cupertinoOverrideTheme: const CupertinoThemeData(applyThemeToAll: true),

@@ -72,7 +72,10 @@ class GlobalCartScreen extends StatelessWidget {
                         ),
                         const Divider(),
                         ...itemsInList.map(
-                          (cartItem) => ListItemCard(item: cartItem.listItem, inCart: true,),
+                          (cartItem) => ListItemCard(
+                            item: cartItem.listItem,
+                            inCart: true,
+                          ),
                         ),
                       ],
                     ),

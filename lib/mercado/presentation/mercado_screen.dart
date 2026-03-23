@@ -27,7 +27,10 @@ class MercadoScreen extends StatelessWidget {
               if (state.status == MercadoStatus.sending)
                 const SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Card(
                       color: Colors.blueAccent,
                       child: Padding(
@@ -45,7 +48,10 @@ class MercadoScreen extends StatelessWidget {
                             SizedBox(width: 16),
                             Text(
                               "Processando sua nota fiscal...",
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -53,28 +59,45 @@ class MercadoScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (state.status == MercadoStatus.error && state.history.isNotEmpty)
+              if (state.status == MercadoStatus.error &&
+                  state.history.isNotEmpty)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Card(
                       color: Theme.of(context).colorScheme.errorContainer,
                       child: ListTile(
-                        leading: Icon(Icons.error_outline, color: Theme.of(context).colorScheme.onErrorContainer),
+                        leading: Icon(
+                          Icons.error_outline,
+                          color: Theme.of(context).colorScheme.onErrorContainer,
+                        ),
                         title: Text(
                           "Falha no processamento",
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onErrorContainer,
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         subtitle: Text(
                           state.errorMessage ?? "",
-                          style: TextStyle(color: Theme.of(context).colorScheme.onErrorContainer),
+                          style: TextStyle(
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
+                          ),
                         ),
                         trailing: IconButton(
-                          icon: Icon(Icons.close, color: Theme.of(context).colorScheme.onErrorContainer),
-                          onPressed: () => context.read<MercadoBloc>().add(ClearError()),
+                          icon: Icon(
+                            Icons.close,
+                            color:
+                                Theme.of(context).colorScheme.onErrorContainer,
+                          ),
+                          onPressed:
+                              () =>
+                                  context.read<MercadoBloc>().add(ClearError()),
                         ),
                       ),
                     ),
@@ -89,11 +112,13 @@ class MercadoScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              if (state.status == MercadoStatus.loading && state.history.isEmpty)
+              if (state.status == MercadoStatus.loading &&
+                  state.history.isEmpty)
                 const SliverFillRemaining(
                   child: Center(child: CircularProgressIndicator()),
                 )
-              else if (state.status == MercadoStatus.error && state.history.isEmpty)
+              else if (state.status == MercadoStatus.error &&
+                  state.history.isEmpty)
                 SliverFillRemaining(
                   child: Center(
                     child: Column(
@@ -102,7 +127,10 @@ class MercadoScreen extends StatelessWidget {
                         Text(state.errorMessage ?? "Erro ao carregar"),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => context.read<MercadoBloc>().add(LoadNfeHistory()),
+                          onPressed:
+                              () => context.read<MercadoBloc>().add(
+                                LoadNfeHistory(),
+                              ),
                           child: const Text("Tentar novamente"),
                         ),
                       ],
@@ -132,8 +160,18 @@ class MercadoScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatItem(context, Icons.receipt_long, "Notas", totalNotes.toString()),
-                _buildStatItem(context, Icons.shopping_basket, "Itens", totalItems.toString()),
+                _buildStatItem(
+                  context,
+                  Icons.receipt_long,
+                  "Notas",
+                  totalNotes.toString(),
+                ),
+                _buildStatItem(
+                  context,
+                  Icons.shopping_basket,
+                  "Itens",
+                  totalItems.toString(),
+                ),
               ],
             ),
           ],
@@ -142,12 +180,20 @@ class MercadoScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildStatItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Column(
       children: [
         Icon(icon, color: Theme.of(context).colorScheme.primary, size: 30),
         const SizedBox(height: 8),
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
         Text(label, style: TextStyle(color: Colors.grey[600])),
       ],
     );
@@ -161,24 +207,25 @@ class MercadoScreen extends StatelessWidget {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final purchase = history[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: ListTile(
-              leading: const CircleAvatar(child: Icon(Icons.description)),
-              title: Text("Nota de ${DateFormat('dd/MM/yyyy HH:mm').format(purchase.confirmedAt)}"),
-              subtitle: Text("${purchase.items.length} itens • R\$ ${purchase.valorTotal.toStringAsFixed(2)}"),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                context.push('/nfe-details', extra: purchase);
-              },
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final purchase = history[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          child: ListTile(
+            leading: const CircleAvatar(child: Icon(Icons.description)),
+            title: Text(
+              "Nota de ${DateFormat('dd/MM/yyyy HH:mm').format(purchase.confirmedAt)}",
             ),
-          );
-        },
-        childCount: history.length,
-      ),
+            subtitle: Text(
+              "${purchase.items.length} itens • R\$ ${purchase.valorTotal.toStringAsFixed(2)}",
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              context.push('/nfe-details', extra: purchase);
+            },
+          ),
+        );
+      }, childCount: history.length),
     );
   }
 }

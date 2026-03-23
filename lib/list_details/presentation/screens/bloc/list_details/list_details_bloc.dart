@@ -29,10 +29,10 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     required this.listId,
     required SupabaseClient client,
     required CartBloc cartBloc,
-  })  : _repository = repository,
-        _client = client,
-        _cartBloc = cartBloc,
-        super(ListDetailsState.initial()) {
+  }) : _repository = repository,
+       _client = client,
+       _cartBloc = cartBloc,
+       super(ListDetailsState.initial()) {
     _setupRealtime();
     _cartSubscription = _cartBloc.stream.listen((cartState) {
       add(_CartUpdated(cartState.cartItems));
@@ -42,6 +42,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     on<LoadListDetails>(_onLoadListDetails);
     on<SortList>(_onSortList);
     on<AddItemToList>(_onAddItemToList);
+    on<AddNaturalLanguageItemToList>(_onAddNaturalLanguageItemToList);
     on<RemoveItemFromList>(_onRemoveItemFromList);
     on<_CartUpdated>(_onCartUpdated);
   }
@@ -66,7 +67,9 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     final sortedList = List<ListItem>.from(items);
     switch (option) {
       case SortOption.name:
-        sortedList.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        sortedList.sort(
+          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+        );
         break;
       case SortOption.date:
         sortedList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
@@ -98,6 +101,36 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   ) async {
     emit(state.copyWith(sortOption: event.sortOption));
     _filterAndSortItems(emit);
+  }
+
+  Future<void> _onAddNaturalLanguageItemToList(
+    AddNaturalLanguageItemToList event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    if (state.units == null || state.units!.isEmpty) return;
+
+    emit(state.copyWith(isParsingNlp: true, error: null));
+    try {
+      final parsedData = await _repository.parseNaturalLanguageItem(
+        event.query,
+        state.units!,
+      );
+
+      await _repository.addItemToList(
+        listId,
+        parsedData['name'],
+        parsedData['amount'],
+        parsedData['unit_id'],
+      );
+      emit(state.copyWith(isParsingNlp: false));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isParsingNlp: false,
+          error: 'Não foi possível interpretar o item.',
+        ),
+      );
+    }
   }
 
   Future<void> _onAddItemToList(
@@ -133,7 +166,10 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      await _repository.togglePriceForecast(listId, state.list!.priceForecastEnabled);
+      await _repository.togglePriceForecast(
+        listId,
+        state.list!.priceForecastEnabled,
+      );
       add(LoadListDetails());
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));

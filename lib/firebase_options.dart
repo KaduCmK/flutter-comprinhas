@@ -63,7 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '892316366568',
     projectId: 'comprinhas-460819',
     storageBucket: 'comprinhas-460819.firebasestorage.app',
-    androidClientId: '892316366568-mpilie6gihqm2nmeoe6sd400n45bh64m.apps.googleusercontent.com',
+    androidClientId:
+        '892316366568-mpilie6gihqm2nmeoe6sd400n45bh64m.apps.googleusercontent.com',
     iosBundleId: 'com.example.flutterComprinhas',
   );
 }

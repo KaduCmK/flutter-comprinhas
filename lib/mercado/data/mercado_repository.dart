@@ -16,7 +16,9 @@ class MercadoRepository {
         .from('notas_fiscais')
         .select('*, users(*), itens_nota_fiscal(*, produtos(*))')
         .order('created_at', ascending: false);
-    
-    return (response as List).map((json) => PurchaseHistory.fromMap(json)).toList();
+
+    return (response as List)
+        .map((json) => PurchaseHistory.fromMap(json))
+        .toList();
   }
 }

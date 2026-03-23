@@ -11,8 +11,8 @@ class HistoryBloc extends Bloc<HistoryEvent, HistoryState> {
   final String listId;
 
   HistoryBloc({required ListasRepository repository, required this.listId})
-      : _repository = repository,
-        super(const HistoryState()) {
+    : _repository = repository,
+      super(const HistoryState()) {
     on<LoadHistory>(_onLoadHistory);
   }
 
