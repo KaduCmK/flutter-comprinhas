@@ -169,7 +169,7 @@ class MercadoScreen extends StatelessWidget {
             child: ListTile(
               leading: const CircleAvatar(child: Icon(Icons.description)),
               title: Text("Nota de ${DateFormat('dd/MM/yyyy HH:mm').format(purchase.confirmedAt)}"),
-              subtitle: Text("${purchase.items.length} itens • Por ${purchase.confirmedBy}"),
+              subtitle: Text("${purchase.items.length} itens • R\$ ${purchase.valorTotal.toStringAsFixed(2)}"),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 context.push('/nfe-details', extra: purchase);

@@ -1,27 +1,30 @@
 part of 'mercado_bloc.dart';
 
-sealed class MercadoState extends Equatable {
-  const MercadoState();
-  
+enum MercadoStatus { initial, loading, success, error, sending, sent }
+
+final class MercadoState extends Equatable {
+  final MercadoStatus status;
+  final List<PurchaseHistory> history;
+  final String? errorMessage;
+
+  const MercadoState({
+    this.status = MercadoStatus.initial,
+    this.history = const [],
+    this.errorMessage,
+  });
+
+  MercadoState copyWith({
+    MercadoStatus? status,
+    List<PurchaseHistory>? history,
+    String? errorMessage,
+  }) {
+    return MercadoState(
+      status: status ?? this.status,
+      history: history ?? this.history,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [status, history, errorMessage];
 }
-
-final class MercadoInitial extends MercadoState {}
-
-final class MercadoLoading extends MercadoState {}
-
-final class MercadoSuccess extends MercadoState {}
-
-final class MercadoError extends MercadoState {
-  final String message;
-
-  const MercadoError(this.message);
-
-  @override
-  List<Object> get props => [message];
-}
-
-final class SendingNfe extends MercadoState {}
-
-final class NfeSent extends MercadoState {}

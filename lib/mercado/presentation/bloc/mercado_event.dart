@@ -15,3 +15,7 @@ final class SendNfe extends MercadoEvent {
   @override
   List<Object?> get props => [nfe];
 }
+
+final class LoadNfeHistory extends MercadoEvent {}
+
+final class ClearError extends MercadoEvent {}

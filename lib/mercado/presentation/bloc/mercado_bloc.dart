@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/core/config/notification_service.dart';
 import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
+import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:logger/logger.dart';
 
 part 'mercado_event.dart';
@@ -17,29 +18,49 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
     required NotificationService notificationService,
   })  : _repository = mercadoRepository,
         _notificationService = notificationService,
-        super(MercadoInitial()) {
+        super(const MercadoState()) {
+    on<LoadNfeHistory>((event, emit) async {
+      emit(state.copyWith(status: MercadoStatus.loading));
+      try {
+        final history = await _repository.getNfeHistory();
+        emit(state.copyWith(status: MercadoStatus.success, history: history));
+      } catch (e) {
+        _logger.e(e);
+        emit(state.copyWith(
+          status: MercadoStatus.error,
+          errorMessage: e.toString(),
+        ));
+      }
+    });
+
+    on<ClearError>((event, emit) {
+      emit(state.copyWith(status: MercadoStatus.initial, errorMessage: null));
+    });
+
     on<SendNfe>((event, emit) async {
-      final accessKey = event.nfe; // Agora recebe a chave limpa
+      final accessKey = event.nfe;
       _logger.d('Enviando NF-e | $accessKey');
 
-      // A validação do formato da chave já foi feita na tela do scanner.
-      // Apenas uma verificação final por segurança.
       if (accessKey.length != 44 || BigInt.tryParse(accessKey) == null) {
-        emit(MercadoError("Chave de acesso com formato inválido recebida."));
+        emit(state.copyWith(
+          status: MercadoStatus.error,
+          errorMessage: "Chave de acesso com formato inválido recebida.",
+        ));
         return;
       }
 
-      emit(SendingNfe());
+      emit(state.copyWith(status: MercadoStatus.sending));
       await _notificationService.showPersistentNotification(
         id: 0,
         title: 'Enviando Nota Fiscal',
         body: 'Aguarde enquanto processamos a sua nota fiscal.',
       );
       try {
-        await _repository.sendNfe(accessKey); // Envia a chave limpa
+        await _repository.sendNfe(accessKey);
         _logger.i('NF-E enviada com sucesso');
         await _notificationService.cancelNotification(0);
-        emit(NfeSent());
+        emit(state.copyWith(status: MercadoStatus.sent));
+        add(LoadNfeHistory());
       } catch (e) {
         _logger.e(e);
         await _notificationService.cancelNotification(0);
@@ -48,7 +69,10 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
           title: 'Erro ao Enviar Nota Fiscal',
           body: e.toString(),
         );
-        emit(MercadoError(e.toString()));
+        emit(state.copyWith(
+          status: MercadoStatus.error,
+          errorMessage: e.toString(),
+        ));
       }
     });
   }

@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return BlocListener<MercadoBloc, MercadoState>(
       listener: (context, state) {
-        if (state is NfeSent) {
+        if (state.status == MercadoStatus.sent) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Nota fiscal enviada com sucesso!'),

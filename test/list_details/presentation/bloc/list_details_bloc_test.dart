@@ -48,12 +48,12 @@ void main() {
       });
 
       final mockChannel = MockRealtimeChannel();
-      when(() => mockChannel.subscribe(any())).thenAnswer((_) async => 'SUBSCRIBED');
+      when(() => mockChannel.subscribe(any())).thenReturn(mockChannel);
       
       when(() => mockSupabaseClient.auth).thenReturn(mockGotrueClient);
       when(() => mockGotrueClient.currentUser).thenReturn(mockUser);
       when(() => mockSupabaseClient.channel(any())).thenReturn(mockChannel);
-      when(() => mockSupabaseClient.removeChannel(any())).thenAnswer((_) async {});
+      when(() => mockSupabaseClient.removeChannel(any())).thenAnswer((_) async => 'OK');
 
       mockList = ListaCompra(
         id: listId,
