@@ -11,9 +11,10 @@ class LoadListDetails extends ListDetailsEvent {}
 
 class SortList extends ListDetailsEvent {
   final SortOption sortOption;
-  const SortList(this.sortOption);
+  final SortOrder sortOrder;
+  const SortList(this.sortOption, this.sortOrder);
   @override
-  List<Object> get props => [sortOption];
+  List<Object> get props => [sortOption, sortOrder];
 }
 
 class AddItemToList extends ListDetailsEvent {

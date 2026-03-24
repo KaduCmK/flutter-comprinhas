@@ -1,6 +1,8 @@
 part of 'list_details_bloc.dart';
 
-enum SortOption { name, date }
+enum SortOption { name, date, price }
+
+enum SortOrder { ascending, descending }
 
 class ListDetailsState extends Equatable {
   final bool isLoading;
@@ -11,6 +13,7 @@ class ListDetailsState extends Equatable {
   final List<Unit>? units;
   final List<ListItem> items;
   final SortOption sortOption;
+  final SortOrder sortOrder;
 
   const ListDetailsState({
     this.isLoading = false,
@@ -20,7 +23,8 @@ class ListDetailsState extends Equatable {
     this.list,
     this.units,
     this.items = const [],
-    this.sortOption = SortOption.name,
+    this.sortOption = SortOption.date,
+    this.sortOrder = SortOrder.descending,
   });
 
   factory ListDetailsState.initial() {
@@ -36,6 +40,7 @@ class ListDetailsState extends Equatable {
     List<Unit>? units,
     List<ListItem>? items,
     SortOption? sortOption,
+    SortOrder? sortOrder,
   }) {
     return ListDetailsState(
       isLoading: isLoading ?? this.isLoading,
@@ -46,6 +51,7 @@ class ListDetailsState extends Equatable {
       units: units ?? this.units,
       items: items ?? this.items,
       sortOption: sortOption ?? this.sortOption,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
@@ -76,5 +82,6 @@ class ListDetailsState extends Equatable {
     units,
     items,
     sortOption,
+    sortOrder,
   ];
 }

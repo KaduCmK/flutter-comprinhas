@@ -55,37 +55,53 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     _cartSubscription?.cancel();
     return super.close();
   }
+void _filterAndSortItems(Emitter<ListDetailsState> emit) {
+  final cartItemIds =
+      _cartBloc.state.cartItems.map((item) => item.listItem.id).toSet();
+  final itemsToBuy =
+      _originalItems.where((item) => !cartItemIds.contains(item.id)).toList();
+  final sortedItems = _sortItems(itemsToBuy, state.sortOption, state.sortOrder);
+  emit(state.copyWith(items: sortedItems));
+}
 
-  void _filterAndSortItems(Emitter<ListDetailsState> emit) {
-    final cartItemIds =
-        _cartBloc.state.cartItems.map((item) => item.listItem.id).toSet();
-    final itemsToBuy =
-        _originalItems.where((item) => !cartItemIds.contains(item.id)).toList();
-    final sortedItems = _sortItems(itemsToBuy, state.sortOption);
-    emit(state.copyWith(items: sortedItems));
+List<ListItem> _sortItems(
+  List<ListItem> items,
+  SortOption option,
+  SortOrder order,
+) {
+  final sortedList = List<ListItem>.from(items);
+  final multiplier = order == SortOrder.ascending ? 1 : -1;
+
+  switch (option) {
+    case SortOption.name:
+      sortedList.sort(
+        (a, b) =>
+            a.name.toLowerCase().compareTo(b.name.toLowerCase()) * multiplier,
+      );
+      break;
+    case SortOption.date:
+      sortedList.sort(
+        (a, b) => a.createdAt.compareTo(b.createdAt) * multiplier,
+      );
+      break;
+    case SortOption.price:
+      sortedList.sort((a, b) {
+        final priceA = a.precoSugerido ?? 0;
+        final priceB = b.precoSugerido ?? 0;
+        return priceA.compareTo(priceB) * multiplier;
+      });
+      break;
   }
-
-  List<ListItem> _sortItems(List<ListItem> items, SortOption option) {
-    final sortedList = List<ListItem>.from(items);
-    switch (option) {
-      case SortOption.name:
-        sortedList.sort(
-          (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-        );
-        break;
-      case SortOption.date:
-        sortedList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-        break;
-    }
-    return sortedList;
-  }
-
-  Future<void> _onLoadListDetails(
-    LoadListDetails event,
-    Emitter<ListDetailsState> emit,
-  ) async {
-    emit(state.copyWith(isLoading: true));
-    try {
+  return sortedList;
+}
+...
+Future<void> _onSortList(
+  SortList event,
+  Emitter<ListDetailsState> emit,
+) async {
+  emit(state.copyWith(sortOption: event.sortOption, sortOrder: event.sortOrder));
+  _filterAndSortItems(emit);
+}
       final list = await _repository.getListById(listId);
       final units = await _repository.getUnits();
       _originalItems = await _repository.getListItems(listId);
