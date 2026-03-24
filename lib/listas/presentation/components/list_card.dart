@@ -5,6 +5,7 @@ import 'package:flutter_comprinhas/listas/presentation/components/edit_list_dial
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
+import 'package:flutter_comprinhas/shared/widgets/overlapping_avatars.dart';
 import 'package:go_router/go_router.dart';
 
 class ListCard extends StatelessWidget {
@@ -54,15 +55,20 @@ class ListCard extends StatelessWidget {
                 style: textTheme.titleLarge!.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
+              const Spacer(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Icon(Icons.calendar_today, size: 16),
+                  const Icon(Icons.people, size: 16),
                   const SizedBox(width: 4),
-                  Text(list.createdAtFormatted),
+                  Text("${list.members.length} participantes"),
                 ],
               ),
+              const SizedBox(height: 8),
+              OverlappingAvatars(list: list),
             ],
           ),
         ),

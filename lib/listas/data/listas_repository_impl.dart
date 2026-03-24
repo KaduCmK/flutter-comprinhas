@@ -33,10 +33,14 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       final response = await _client
           .from('lists')
-          .select('*, list_members!inner(*)')
+          .select('*, list_members!inner(user_id), all_members:list_members(*, users(*))')
           .eq('list_members.user_id', _client.auth.currentUser!.id);
 
-      final lists = response.map((list) => ListaCompra.fromMap(list)).toList();
+      final lists = response.map((list) {
+        // Mapeia all_members de volta para list_members para o fromMap da entidade funcionar
+        list['list_members'] = list['all_members'];
+        return ListaCompra.fromMap(list);
+      }).toList();
       return lists;
     } catch (e) {
       debugPrint(e.toString());
@@ -58,7 +62,7 @@ class ListasRepositoryImpl implements ListasRepository {
   Future<ListaCompra> getListById(String listId) async {
     try {
       final response =
-          await _client.from('lists').select().eq('id', listId).single();
+          await _client.from('lists').select('*, list_members(*, users(*))').eq('id', listId).single();
       return ListaCompra.fromMap(response);
     } catch (e) {
       _logger.e('Erro ao buscar lista por id: $e');

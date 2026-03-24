@@ -5,6 +5,8 @@ import 'package:flutter_comprinhas/list_details/presentation/components/gemini_a
 import 'package:flutter_comprinhas/list_details/presentation/components/list_details_appbar_actions.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
+import 'package:flutter_comprinhas/shared/widgets/overlapping_avatars.dart';
+import 'package:go_router/go_router.dart';
 
 class ListDetailsAppBar extends StatefulWidget {
   const ListDetailsAppBar({super.key});
@@ -61,16 +63,63 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        state.list?.name ?? '',
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.headlineMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
+                      InkWell(
+                        onTap: () {
+                          if (state.list != null) {
+                            context.push('/list/${state.list!.id}/info', extra: state.list);
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  state.list?.name ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: textTheme.headlineMedium?.copyWith(
+                                    color: colorScheme.onPrimaryContainer,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Icon(Icons.info_outline, size: 20, color: colorScheme.primary),
+                            ],
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
+                      if (state.list != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OverlappingAvatars(list: state.list!, size: 36, overlap: 16),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Criado por:",
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                                Text(
+                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['name'] ?? 
+                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['full_name'] ?? 
+                                  'Usuário',
+                                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                      ],
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
