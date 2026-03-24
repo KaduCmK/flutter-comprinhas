@@ -19,8 +19,8 @@ class ListDetailsAppbarActions extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
-      spacing: 4,
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
       children: [
         IconButton(
           onPressed:

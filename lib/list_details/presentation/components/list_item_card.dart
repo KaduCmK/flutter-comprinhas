@@ -65,6 +65,7 @@ class ListItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Expanded(
+              flex: 3,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -131,7 +132,8 @@ class ListItemCard extends StatelessWidget {
               ),
             ),
             if (item.precoSugerido != null)
-              Flexible(
+              Expanded(
+                flex: 2,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: Column(

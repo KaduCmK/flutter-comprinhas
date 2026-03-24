@@ -1,6 +1,7 @@
 import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/components/gemini_animated_border.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/list_details_appbar_actions.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
@@ -95,10 +96,7 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                     ],
                   ),
                   const Spacer(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [ListDetailsAppbarActions(state: state)],
-                  ),
+                  ListDetailsAppbarActions(state: state),
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -125,44 +123,60 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                       Container(
                         height: 32,
                         width: 1,
-                        color: colorScheme.onPrimaryContainer.withOpacity(0.2),
+                        color: colorScheme.onPrimaryContainer.withValues(alpha: 0.2),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
-                        child: TextFormField(
-                          controller: _nlpController,
-                          focusNode: _nlpFocusNode,
-                          enabled: !state.isParsingNlp,
-                          decoration: InputDecoration(
-                            hintText: "Adicionar item com IA...",
-                            filled: true,
-                            fillColor: colorScheme.surface,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 0,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(24),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon:
-                                state.isParsingNlp
-                                    ? Container(
-                                      padding: const EdgeInsets.all(12),
-                                      width: 24,
-                                      height: 24,
-                                      child: const CircularProgressIndicator(
-                                        strokeWidth: 2,
+                        child: GeminiAnimatedBorder(
+                          child: TextFormField(
+                            controller: _nlpController,
+                            focusNode: _nlpFocusNode,
+                            enabled: !state.isParsingNlp,
+                            decoration: InputDecoration(
+                              hintText: "Adicionar item",
+                              prefixIcon: ShaderMask(
+                                shaderCallback:
+                                    (bounds) => LinearGradient(
+                                      colors: const [
+                                        Color(0xFF4285F4),
+                                        Color(0xFF9B72CB),
+                                        Color(0xFFD96570),
+                                      ],
+                                    ).createShader(bounds),
+                                child: const Icon(
+                                  Icons.auto_awesome,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: colorScheme.surface,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 0,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(24),
+                                borderSide: BorderSide.none,
+                              ),
+                              suffixIcon:
+                                  state.isParsingNlp
+                                      ? Container(
+                                        padding: const EdgeInsets.all(12),
+                                        width: 24,
+                                        height: 24,
+                                        child: const CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : IconButton(
+                                        icon: const Icon(Icons.send),
+                                        onPressed: () => _submitNlp(context),
+                                        color: colorScheme.primary,
                                       ),
-                                    )
-                                    : IconButton(
-                                      icon: const Icon(Icons.send),
-                                      onPressed: () => _submitNlp(context),
-                                      color: colorScheme.primary,
-                                    ),
+                            ),
+                            textInputAction: TextInputAction.send,
+                            onFieldSubmitted: (_) => _submitNlp(context),
                           ),
-                          textInputAction: TextInputAction.send,
-                          onFieldSubmitted: (_) => _submitNlp(context),
                         ),
                       ),
                     ],
