@@ -1,29 +1,66 @@
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 
 class PrecoSugeridoChip extends StatelessWidget {
-  final String listItemId;
-  final num? precoSugerido;
+  final ListItem item;
 
-  const PrecoSugeridoChip({
-    super.key,
-    required this.listItemId,
-    this.precoSugerido,
-  });
+  const PrecoSugeridoChip({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ActionChip(
-      avatar: Icon(Icons.auto_awesome, size: 16, color: colorScheme.primary),
-      label: Text(
-        "R\$ ${precoSugerido?.toStringAsFixed(2) ?? '--'}",
-        style: const TextStyle(fontWeight: FontWeight.bold),
+    String suffix = "";
+    if (item.unidadePrecoSugerido != null &&
+        item.unidadePrecoSugerido!.toLowerCase() != 'un') {
+      suffix = " / ${item.unidadePrecoSugerido}";
+    }
+
+    return InkWell(
+      onTap: () => _showMatchesDialog(context),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 2.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.auto_awesome, size: 14, color: colorScheme.primary),
+            const SizedBox(width: 4),
+            if (item.precoSugerido != null)
+              AnimatedFlipCounter(
+                value: item.precoSugerido!,
+                prefix: "R\$ ",
+                fractionDigits: 2,
+                decimalSeparator: ',',
+                thousandSeparator: '.',
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+                textStyle: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              )
+            else
+              const Text(
+                "R\$ --",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+            if (suffix.isNotEmpty)
+              Text(
+                suffix,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
       ),
-      onPressed: () => _showMatchesDialog(context),
     );
   }
 
@@ -52,7 +89,7 @@ class PrecoSugeridoChip extends StatelessWidget {
           content: SizedBox(
             width: 500, // Força uma largura maior para melhor legibilidade
             child: FutureBuilder<List<ProductMatch>>(
-              future: repository.getProductMatches(listItemId),
+              future: repository.getProductMatches(item.id),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox(
@@ -78,7 +115,7 @@ class PrecoSugeridoChip extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Selecione um produto para definir o preço aproximado:",
+                      "Selecione um produto para definir o preço base:",
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -117,7 +154,7 @@ class PrecoSugeridoChip extends StatelessWidget {
                                     ? null
                                     : () async {
                                       await repository.updatePrecoSugerido(
-                                        listItemId,
+                                        item.id,
                                         match.price!,
                                       );
                                       if (context.mounted) {
@@ -143,11 +180,11 @@ class PrecoSugeridoChip extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            "Preço Atual:",
+                            "Preço Base Atual:",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            "R\$ ${precoSugerido?.toStringAsFixed(2) ?? '--'}",
+                            "R\$ ${item.precoSugerido?.toStringAsFixed(2) ?? '--'}",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,

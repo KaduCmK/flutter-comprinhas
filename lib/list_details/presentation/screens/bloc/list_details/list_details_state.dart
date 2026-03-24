@@ -45,6 +45,23 @@ class ListDetailsState extends Equatable {
     );
   }
 
+  double get estimatedTotal {
+    double total = 0.0;
+    for (var item in items) {
+      if (item.precoSugerido != null) {
+        double multiplier = 1.0;
+        if (item.unidadePrecoSugerido != null) {
+          multiplier = UnitConverter.getConversionFactor(
+            item.unit.abbreviation,
+            item.unidadePrecoSugerido!,
+          );
+        }
+        total += (item.precoSugerido! * multiplier * item.amount);
+      }
+    }
+    return total;
+  }
+
   @override
   List<Object?> get props => [
     isLoading,

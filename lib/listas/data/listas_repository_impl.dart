@@ -113,7 +113,7 @@ class ListasRepositoryImpl implements ListasRepository {
       final response = await _client
           .from('list_items')
           .select(
-            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), units(*), preco_sugerido',
+            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), units(*), preco_sugerido, unidade_preco_sugerido',
           )
           .eq('list_id', listId);
 

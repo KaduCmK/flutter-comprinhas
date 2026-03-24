@@ -8,6 +8,7 @@ import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/c
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
+import 'package:flutter_comprinhas/shared/utils/unit_converter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'list_details_event.dart';
