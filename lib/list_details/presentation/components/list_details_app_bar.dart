@@ -92,11 +92,21 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                           ),
                         ),
                       ),
+                      if (state.list != null && state.list!.members.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OverlappingAvatars(list: state.list!, size: 20, overlap: 8),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            "Total: ",
+                            "Total estimado: ",
                             style: textTheme.titleMedium,
                           ),
                           AnimatedFlipCounter(
@@ -112,16 +122,6 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                               color: colorScheme.primary,
                             ),
                           ),
-                          if (state.list != null && state.list!.members.isNotEmpty) ...[
-                            const SizedBox(width: 16),
-                            Container(
-                              height: 16,
-                              width: 1,
-                              color: colorScheme.outlineVariant,
-                            ),
-                            const SizedBox(width: 16),
-                            OverlappingAvatars(list: state.list!, size: 24, overlap: 10),
-                          ],
                         ],
                       ),
                     ],

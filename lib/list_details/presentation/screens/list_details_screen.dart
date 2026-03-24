@@ -78,7 +78,7 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                 snap: true,
                 floating: true,
                 automaticallyImplyLeading: true,
-                expandedHeight: 210,
+                expandedHeight: 230,
                 backgroundColor: Colors.transparent,
                 surfaceTintColor: Colors.transparent,
                 flexibleSpace: FlexibleSpaceBar(
