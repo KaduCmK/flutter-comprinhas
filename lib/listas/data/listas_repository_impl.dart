@@ -80,6 +80,7 @@ class ListasRepositoryImpl implements ListasRepository {
 
   @override
   Future<void> upsertList(String name, {String? listId}) async {
+    debugPrint('Upsert list: $name, id: $listId');
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       throw 'Usuario nao autenticado';
@@ -92,7 +93,15 @@ class ListasRepositoryImpl implements ListasRepository {
           'owner_id': userId,
         });
       } else {
-        await _client.from('lists').update({'name': name}).eq('id', listId);
+        final response = await _client
+            .from('lists')
+            .update({'name': name})
+            .eq('id', listId)
+            .select();
+        
+        if (response.isEmpty) {
+          throw 'Não foi possível atualizar a lista. Verifique se você tem permissão.';
+        }
       }
     } catch (e) {
       _logger.e(e.toString());

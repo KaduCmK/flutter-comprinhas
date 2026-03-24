@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/presentation/components/edit_list_dialog.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
+import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:go_router/go_router.dart';
 
@@ -23,6 +24,15 @@ class ListCard extends StatelessWidget {
           context.push('/list/${list.id}');
         },
         onLongPress: () {
+          final currentUserId = supabase.auth.currentUser?.id;
+          if (currentUserId != list.ownerId) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Apenas o dono da lista pode editá-la.'),
+              ),
+            );
+            return;
+          }
           showDialog(
             context: context,
             builder:
