@@ -43,22 +43,15 @@ class OverlappingAvatars extends StatelessWidget {
                     member.user.userMetadata?["picture"];
                 return Positioned(
                   left: index * (size - overlap),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.surface,
-                        width: 1.5,
-                      ),
-                    ),
+                  child: CircleAvatar(
+                    radius: size / 2,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     child: CircleAvatar(
                       radius: size / 2 - 1.5,
-                      backgroundImage:
-                          url != null ? NetworkImage(url) : null,
+                      backgroundImage: url != null ? NetworkImage(url) : null,
                       child: url == null ? const Icon(Icons.person, size: 16) : null,
                     ),
-                  ),
-                );
+                  ),                );
               }).reversed.toList(), // Reversed to have first items on top
             ),
           ),
@@ -70,19 +63,10 @@ class OverlappingAvatars extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.primary,
-              width: 1.5,
-            ),
-          ),
-          child: CircleAvatar(
-            radius: size / 2 - 1.5,
-            backgroundImage: url != null ? NetworkImage(url) : null,
-            child: url == null ? const Icon(Icons.person, size: 16) : null,
-          ),
+        CircleAvatar(
+          radius: size / 2,
+          backgroundImage: url != null ? NetworkImage(url) : null,
+          child: url == null ? const Icon(Icons.person, size: 16) : null,
         ),
         Positioned(
           top: -8,

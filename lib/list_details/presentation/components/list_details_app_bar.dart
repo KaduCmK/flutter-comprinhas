@@ -119,28 +119,7 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            OverlappingAvatars(list: state.list!, size: 28, overlap: 12),
-                            const SizedBox(width: 8),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Criado por:",
-                                  style: textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                                Text(
-                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['name'] ?? 
-                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['full_name'] ?? 
-                                  'Usuário',
-                                  style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
+                            OverlappingAvatars(list: state.list!, size: 24, overlap: 10),
                           ],
                         ),
                       ],
