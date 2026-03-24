@@ -58,6 +58,15 @@ class ListCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 4),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.calendar_today, size: 16),
+                  const SizedBox(width: 4),
+                  Text(list.createdAtFormatted, style: textTheme.bodySmall),
+                ],
+              ),
               const Spacer(),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
