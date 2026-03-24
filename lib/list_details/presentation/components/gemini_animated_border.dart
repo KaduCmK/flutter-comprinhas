@@ -6,12 +6,14 @@ class GeminiAnimatedBorder extends StatefulWidget {
   final double borderRadius;
   final double borderWidth;
   final List<Color> gradientColors;
+  final bool isParsing;
 
   const GeminiAnimatedBorder({
     super.key,
     required this.child,
     this.borderRadius = 24.0,
     this.borderWidth = 2.0,
+    this.isParsing = false,
     this.gradientColors = const [
       Color(0xFF4285F4), // Blue
       Color(0xFF9B72CB), // Purple
@@ -32,7 +34,7 @@ class _GeminiAnimatedBorderState extends State<GeminiAnimatedBorder>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 4),
     )..repeat();
   }
 
@@ -53,6 +55,7 @@ class _GeminiAnimatedBorderState extends State<GeminiAnimatedBorder>
             borderRadius: widget.borderRadius,
             borderWidth: widget.borderWidth,
             gradientColors: widget.gradientColors,
+            isParsing: widget.isParsing,
           ),
           child: widget.child,
         );
@@ -66,12 +69,14 @@ class _GeminiBorderPainter extends CustomPainter {
   final double borderRadius;
   final double borderWidth;
   final List<Color> gradientColors;
+  final bool isParsing;
 
   _GeminiBorderPainter({
     required this.animationValue,
     required this.borderRadius,
     required this.borderWidth,
     required this.gradientColors,
+    required this.isParsing,
   });
 
   @override
@@ -82,44 +87,67 @@ class _GeminiBorderPainter extends CustomPainter {
       Radius.circular(borderRadius),
     );
 
-    // Create the path for the border
     final Path path = Path()..addRRect(rrect);
 
-    // Create a rotating gradient
-    // We use a sweep gradient that only covers a portion of the perimeter
-    final double startAngle = animationValue * 2 * pi;
-    
-    final Paint paint = Paint()
-      ..shader = SweepGradient(
-        colors: [
-          ...gradientColors,
-          gradientColors.first.withValues(alpha: 0),
-          Colors.transparent,
-          gradientColors.first.withValues(alpha: 0),
-          ...gradientColors,
-        ],
-        stops: const [
-          0.0, 0.1, 0.2, 0.3, 0.5, 0.7, 0.8, 0.9, 1.0
-        ],
-        transform: GradientRotation(startAngle),
-      ).createShader(rect)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth
-      ..strokeCap = StrokeCap.round;
+    if (isParsing) {
+      // Estado Carregando: Animação de rotação segmentada
+      final double startAngle = animationValue * 2 * pi;
+      
+      final Paint paint = Paint()
+        ..shader = SweepGradient(
+          colors: [
+            ...gradientColors,
+            gradientColors.first.withValues(alpha: 0),
+            Colors.transparent,
+            gradientColors.first.withValues(alpha: 0),
+            ...gradientColors,
+          ],
+          stops: const [
+            0.0, 0.1, 0.4, 0.3, 0.5, 0.7, 0.8, 0.9, 1.0
+          ],
+          transform: GradientRotation(startAngle),
+        ).createShader(rect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth
+        ..strokeCap = StrokeCap.round;
 
-    // Bloom/Glow effect using mask blur
-    final Paint glowPaint = Paint()
-      ..shader = paint.shader
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth * 2
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+      final Paint glowPaint = Paint()
+        ..shader = paint.shader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth * 2
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
-    canvas.drawPath(path, glowPaint);
-    canvas.drawPath(path, paint);
+      canvas.drawPath(path, glowPaint);
+      canvas.drawPath(path, paint);
+    } else {
+      // Estado Inicial: Efeito "Breathing" em todo o perímetro
+      // Usamos seno para criar o efeito pulsar (0 -> 1 -> 0)
+      final double breath = (sin(animationValue * 2 * pi) + 1) / 2;
+      final double opacity = 0.2 + (breath * 0.8);
+      
+      final Paint paint = Paint()
+        ..shader = LinearGradient(
+          colors: gradientColors.map((c) => c.withValues(alpha: opacity)).toList(),
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(rect)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth
+        ..strokeCap = StrokeCap.round;
+
+      final Paint glowPaint = Paint()
+        ..shader = paint.shader
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth * 1.5
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2 + (breath * 4));
+
+      canvas.drawPath(path, glowPaint);
+      canvas.drawPath(path, paint);
+    }
   }
 
   @override
   bool shouldRepaint(covariant _GeminiBorderPainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue;
+    return oldDelegate.animationValue != animationValue || oldDelegate.isParsing != isParsing;
   }
 }

@@ -128,6 +128,7 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: GeminiAnimatedBorder(
+                          isParsing: state.isParsingNlp,
                           gradientColors: [
                             colorScheme.primary,
                             colorScheme.secondary,
@@ -163,21 +164,13 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                 borderRadius: BorderRadius.circular(24),
                                 borderSide: BorderSide.none,
                               ),
-                              suffixIcon:
-                                  state.isParsingNlp
-                                      ? Container(
-                                        padding: const EdgeInsets.all(12),
-                                        width: 24,
-                                        height: 24,
-                                        child: const CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                        ),
-                                      )
-                                      : IconButton(
-                                        icon: const Icon(Icons.send),
-                                        onPressed: () => _submitNlp(context),
-                                        color: colorScheme.primary,
-                                      ),
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.send),
+                                onPressed: state.isParsingNlp
+                                    ? null
+                                    : () => _submitNlp(context),
+                                color: colorScheme.primary,
+                              ),
                             ),
                             textInputAction: TextInputAction.send,
                             onFieldSubmitted: (_) => _submitNlp(context),
