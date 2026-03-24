@@ -41,8 +41,9 @@ void main() {
         () => mockListasRepository.upsertList(
           any(),
           listId: any(named: 'listId'),
+          backgroundImageUrl: any(named: 'backgroundImageUrl'),
         ),
-      ).thenAnswer((_) async {});
+      ).thenAnswer((_) async => 'mocked-id');
     });
 
     test('o estado inicial deve ser ListasInitial', () {

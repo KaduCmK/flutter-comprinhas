@@ -29,6 +29,7 @@ class ListaCompra extends Equatable {
   final CartMode cartMode;
   final bool priceForecastEnabled;
   final List<ListMember> members;
+  final String? backgroundImage;
 
   const ListaCompra({
     required this.id,
@@ -38,6 +39,7 @@ class ListaCompra extends Equatable {
     this.cartMode = CartMode.shared,
     this.priceForecastEnabled = false,
     this.members = const [],
+    this.backgroundImage,
   });
 
   String get createdAtFormatted => DateFormat('dd/MM/yyyy').format(createdAt);
@@ -59,6 +61,7 @@ class ListaCompra extends Equatable {
       ),
       priceForecastEnabled: map['price_forecast_enabled'] as bool? ?? false,
       members: membersList,
+      backgroundImage: map['background_image'] as String?,
     );
   }
 
@@ -69,6 +72,7 @@ class ListaCompra extends Equatable {
       'owner_id': ownerId,
       'cart_mode': cartMode.name,
       'price_forecast_enabled': priceForecastEnabled,
+      if (backgroundImage != null) 'background_image': backgroundImage,
     };
   }
 
@@ -81,5 +85,6 @@ class ListaCompra extends Equatable {
     cartMode,
     priceForecastEnabled,
     members,
+    backgroundImage,
   ];
 }

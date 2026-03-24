@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
@@ -7,7 +8,8 @@ import 'package:flutter_comprinhas/shared/entities/unit.dart';
 
 abstract class ListasRepository {
   Future<List<ListaCompra>> getUserLists();
-  Future<void> upsertList(String name, {String? listId});
+  Future<String> upsertList(String name, {String? listId, String? backgroundImageUrl});
+  Future<String?> uploadBackgroundImage(File imageFile, String listId);
   Future<void> deleteList(String listId);
   Future<void> joinList(String listId);
   Future<ListaCompra> getListById(String listId);

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
@@ -83,7 +84,7 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
-  Future<void> upsertList(String name, {String? listId}) async {
+  Future<String> upsertList(String name, {String? listId, String? backgroundImageUrl}) async {
     debugPrint('Upsert list: $name, id: $listId');
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
@@ -92,24 +93,50 @@ class ListasRepositoryImpl implements ListasRepository {
 
     try {
       if (listId == null) {
-        await _client.from('lists').insert({
+        final Map<String, dynamic> data = {
           'name': name,
           'owner_id': userId,
-        });
+        };
+        if (backgroundImageUrl != null) data['background_image'] = backgroundImageUrl;
+
+        final response = await _client.from('lists').insert(data).select('id').single();
+        return response['id'] as String;
       } else {
+        final Map<String, dynamic> data = {'name': name};
+        if (backgroundImageUrl != null) data['background_image'] = backgroundImageUrl;
+
         final response = await _client
             .from('lists')
-            .update({'name': name})
+            .update(data)
             .eq('id', listId)
-            .select();
-        
+            .select('id');
+
         if (response.isEmpty) {
           throw 'Não foi possível atualizar a lista. Verifique se você tem permissão.';
         }
+        return listId;
       }
     } catch (e) {
       _logger.e(e.toString());
       rethrow;
+    }
+  }
+  @override
+  Future<String?> uploadBackgroundImage(File imageFile, String listId) async {
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final filePath = '$listId/$fileName';
+      
+      await _client.storage.from('list_backgrounds').upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      return _client.storage.from('list_backgrounds').getPublicUrl(filePath);
+    } catch (e) {
+      _logger.e('Erro ao fazer upload da imagem de fundo: $e');
+      return null;
     }
   }
 

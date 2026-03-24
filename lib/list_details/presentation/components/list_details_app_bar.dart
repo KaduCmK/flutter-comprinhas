@@ -51,80 +51,108 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
         }
       },
       builder: (context, state) {
+        final hasImage = state.list?.backgroundImage != null;
+
         return SafeArea(
           child: Card(
             elevation: 2,
-            color: colorScheme.primaryContainer,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          if (state.list != null) {
-                            context.push('/list/${state.list!.id}/info', extra: state.list);
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  state.list?.name ?? '',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: textTheme.headlineMedium?.copyWith(
-                                    color: colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.bold,
+            clipBehavior: Clip.antiAlias,
+            color: hasImage ? Colors.transparent : colorScheme.primaryContainer,
+            child: Container(
+              decoration: BoxDecoration(
+                image: hasImage
+                    ? DecorationImage(
+                        image: NetworkImage(state.list!.backgroundImage!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: hasImage
+                      ? const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black87,
+                            Colors.black54,
+                            Colors.black87,
+                          ],
+                          stops: [0.0, 0.5, 1.0],
+                        )
+                      : null,
+                ),
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            if (state.list != null) {
+                              context.push('/list/${state.list!.id}/info', extra: state.list);
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    state.list?.name ?? '',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: textTheme.headlineMedium?.copyWith(
+                                      color: hasImage ? Colors.white : colorScheme.onPrimaryContainer,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      if (state.list != null && state.list!.members.isNotEmpty) ...[
-                        const SizedBox(height: 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            OverlappingAvatars(list: state.list!, size: 20, overlap: 8),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                      ],
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Total estimado: ",
-                            style: textTheme.titleMedium,
-                          ),
-                          AnimatedFlipCounter(
-                            value: state.estimatedTotal,
-                            prefix: "R\$ ",
-                            fractionDigits: 2,
-                            decimalSeparator: ',',
-                            thousandSeparator: '.',
-                            duration: const Duration(milliseconds: 500),
-                            curve: Curves.easeOut,
-                            textStyle: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.primary,
+                              ],
                             ),
                           ),
+                        ),
+                        if (state.list != null && state.list!.members.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              OverlappingAvatars(list: state.list!, size: 20, overlap: 8),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
                         ],
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              "Total estimado: ",
+                              style: textTheme.titleMedium?.copyWith(
+                                color: hasImage ? Colors.white70 : null,
+                              ),
+                            ),
+                            AnimatedFlipCounter(
+                              value: state.estimatedTotal,
+                              prefix: "R\$ ",
+                              fractionDigits: 2,
+                              decimalSeparator: ',',
+                              thousandSeparator: '.',
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeOut,
+                              textStyle: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: hasImage ? Colors.white : colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Spacer(),
                   ListDetailsAppbarActions(state: state),
                   const SizedBox(height: 8),
                   Row(
@@ -215,7 +243,7 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
               ),
             ),
           ),
-        );
+        ));
       },
     );
   }

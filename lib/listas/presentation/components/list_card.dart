@@ -17,9 +17,12 @@ class ListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final hasImage = list.backgroundImage != null;
+    final textColor = hasImage ? Colors.white : null;
 
     return Card(
       elevation: 2,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
           context.push('/list/${list.id}');
@@ -43,42 +46,73 @@ class ListCard extends StatelessWidget {
                 ),
           );
         },
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                list.name,
-                style: textTheme.titleLarge!.copyWith(
-                  fontWeight: FontWeight.bold,
+        child: Container(
+          decoration: BoxDecoration(
+            image: hasImage
+                ? DecorationImage(
+                    image: NetworkImage(list.backgroundImage!),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: hasImage
+                  ? const LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black87,
+                        Colors.black12,
+                        Colors.black54,
+                        Colors.black87,
+                      ],
+                      stops: [0.0, 0.3, 0.7, 1.0],
+                    )
+                  : null,
+            ),
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  list.name,
+                  style: textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(Icons.calendar_today, size: 16),
-                  const SizedBox(width: 4),
-                  Text(list.createdAtFormatted, style: textTheme.bodySmall),
-                ],
-              ),
-              const Spacer(),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(Icons.people, size: 16),
-                  const SizedBox(width: 4),
-                  Text("${list.members.length} participantes"),
-                ],
-              ),
-              const SizedBox(height: 8),
-              OverlappingAvatars(list: list),
-            ],
+                const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.calendar_today, size: 16, color: textColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      list.createdAtFormatted,
+                      style: textTheme.bodySmall?.copyWith(color: textColor),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.people, size: 16, color: textColor),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${list.members.length} participantes",
+                      style: TextStyle(color: textColor),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                OverlappingAvatars(list: list),
+              ],
+            ),
           ),
         ),
       ),

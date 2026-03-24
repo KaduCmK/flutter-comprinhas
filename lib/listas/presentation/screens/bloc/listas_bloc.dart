@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
@@ -45,7 +47,26 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
     emit(ListasLoading(lists: state.lists, units: state.units));
 
     try {
-      await _repository.upsertList(event.name, listId: event.listId);
+      String listId = await _repository.upsertList(
+        event.name,
+        listId: event.listId,
+        backgroundImageUrl: event.backgroundImageUrl,
+      );
+
+      if (event.imageFile != null) {
+        final uploadedUrl = await _repository.uploadBackgroundImage(
+          event.imageFile!,
+          listId,
+        );
+        if (uploadedUrl != null) {
+          await _repository.upsertList(
+            event.name,
+            listId: listId,
+            backgroundImageUrl: uploadedUrl,
+          );
+        }
+      }
+
       final newLists = await _repository.getUserLists();
       emit(ListasLoaded(lists: newLists, units: state.units));
     } catch (e) {
