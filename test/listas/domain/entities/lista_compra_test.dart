@@ -4,12 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('ListaCompra', () {
     final date = DateTime(2024, 7, 25);
-    final lista = ListaCompra(
-      id: '1',
-      name: 'Teste',
-      ownerId: 'user-1',
-      createdAt: date,
-    );
 
     test('getter createdAtFormatted deve formatar a data para dd/MM/yyyy', () {
       final date = DateTime(2024, 7, 25);

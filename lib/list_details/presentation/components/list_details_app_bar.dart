@@ -128,6 +128,11 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: GeminiAnimatedBorder(
+                          gradientColors: [
+                            colorScheme.primary,
+                            colorScheme.secondary,
+                            colorScheme.tertiary,
+                          ],
                           child: TextFormField(
                             controller: _nlpController,
                             focusNode: _nlpFocusNode,
@@ -137,10 +142,10 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                               prefixIcon: ShaderMask(
                                 shaderCallback:
                                     (bounds) => LinearGradient(
-                                      colors: const [
-                                        Color(0xFF4285F4),
-                                        Color(0xFF9B72CB),
-                                        Color(0xFFD96570),
+                                      colors: [
+                                        colorScheme.primary,
+                                        colorScheme.secondary,
+                                        colorScheme.tertiary,
                                       ],
                                     ).createShader(bounds),
                                 child: const Icon(

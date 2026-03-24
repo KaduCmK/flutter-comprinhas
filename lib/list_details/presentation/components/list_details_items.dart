@@ -33,7 +33,6 @@ class ListDetailsItems extends StatelessWidget {
                 },
                 onEdit: () {
                   // TODO: Implementar lógica de edição
-                  print("Editar item: ${item.name}");
                 },
               );
             },
