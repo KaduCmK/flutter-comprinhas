@@ -41,8 +41,36 @@ class _EditListDialogState extends State<EditListDialog> {
   }
 
   void _delete() {
-    context.read<ListasBloc>().add(DeleteListEvent(widget.list.id));
-    context.pop();
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Excluir Lista'),
+            content: const Text(
+              'Tem certeza que deseja excluir esta lista e todos os seus itens? Esta ação não pode ser desfeita.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  // Fecha o dialogo de confirmacao
+                  Navigator.pop(context);
+                  // Dispara o evento de exclusao
+                  context.read<ListasBloc>().add(DeleteListEvent(widget.list.id));
+                  // Fecha o dialogo de edicao
+                  Navigator.pop(this.context);
+                },
+                child: const Text(
+                  'Excluir',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+    );
   }
 
   @override

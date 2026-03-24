@@ -45,7 +45,7 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
         listId: _isEditMode ? widget.listToEdit!.id : null,
       ),
     );
-    context.pop(context);
+    context.pop();
   }
 
   @override

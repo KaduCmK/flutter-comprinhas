@@ -87,7 +87,10 @@ class ListasRepositoryImpl implements ListasRepository {
 
     try {
       if (listId == null) {
-        await _client.from('lists').insert({'name': name});
+        await _client.from('lists').insert({
+          'name': name,
+          'owner_id': userId,
+        });
       } else {
         await _client.from('lists').update({'name': name}).eq('id', listId);
       }
@@ -100,6 +103,9 @@ class ListasRepositoryImpl implements ListasRepository {
   @override
   Future<void> deleteList(String listId) async {
     try {
+      // Tentamos deletar primeiro os itens e historico para evitar erro de constraint caso nao haja cascade no banco
+      await _client.from('purchase_history_items').delete().eq('list_id', listId);
+      await _client.from('list_items').delete().eq('list_id', listId);
       await _client.from("lists").delete().eq('id', listId);
     } catch (e) {
       _logger.e(e);
@@ -142,12 +148,14 @@ class ListasRepositoryImpl implements ListasRepository {
       'amount': amount,
       'list_id': listId,
       'unit_id': unitId,
+      'created_by_id': currentUserId,
     };
 
     try {
       await _client.from('list_items').insert(dbRecord);
     } catch (e) {
       _logger.e(e.toString());
+      rethrow;
     }
   }
 
