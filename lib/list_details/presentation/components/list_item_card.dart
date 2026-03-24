@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/preco_sugerido_chip.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:flutter_comprinhas/shared/utils/unit_converter.dart';
 import 'package:flutter_swipe_action_cell/flutter_swipe_action_cell.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +29,20 @@ class ListItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final listDetailsState = context.watch<ListDetailsBloc>().state;
+
+    final bool priceForecastEnabled =
+        listDetailsState.list?.priceForecastEnabled ?? false;
+    final bool hasAnySuggestedPrice =
+        listDetailsState.items.any((i) => i.precoSugerido != null);
+
+    final bool isSuggestingPrice =
+        listDetailsState.suggestingPriceItemId == item.id;
+
+    final bool showSuggestButton =
+        !priceForecastEnabled &&
+        hasAnySuggestedPrice &&
+        item.precoSugerido == null;
 
     // Calcular o subtotal apenas se houver preco sugerido
     double? subtotal;
@@ -160,6 +175,34 @@ class ListItemCard extends StatelessWidget {
                         ),
                       Flexible(child: PrecoSugeridoChip(item: item)),
                     ],
+                  ),
+                ),
+              ),
+            if (isSuggestingPrice)
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (showSuggestButton)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: TextButton.icon(
+                  onPressed: () {
+                    context.read<ListDetailsBloc>().add(SugerirPreco(item));
+                  },
+                  icon: const Icon(Icons.auto_awesome, size: 16),
+                  label: const Text(
+                    'Sugerir Preço',
+                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ),

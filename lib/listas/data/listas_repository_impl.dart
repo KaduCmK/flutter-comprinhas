@@ -184,6 +184,20 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
+  Future<void> sugerirPreco(ListItem item) async {
+    try {
+      final record = item.toMap();
+      record['id'] = item.id;
+      record['created_at'] = item.createdAt.toIso8601String();
+
+      await _client.functions.invoke('sugerir-preco', body: {'record': record});
+    } catch (e) {
+      _logger.e('Erro ao sugerir preço: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<void> updatePrecoSugerido(String itemId, num price) async {
     try {
       await _client

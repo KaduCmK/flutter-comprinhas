@@ -45,6 +45,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     on<AddItemToList>(_onAddItemToList);
     on<AddNaturalLanguageItemToList>(_onAddNaturalLanguageItemToList);
     on<RemoveItemFromList>(_onRemoveItemFromList);
+    on<SugerirPreco>(_onSugerirPreco);
     on<_CartUpdated>(_onCartUpdated);
   }
 
@@ -158,6 +159,20 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
       await _repository.removeItemFromList(event.itemId);
     } catch (e) {
       emit(state.copyWith(error: e.toString()));
+    }
+  }
+
+  Future<void> _onSugerirPreco(
+    SugerirPreco event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    emit(state.copyWith(suggestingPriceItemId: event.item.id));
+    try {
+      await _repository.sugerirPreco(event.item);
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    } finally {
+      emit(state.copyWith(suggestingPriceItemId: null));
     }
   }
 

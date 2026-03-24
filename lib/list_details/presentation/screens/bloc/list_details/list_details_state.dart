@@ -5,6 +5,7 @@ enum SortOption { name, date }
 class ListDetailsState extends Equatable {
   final bool isLoading;
   final bool isParsingNlp;
+  final String? suggestingPriceItemId;
   final String? error;
   final ListaCompra? list;
   final List<Unit>? units;
@@ -14,6 +15,7 @@ class ListDetailsState extends Equatable {
   const ListDetailsState({
     this.isLoading = false,
     this.isParsingNlp = false,
+    this.suggestingPriceItemId,
     this.error,
     this.list,
     this.units,
@@ -28,6 +30,7 @@ class ListDetailsState extends Equatable {
   ListDetailsState copyWith({
     bool? isLoading,
     bool? isParsingNlp,
+    String? suggestingPriceItemId,
     String? error,
     ListaCompra? list,
     List<Unit>? units,
@@ -37,6 +40,7 @@ class ListDetailsState extends Equatable {
     return ListDetailsState(
       isLoading: isLoading ?? this.isLoading,
       isParsingNlp: isParsingNlp ?? this.isParsingNlp,
+      suggestingPriceItemId: suggestingPriceItemId,
       error: error,
       list: list ?? this.list,
       units: units ?? this.units,
@@ -66,6 +70,7 @@ class ListDetailsState extends Equatable {
   List<Object?> get props => [
     isLoading,
     isParsingNlp,
+    suggestingPriceItemId,
     error,
     list,
     units,

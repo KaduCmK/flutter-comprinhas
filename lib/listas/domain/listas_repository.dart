@@ -27,6 +27,8 @@ abstract class ListasRepository {
   );
   Future<void> removeItemFromList(String itemId);
 
+  Future<void> sugerirPreco(ListItem item);
+
   Future<void> updatePrecoSugerido(String itemId, num price);
 
   Future<List<ProductMatch>> getProductMatches(String listItemId);

@@ -42,9 +42,20 @@ class AddNaturalLanguageItemToList extends ListDetailsEvent {
 
 class RemoveItemFromList extends ListDetailsEvent {
   final String itemId;
+
   const RemoveItemFromList(this.itemId);
+
   @override
   List<Object> get props => [itemId];
+}
+
+class SugerirPreco extends ListDetailsEvent {
+  final ListItem item;
+
+  const SugerirPreco(this.item);
+
+  @override
+  List<Object> get props => [item];
 }
 
 class TogglePriceForecast extends ListDetailsEvent {}
