@@ -34,7 +34,7 @@ class _GeminiAnimatedBorderState extends State<GeminiAnimatedBorder>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 3),
     )..repeat();
   }
 
@@ -91,7 +91,7 @@ class _GeminiBorderPainter extends CustomPainter {
 
     if (isParsing) {
       // Estado Carregando: Animação de rotação segmentada
-      final double startAngle = animationValue * 2 * pi;
+      final double startAngle = animationValue * 4 * pi;
       
       final Paint paint = Paint()
         ..shader = SweepGradient(

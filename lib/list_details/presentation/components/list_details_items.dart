@@ -56,10 +56,14 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
   }
 
   Widget _buildItem(ListItem item, Animation<double> animation) {
+    final curvedAnimation = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+    );
     return SizeTransition(
-      sizeFactor: animation,
+      sizeFactor: curvedAnimation,
       child: FadeTransition(
-        opacity: animation,
+        opacity: curvedAnimation,
         child: ListItemCard(
           item: item,
           inCart: false,
@@ -85,7 +89,7 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
         _listKey.currentState?.removeItem(
           i,
           (context, animation) => _buildItem(removedItem, animation),
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 250),
         );
         i--;
       }
@@ -96,7 +100,7 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
       final newItem = newItems[i];
       if (!_items.any((oi) => oi.id == newItem.id)) {
         _items.insert(i, newItem);
-        _listKey.currentState?.insertItem(i, duration: const Duration(milliseconds: 500));
+        _listKey.currentState?.insertItem(i, duration: const Duration(milliseconds: 400));
       }
     }
 
