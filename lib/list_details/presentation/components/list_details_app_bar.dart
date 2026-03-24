@@ -86,8 +86,6 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Icon(Icons.info_outline, size: 20, color: colorScheme.primary),
                             ],
                           ),
                         ),
