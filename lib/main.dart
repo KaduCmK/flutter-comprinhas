@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/app_theme.dart';
@@ -166,12 +167,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Comprinhas',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      routerConfig: _router,
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp.router(
+          title: 'Comprinhas',
+          theme: AppTheme.light(colorScheme: lightDynamic),
+          darkTheme: AppTheme.dark(colorScheme: darkDynamic),
+          themeMode: ThemeMode.system,
+          routerConfig: _router,
+        );
+      },
     );
   }
 }
