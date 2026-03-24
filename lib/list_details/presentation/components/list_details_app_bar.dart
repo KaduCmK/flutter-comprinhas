@@ -92,34 +92,6 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                           ),
                         ),
                       ),
-                      if (state.list != null) ...[
-                        const SizedBox(height: 8),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            OverlappingAvatars(list: state.list!, size: 36, overlap: 16),
-                            const SizedBox(width: 12),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Criado por:",
-                                  style: textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                Text(
-                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['name'] ?? 
-                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['full_name'] ?? 
-                                  'Usuário',
-                                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                      ],
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -142,6 +114,36 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                           ),
                         ],
                       ),
+                      if (state.list != null) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            OverlappingAvatars(list: state.list!, size: 28, overlap: 12),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Criado por:",
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                                Text(
+                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['name'] ?? 
+                                  state.list!.members.firstWhere((m) => m.user.id == state.list!.ownerId, orElse: () => state.list!.members.first).user.userMetadata?['full_name'] ?? 
+                                  'Usuário',
+                                  style: textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                   const Spacer(),
