@@ -58,192 +58,226 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
             elevation: 2,
             clipBehavior: Clip.antiAlias,
             color: hasImage ? Colors.transparent : colorScheme.primaryContainer,
-            child: Container(
-              decoration: BoxDecoration(
-                image: hasImage
-                    ? DecorationImage(
-                        image: NetworkImage(state.list!.backgroundImage!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: hasImage
-                      ? const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black87,
-                            Colors.black54,
-                            Colors.black87,
-                          ],
-                          stops: [0.0, 0.5, 1.0],
-                        )
-                      : null,
-                ),
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        InkWell(
-                          onTap: () {
-                            if (state.list != null) {
-                              context.push('/list/${state.list!.id}/info', extra: state.list);
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    state.list?.name ?? '',
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      color: hasImage ? Colors.white : colorScheme.onPrimaryContainer,
-                                      fontWeight: FontWeight.bold,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (hasImage)
+                  Image.network(
+                    state.list!.backgroundImage!,
+                    fit: BoxFit.cover,
+                    frameBuilder:
+                        (context, child, frame, wasSynchronouslyLoaded) {
+                      if (wasSynchronouslyLoaded) return child;
+                      return AnimatedOpacity(
+                        opacity: frame == null ? 0 : 1,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                        child: child,
+                      );
+                    },
+                  ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: hasImage
+                        ? const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black87,
+                              Colors.black54,
+                              Colors.black87,
+                            ],
+                            stops: [0.0, 0.5, 1.0],
+                          )
+                        : null,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              if (state.list != null) {
+                                context.push(
+                                  '/list/${state.list!.id}/info',
+                                  extra: state.list,
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 4.0,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      state.list?.name ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: textTheme.headlineMedium?.copyWith(
+                                        color: hasImage
+                                            ? Colors.white
+                                            : colorScheme.onPrimaryContainer,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 20,
+                                    color: hasImage
+                                        ? Colors.white70
+                                        : colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (state.list != null &&
+                              state.list!.members.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                OverlappingAvatars(
+                                  list: state.list!,
+                                  size: 20,
+                                  overlap: 8,
                                 ),
                               ],
                             ),
-                          ),
-                        ),
-                        if (state.list != null && state.list!.members.isNotEmpty) ...[
-                          const SizedBox(height: 2),
+                            const SizedBox(height: 8),
+                          ],
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              OverlappingAvatars(list: state.list!, size: 20, overlap: 8),
+                              Text(
+                                "Total estimado: ",
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: hasImage ? Colors.white70 : null,
+                                ),
+                              ),
+                              AnimatedFlipCounter(
+                                value: state.estimatedTotal,
+                                prefix: "R\$ ",
+                                fractionDigits: 2,
+                                decimalSeparator: ',',
+                                thousandSeparator: '.',
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeOut,
+                                textStyle: textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: hasImage
+                                      ? Colors.white
+                                      : colorScheme.primary,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
                         ],
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              "Total estimado: ",
-                              style: textTheme.titleMedium?.copyWith(
-                                color: hasImage ? Colors.white70 : null,
-                              ),
-                            ),
-                            AnimatedFlipCounter(
-                              value: state.estimatedTotal,
-                              prefix: "R\$ ",
-                              fractionDigits: 2,
-                              decimalSeparator: ',',
-                              thousandSeparator: '.',
-                              duration: const Duration(milliseconds: 500),
-                              curve: Curves.easeOut,
-                              textStyle: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: hasImage ? Colors.white : colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                  ListDetailsAppbarActions(state: state),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      IconButton.filled(
-                        onPressed:
-                            state.isParsingNlp
+                      ),
+                      const Spacer(),
+                      ListDetailsAppbarActions(state: state),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          IconButton.filled(
+                            onPressed: state.isParsingNlp
                                 ? null
                                 : () => showDialog(
-                                  context: context,
-                                  builder: (_) {
-                                    return BlocProvider.value(
-                                      value: context.read<ListDetailsBloc>(),
-                                      child: const NewItemDialog(),
-                                    );
-                                  },
-                                ),
-                        icon: const Icon(Icons.add),
-                        style: IconButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        height: 32,
-                        width: 1,
-                        color: colorScheme.onPrimaryContainer.withValues(alpha: 0.2),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: GeminiAnimatedBorder(
-                          isParsing: state.isParsingNlp,
-                          gradientColors: [
-                            colorScheme.primary,
-                            colorScheme.secondary,
-                            colorScheme.tertiary,
-                          ],
-                          child: TextFormField(
-                            controller: _nlpController,
-                            focusNode: _nlpFocusNode,
-                            enabled: !state.isParsingNlp,
-                            decoration: InputDecoration(
-                              hintText: "Adicionar item",
-                              prefixIcon: ShaderMask(
-                                shaderCallback:
-                                    (bounds) => LinearGradient(
+                                      context: context,
+                                      builder: (_) {
+                                        return BlocProvider.value(
+                                          value:
+                                              context.read<ListDetailsBloc>(),
+                                          child: const NewItemDialog(),
+                                        );
+                                      },
+                                    ),
+                            icon: const Icon(Icons.add),
+                            style: IconButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            height: 32,
+                            width: 1,
+                            color: colorScheme.onPrimaryContainer
+                                .withValues(alpha: 0.2),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GeminiAnimatedBorder(
+                              isParsing: state.isParsingNlp,
+                              gradientColors: [
+                                colorScheme.primary,
+                                colorScheme.secondary,
+                                colorScheme.tertiary,
+                              ],
+                              child: TextFormField(
+                                controller: _nlpController,
+                                focusNode: _nlpFocusNode,
+                                enabled: !state.isParsingNlp,
+                                decoration: InputDecoration(
+                                  hintText: "Adicionar item",
+                                  prefixIcon: ShaderMask(
+                                    shaderCallback: (bounds) => LinearGradient(
                                       colors: [
                                         colorScheme.primary,
                                         colorScheme.secondary,
                                         colorScheme.tertiary,
                                       ],
                                     ).createShader(bounds),
-                                child: const Icon(
-                                  Icons.auto_awesome,
-                                  color: Colors.white,
+                                    child: const Icon(
+                                      Icons.auto_awesome,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: colorScheme.surface,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 0,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.send),
+                                    onPressed: state.isParsingNlp
+                                        ? null
+                                        : () => _submitNlp(context),
+                                    color: colorScheme.primary,
+                                  ),
                                 ),
-                              ),
-                              filled: true,
-                              fillColor: colorScheme.surface,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 0,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(24),
-                                borderSide: BorderSide.none,
-                              ),
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.send),
-                                onPressed: state.isParsingNlp
-                                    ? null
-                                    : () => _submitNlp(context),
-                                color: colorScheme.primary,
+                                textInputAction: TextInputAction.send,
+                                onFieldSubmitted: (_) => _submitNlp(context),
                               ),
                             ),
-                            textInputAction: TextInputAction.send,
-                            onFieldSubmitted: (_) => _submitNlp(context),
                           ),
-                        ),
+                        ],
                       ),
+                      state.isLoading
+                          ? const LinearProgressIndicator()
+                          : const SizedBox(height: 4),
                     ],
                   ),
-                  state.isLoading
-                      ? const LinearProgressIndicator()
-                      : const SizedBox(height: 4),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ));
+        );
       },
     );
   }

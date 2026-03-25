@@ -46,74 +46,83 @@ class ListCard extends StatelessWidget {
                 ),
           );
         },
-        child: Container(
-          decoration: BoxDecoration(
-            image: hasImage
-                ? DecorationImage(
-                    image: NetworkImage(list.backgroundImage!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: hasImage
-                  ? const LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black87,
-                        Colors.black12,
-                        Colors.black54,
-                        Colors.black87,
-                      ],
-                      stops: [0.0, 0.3, 0.7, 1.0],
-                    )
-                  : null,
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  list.name,
-                  style: textTheme.titleLarge!.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (hasImage)
+              Image.network(
+                list.backgroundImage!,
+                fit: BoxFit.cover,
+                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                  if (wasSynchronouslyLoaded) return child;
+                  return AnimatedOpacity(
+                    opacity: frame == null ? 0 : 1,
+                    duration: const Duration(milliseconds: 500),
+                    curve: Curves.easeOut,
+                    child: child,
+                  );
+                },
+              ),
+            Container(
+              decoration: BoxDecoration(
+                gradient: hasImage
+                    ? const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black87,
+                          Colors.black12,
+                          Colors.black54,
+                          Colors.black87,
+                        ],
+                        stops: [0.0, 0.3, 0.7, 1.0],
+                      )
+                    : null,
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    list.name,
+                    style: textTheme.titleLarge!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: textColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.calendar_today, size: 16, color: textColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      list.createdAtFormatted,
-                      style: textTheme.bodySmall?.copyWith(color: textColor),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Icon(Icons.people, size: 16, color: textColor),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${list.members.length} participantes",
-                      style: TextStyle(color: textColor),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                OverlappingAvatars(list: list),
-              ],
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.calendar_today, size: 16, color: textColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        list.createdAtFormatted,
+                        style: textTheme.bodySmall?.copyWith(color: textColor),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.people, size: 16, color: textColor),
+                      const SizedBox(width: 4),
+                      Text(
+                        "${list.members.length} participantes",
+                        style: TextStyle(color: textColor),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  OverlappingAvatars(list: list),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
