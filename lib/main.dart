@@ -23,8 +23,10 @@ import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
+import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
 import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_comprinhas/mercado/presentation/enviar_nota_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/mercado_details_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -167,6 +169,13 @@ final _router = GoRouter(
       builder: (context, state) {
         final bloc = state.extra as MercadoBloc;
         return BlocProvider.value(value: bloc, child: const EnviarNotaScreen());
+      },
+    ),
+    GoRoute(
+      path: '/mercado-details',
+      builder: (context, state) {
+        final stats = state.extra as MercadoStats;
+        return MercadoDetailsScreen(stats: stats);
       },
     ),
   ],

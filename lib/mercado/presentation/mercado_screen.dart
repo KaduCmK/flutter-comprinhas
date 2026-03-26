@@ -49,13 +49,18 @@ class MercadoScreen extends StatelessWidget {
                           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                           child: Card(
                             elevation: 2,
+                            clipBehavior: Clip.antiAlias,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
+                            child: InkWell(
+                              onTap: () {
+                                context.push('/mercado-details', extra: stats);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
                                   Row(
                                     children: [
                                       CircleAvatar(
@@ -97,8 +102,9 @@ class MercadoScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                      );
+                    },
                     ),
                   ),
                 ),
