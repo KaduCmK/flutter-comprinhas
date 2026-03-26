@@ -17,6 +17,7 @@ class MercadoScreen extends StatelessWidget {
             context.read<MercadoBloc>().add(LoadNfeHistory());
           },
           child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
@@ -24,6 +25,85 @@ class MercadoScreen extends StatelessWidget {
                   child: _buildSummaryCard(context, state),
                 ),
               ),
+              if (state.topMercados.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    child: Text(
+                      "Seus Mercados",
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 140,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: state.topMercados.length,
+                      itemBuilder: (context, index) {
+                        final stats = state.topMercados[index];
+                        return Container(
+                          width: 220,
+                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                          child: Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                                        child: Icon(
+                                          Icons.storefront, 
+                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          stats.mercado.nome,
+                                          style: const TextStyle(fontWeight: FontWeight.bold),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "R\$ ${stats.valorTotalGasto.toStringAsFixed(2)}",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Theme.of(context).colorScheme.primary,
+                                        ),
+                                      ),
+                                      Text(
+                                        "${stats.totalNotas} notas processadas",
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+              ],
               if (state.status == MercadoStatus.sending)
                 const SliverToBoxAdapter(
                   child: Padding(
@@ -103,12 +183,12 @@ class MercadoScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Text(
                     "Histórico de Notas",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -147,30 +227,60 @@ class MercadoScreen extends StatelessWidget {
   }
 
   Widget _buildSummaryCard(BuildContext context, MercadoState state) {
-    int totalNotes = state.history.length;
-    int totalItems = state.history.fold(0, (sum, p) => sum + p.items.length);
+    final now = DateTime.now();
+    
+    // Calcula metricas do mes atual
+    final notasDoMes = state.history.where((n) => n.confirmedAt.year == now.year && n.confirmedAt.month == now.month).toList();
+    final totalGastoMes = notasDoMes.fold(0.0, (sum, n) => sum + n.valorTotal);
+    final totalItemsMes = notasDoMes.fold(0, (sum, n) => sum + n.items.length);
 
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [
+              Theme.of(context).colorScheme.primaryContainer,
+              Theme.of(context).colorScheme.surfaceContainerHighest,
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           children: [
+            Text(
+              "Gastos em ${DateFormat('MMMM', 'pt_BR').format(now).capitalize()}",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "R\$ ${totalGastoMes.toStringAsFixed(2)}",
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: 24),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildStatItem(
                   context,
                   Icons.receipt_long,
                   "Notas",
-                  totalNotes.toString(),
+                  notasDoMes.length.toString(),
                 ),
+                Container(width: 1, height: 40, color: Theme.of(context).colorScheme.outlineVariant),
                 _buildStatItem(
                   context,
                   Icons.shopping_basket,
                   "Itens",
-                  totalItems.toString(),
+                  totalItemsMes.toString(),
                 ),
               ],
             ),
@@ -188,13 +298,17 @@ class MercadoScreen extends StatelessWidget {
   ) {
     return Column(
       children: [
-        Icon(icon, color: Theme.of(context).colorScheme.primary, size: 30),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Row(
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
         ),
-        Text(label, style: TextStyle(color: Colors.grey[600])),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
   }
@@ -206,26 +320,79 @@ class MercadoScreen extends StatelessWidget {
       );
     }
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        final purchase = history[index];
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          child: ListTile(
-            leading: const CircleAvatar(child: Icon(Icons.description)),
-            title: Text(
-              "Nota de ${DateFormat('dd/MM/yyyy HH:mm').format(purchase.confirmedAt)}",
+    return SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final purchase = history[index];
+          final mercadoName = purchase.mercado?.nome ?? 'Mercado Desconhecido';
+          
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 6),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () {
+                context.push('/nfe-details', extra: purchase);
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                      child: Text(
+                        mercadoName.isNotEmpty ? mercadoName[0].toUpperCase() : 'M',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            mercadoName,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "${purchase.items.length} itens • ${DateFormat('dd MMM yyyy', 'pt_BR').format(purchase.confirmedAt)}",
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      "R\$ ${purchase.valorTotal.toStringAsFixed(2)}",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            subtitle: Text(
-              "${purchase.items.length} itens • R\$ ${purchase.valorTotal.toStringAsFixed(2)}",
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              context.push('/nfe-details', extra: purchase);
-            },
-          ),
-        );
-      }, childCount: history.length),
+          );
+        }, childCount: history.length),
+      ),
     );
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return "${this[0].toUpperCase()}${substring(1).toLowerCase()}";
   }
 }

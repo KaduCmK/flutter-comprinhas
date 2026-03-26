@@ -23,7 +23,12 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
       emit(state.copyWith(status: MercadoStatus.loading));
       try {
         final history = await _repository.getNfeHistory();
-        emit(state.copyWith(status: MercadoStatus.success, history: history));
+        final topMercados = await _repository.getTopMercados();
+        emit(state.copyWith(
+          status: MercadoStatus.success, 
+          history: history,
+          topMercados: topMercados,
+        ));
       } catch (e) {
         _logger.e(e);
         emit(

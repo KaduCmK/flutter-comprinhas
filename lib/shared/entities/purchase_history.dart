@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_comprinhas/shared/entities/mercado.dart';
 import 'package:flutter_comprinhas/shared/entities/purchase_history_item.dart';
 
 class PurchaseHistory extends Equatable {
@@ -7,6 +8,7 @@ class PurchaseHistory extends Equatable {
   final String? confirmedBy;
   final List<PurchaseHistoryItem> items;
   final double valorTotal;
+  final Mercado? mercado;
 
   const PurchaseHistory({
     required this.id,
@@ -14,6 +16,7 @@ class PurchaseHistory extends Equatable {
     this.confirmedBy,
     required this.items,
     required this.valorTotal,
+    this.mercado,
   });
 
   factory PurchaseHistory.fromMap(Map<String, dynamic> map) {
@@ -29,6 +32,7 @@ class PurchaseHistory extends Equatable {
       confirmedAt: DateTime.parse(map['created_at'] as String),
       confirmedBy: userName ?? 'Desconhecido',
       valorTotal: (map['valor_total'] as num).toDouble(),
+      mercado: map['mercados'] != null ? Mercado.fromMap(map['mercados']) : null,
       items:
           (map['itens_nota_fiscal'] as List<dynamic>?)
               ?.map(
@@ -41,5 +45,5 @@ class PurchaseHistory extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, confirmedAt, confirmedBy, items, valorTotal];
+  List<Object?> get props => [id, confirmedAt, confirmedBy, items, valorTotal, mercado];
 }

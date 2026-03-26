@@ -27,10 +27,12 @@ import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_comprinhas/mercado/presentation/enviar_nota_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('pt_BR', null);
   await dotenv.load(fileName: '.env');
 
   configureServiceLocator();
