@@ -1,16 +1,74 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:http/http.dart' as http;
 
-class MercadoDetailsScreen extends StatelessWidget {
+class MercadoDetailsScreen extends StatefulWidget {
   final MercadoStats stats;
 
   const MercadoDetailsScreen({super.key, required this.stats});
 
   @override
+  State<MercadoDetailsScreen> createState() => _MercadoDetailsScreenState();
+}
+
+class _MercadoDetailsScreenState extends State<MercadoDetailsScreen> {
+  LatLng? _coordinates;
+  bool _isLoadingCoords = false;
+  final MapController _mapController = MapController();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCoordinates();
+  }
+
+  Future<void> _fetchCoordinates() async {
+    final endereco = widget.stats.mercado.endereco;
+    if (endereco == null || endereco.isEmpty) return;
+
+    setState(() {
+      _isLoadingCoords = true;
+    });
+
+    try {
+      // Usando Nominatim do OpenStreetMap para geocodificação gratuita
+      final encodedAddress = Uri.encodeComponent(endereco);
+      final url = Uri.parse(
+          'https://nominatim.openstreetmap.org/search?q=$encodedAddress&format=json&limit=1');
+
+      final response = await http.get(url, headers: {
+        'User-Agent': 'io.github.kaducmk.comprinhas',
+      });
+
+      if (response.statusCode == 200) {
+        final List data = json.decode(response.body);
+        if (data.isNotEmpty) {
+          final lat = double.parse(data[0]['lat']);
+          final lon = double.parse(data[0]['lon']);
+          setState(() {
+            _coordinates = LatLng(lat, lon);
+          });
+          // Move o mapa para a nova posição
+          _mapController.move(_coordinates!, 15.0);
+        }
+      }
+    } catch (e) {
+      debugPrint('Erro ao buscar coordenadas: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingCoords = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final mercado = stats.mercado;
+    final mercado = widget.stats.mercado;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -66,13 +124,13 @@ class MercadoDetailsScreen extends StatelessWidget {
                     children: [
                       _buildStatColumn(
                         context,
-                        "R\$ ${stats.valorTotalGasto.toStringAsFixed(2)}",
+                        "R\$ ${widget.stats.valorTotalGasto.toStringAsFixed(2)}",
                         "Gasto Total",
                       ),
                       Container(width: 1, height: 40, color: colorScheme.outlineVariant),
                       _buildStatColumn(
                         context,
-                        stats.totalNotas.toString(),
+                        widget.stats.totalNotas.toString(),
                         "Notas Fiscais",
                       ),
                     ],
@@ -116,28 +174,27 @@ class MercadoDetailsScreen extends StatelessWidget {
                       border: Border.all(color: colorScheme.outlineVariant),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    // TODO: A geocodificação real precisa das coordenadas.
-                    // Estamos usando um fallback visual por enquanto.
                     child: Stack(
                       children: [
                         FlutterMap(
+                          mapController: _mapController,
                           options: const MapOptions(
-                            initialCenter: LatLng(-22.9068, -43.1729), // RJ como Fallback
+                            initialCenter: LatLng(-22.9068, -43.1729), // Fallback inicial (RJ)
                             initialZoom: 13.0,
                           ),
                           children: [
                             TileLayer(
                               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.flutter_comprinhas',
+                              userAgentPackageName: 'io.github.kaducmk.comprinhas',
                             ),
-                            if (mercado.endereco != null && mercado.endereco!.isNotEmpty)
-                              const MarkerLayer(
+                            if (_coordinates != null)
+                              MarkerLayer(
                                 markers: [
                                   Marker(
-                                    point: LatLng(-22.9068, -43.1729), // RJ como Fallback
+                                    point: _coordinates!,
                                     width: 80,
                                     height: 80,
-                                    child: Icon(
+                                    child: const Icon(
                                       Icons.location_on,
                                       color: Colors.red,
                                       size: 40,
@@ -147,7 +204,23 @@ class MercadoDetailsScreen extends StatelessWidget {
                               ),
                           ],
                         ),
-                        // Overlay para indicar que é ilustrativo caso falte geocodificação
+                        if (_isLoadingCoords)
+                          Container(
+                            color: Colors.black12,
+                            child: const Center(child: CircularProgressIndicator()),
+                          ),
+                        if (!_isLoadingCoords && _coordinates == null && mercado.endereco != null)
+                          Container(
+                            color: Colors.black45,
+                            padding: const EdgeInsets.all(16),
+                            child: const Center(
+                              child: Text(
+                                "Não foi possível localizar o endereço no mapa",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
                         if (mercado.endereco == null || mercado.endereco!.isEmpty)
                           Container(
                             color: Colors.black45,
