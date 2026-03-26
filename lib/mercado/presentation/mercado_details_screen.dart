@@ -130,6 +130,21 @@ class MercadoDetailsScreen extends StatelessWidget {
                               urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                               userAgentPackageName: 'com.example.flutter_comprinhas',
                             ),
+                            if (mercado.endereco != null && mercado.endereco!.isNotEmpty)
+                              const MarkerLayer(
+                                markers: [
+                                  Marker(
+                                    point: LatLng(-22.9068, -43.1729), // RJ como Fallback
+                                    width: 80,
+                                    height: 80,
+                                    child: Icon(
+                                      Icons.location_on,
+                                      color: Colors.red,
+                                      size: 40,
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                         // Overlay para indicar que é ilustrativo caso falte geocodificação
