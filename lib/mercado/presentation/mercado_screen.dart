@@ -28,10 +28,15 @@ class MercadoScreen extends StatelessWidget {
               if (state.topMercados.isNotEmpty) ...[
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Text(
                       "Seus Mercados",
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -46,11 +51,16 @@ class MercadoScreen extends StatelessWidget {
                         final stats = state.topMercados[index];
                         return Container(
                           width: 220,
-                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 4,
+                            vertical: 4,
+                          ),
                           child: Card(
                             elevation: 2,
                             clipBehavior: Clip.antiAlias,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: InkWell(
                               onTap: () {
                                 context.push('/mercado-details', extra: stats);
@@ -59,52 +69,68 @@ class MercadoScreen extends StatelessWidget {
                                 padding: const EdgeInsets.all(12.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                  Row(
-                                    children: [
-                                      CircleAvatar(
-                                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                        child: Icon(
-                                          Icons.storefront, 
-                                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                    Row(
+                                      children: [
+                                        CircleAvatar(
+                                          backgroundColor:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primaryContainer,
+                                          child: Icon(
+                                            Icons.storefront,
+                                            color:
+                                                Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimaryContainer,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          stats.mercado.nome,
-                                          style: const TextStyle(fontWeight: FontWeight.bold),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            stats.mercado.nome,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "R\$ ${stats.valorTotalGasto.toStringAsFixed(2)}",
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Theme.of(context).colorScheme.primary,
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "R\$ ${stats.valorTotalGasto.toStringAsFixed(2)}",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                          ),
                                         ),
-                                      ),
-                                      Text(
-                                        "${stats.totalNotas} notas processadas",
-                                        style: Theme.of(context).textTheme.bodySmall,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                        Text(
+                                          "${stats.totalNotas} notas processadas",
+                                          style:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodySmall,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -191,10 +217,15 @@ class MercadoScreen extends StatelessWidget {
                 ),
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Text(
                     "Histórico de Notas",
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
@@ -234,9 +265,16 @@ class MercadoScreen extends StatelessWidget {
 
   Widget _buildSummaryCard(BuildContext context, MercadoState state) {
     final now = DateTime.now();
-    
+
     // Calcula metricas do mes atual
-    final notasDoMes = state.history.where((n) => n.confirmedAt.year == now.year && n.confirmedAt.month == now.month).toList();
+    final notasDoMes =
+        state.history
+            .where(
+              (n) =>
+                  n.confirmedAt.year == now.year &&
+                  n.confirmedAt.month == now.month,
+            )
+            .toList();
     final totalGastoMes = notasDoMes.fold(0.0, (sum, n) => sum + n.valorTotal);
     final totalItemsMes = notasDoMes.fold(0, (sum, n) => sum + n.items.length);
 
@@ -281,7 +319,11 @@ class MercadoScreen extends StatelessWidget {
                   "Notas",
                   notasDoMes.length.toString(),
                 ),
-                Container(width: 1, height: 40, color: Theme.of(context).colorScheme.outlineVariant),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
                 _buildStatItem(
                   context,
                   Icons.shopping_basket,
@@ -332,10 +374,12 @@ class MercadoScreen extends StatelessWidget {
         delegate: SliverChildBuilderDelegate((context, index) {
           final purchase = history[index];
           final mercadoName = purchase.mercado?.nome ?? 'Mercado Desconhecido';
-          
+
           return Card(
             margin: const EdgeInsets.symmetric(vertical: 6),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: () {
@@ -347,11 +391,17 @@ class MercadoScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.secondaryContainer,
                       child: Text(
-                        mercadoName.isNotEmpty ? mercadoName[0].toUpperCase() : 'M',
+                        mercadoName.isNotEmpty
+                            ? mercadoName[0].toUpperCase()
+                            : 'M',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onSecondaryContainer,
+                          color:
+                              Theme.of(
+                                context,
+                              ).colorScheme.onSecondaryContainer,
                           fontWeight: FontWeight.bold,
                           fontSize: 20,
                         ),
@@ -364,7 +414,10 @@ class MercadoScreen extends StatelessWidget {
                         children: [
                           Text(
                             mercadoName,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

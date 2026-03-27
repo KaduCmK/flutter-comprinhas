@@ -29,7 +29,10 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
 
   Future<void> _pickAndUploadImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
 
     if (pickedFile == null) return;
 
@@ -38,9 +41,12 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
     try {
       final repository = sl<ListasRepository>();
       final file = File(pickedFile.path);
-      
-      final uploadedUrl = await repository.uploadBackgroundImage(file, _currentList.id);
-      
+
+      final uploadedUrl = await repository.uploadBackgroundImage(
+        file,
+        _currentList.id,
+      );
+
       if (uploadedUrl != null) {
         await repository.upsertList(
           _currentList.name,
@@ -64,7 +70,9 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Imagem de fundo atualizada com sucesso!')),
+            const SnackBar(
+              content: Text('Imagem de fundo atualizada com sucesso!'),
+            ),
           );
         }
       } else {
@@ -72,9 +80,9 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Erro: $e')));
       }
     } finally {
       if (mounted) {
@@ -97,7 +105,11 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
             expandedHeight: 250.0,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 16, right: 16),
+              titlePadding: const EdgeInsets.only(
+                left: 16,
+                bottom: 16,
+                right: 16,
+              ),
               title: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,15 +119,34 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                     style: TextStyle(
                       color: hasImage ? Colors.white : null,
                       fontWeight: FontWeight.bold,
-                      shadows: hasImage ? [const Shadow(color: Colors.black54, blurRadius: 4)] : null,
+                      shadows:
+                          hasImage
+                              ? [
+                                const Shadow(
+                                  color: Colors.black54,
+                                  blurRadius: 4,
+                                ),
+                              ]
+                              : null,
                     ),
                   ),
                   Text(
                     "Criada em ${_currentList.createdAtFormatted}",
                     style: TextStyle(
                       fontSize: 10,
-                      color: hasImage ? Colors.white70 : colorScheme.onSurfaceVariant,
-                      shadows: hasImage ? [const Shadow(color: Colors.black54, blurRadius: 4)] : null,
+                      color:
+                          hasImage
+                              ? Colors.white70
+                              : colorScheme.onSurfaceVariant,
+                      shadows:
+                          hasImage
+                              ? [
+                                const Shadow(
+                                  color: Colors.black54,
+                                  blurRadius: 4,
+                                ),
+                              ]
+                              : null,
                     ),
                   ),
                 ],
@@ -127,8 +158,12 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                     Image.network(
                       _currentList.backgroundImage!,
                       fit: BoxFit.cover,
-                      frameBuilder:
-                          (context, child, frame, wasSynchronouslyLoaded) {
+                      frameBuilder: (
+                        context,
+                        child,
+                        frame,
+                        wasSynchronouslyLoaded,
+                      ) {
                         if (wasSynchronouslyLoaded) return child;
                         return AnimatedOpacity(
                           opacity: frame == null ? 0 : 1,
@@ -143,7 +178,11 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Colors.black54, Colors.transparent, Colors.black87],
+                          colors: [
+                            Colors.black54,
+                            Colors.transparent,
+                            Colors.black87,
+                          ],
                           stops: [0.0, 0.5, 1.0],
                         ),
                       ),
@@ -154,7 +193,9 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                       child: Icon(
                         Icons.shopping_basket,
                         size: 80,
-                        color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                        color: colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        ),
                       ),
                     ),
                   ],
@@ -162,17 +203,18 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                     Positioned(
                       top: MediaQuery.of(context).padding.top + 8,
                       right: 16,
-                      child: _isUploading
-                          ? const CircularProgressIndicator()
-                          : CircleAvatar(
-                              backgroundColor: colorScheme.surface,
-                              child: IconButton(
-                                icon: const Icon(Icons.add_photo_alternate),
-                                color: colorScheme.primary,
-                                tooltip: "Alterar imagem de fundo",
-                                onPressed: _pickAndUploadImage,
+                      child:
+                          _isUploading
+                              ? const CircularProgressIndicator()
+                              : CircleAvatar(
+                                backgroundColor: colorScheme.surface,
+                                child: IconButton(
+                                  icon: const Icon(Icons.add_photo_alternate),
+                                  color: colorScheme.primary,
+                                  tooltip: "Alterar imagem de fundo",
+                                  onPressed: _pickAndUploadImage,
+                                ),
                               ),
-                            ),
                     ),
                 ],
               ),
@@ -208,28 +250,40 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: _currentList.members.length,
-                            separatorBuilder: (context, index) => const Divider(),
+                            separatorBuilder:
+                                (context, index) => const Divider(),
                             itemBuilder: (context, index) {
                               final member = _currentList.members[index];
-                              final isMemberOwner = member.user.id == _currentList.ownerId;
-                              final url = member.user.userMetadata?["avatar_url"] ??
+                              final isMemberOwner =
+                                  member.user.id == _currentList.ownerId;
+                              final url =
+                                  member.user.userMetadata?["avatar_url"] ??
                                   member.user.userMetadata?["picture"];
-                              final name = member.user.userMetadata?["name"] ??
+                              final name =
+                                  member.user.userMetadata?["name"] ??
                                   member.user.userMetadata?["full_name"] ??
                                   'Usuário';
 
                               return ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 leading: CircleAvatar(
-                                  backgroundImage: url != null ? NetworkImage(url) : null,
-                                  child: url == null ? const Icon(Icons.person) : null,
+                                  backgroundImage:
+                                      url != null ? NetworkImage(url) : null,
+                                  child:
+                                      url == null
+                                          ? const Icon(Icons.person)
+                                          : null,
                                 ),
                                 title: Row(
                                   children: [
                                     Text(name),
                                     if (isMemberOwner) ...[
                                       const SizedBox(width: 4),
-                                      const Icon(Icons.workspace_premium, color: Colors.amber, size: 16),
+                                      const Icon(
+                                        Icons.workspace_premium,
+                                        color: Colors.amber,
+                                        size: 16,
+                                      ),
                                     ],
                                   ],
                                 ),
@@ -249,7 +303,11 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
                       onPressed: () {
                         // TODO: Implementar exclusão
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Use a tela inicial para excluir a lista.')),
+                          const SnackBar(
+                            content: Text(
+                              'Use a tela inicial para excluir a lista.',
+                            ),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.delete),

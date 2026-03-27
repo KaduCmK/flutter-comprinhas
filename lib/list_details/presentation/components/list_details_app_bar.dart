@@ -65,8 +65,12 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                   Image.network(
                     state.list!.backgroundImage!,
                     fit: BoxFit.cover,
-                    frameBuilder:
-                        (context, child, frame, wasSynchronouslyLoaded) {
+                    frameBuilder: (
+                      context,
+                      child,
+                      frame,
+                      wasSynchronouslyLoaded,
+                    ) {
                       if (wasSynchronouslyLoaded) return child;
                       return AnimatedOpacity(
                         opacity: frame == null ? 0 : 1,
@@ -78,18 +82,19 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                   ),
                 Container(
                   decoration: BoxDecoration(
-                    gradient: hasImage
-                        ? const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black87,
-                              Colors.black54,
-                              Colors.black87,
-                            ],
-                            stops: [0.0, 0.5, 1.0],
-                          )
-                        : null,
+                    gradient:
+                        hasImage
+                            ? const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black87,
+                                Colors.black54,
+                                Colors.black87,
+                              ],
+                              stops: [0.0, 0.5, 1.0],
+                            )
+                            : null,
                   ),
                   padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
                   child: Column(
@@ -122,9 +127,11 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: textTheme.headlineMedium?.copyWith(
-                                        color: hasImage
-                                            ? Colors.white
-                                            : colorScheme.onPrimaryContainer,
+                                        color:
+                                            hasImage
+                                                ? Colors.white
+                                                : colorScheme
+                                                    .onPrimaryContainer,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -133,9 +140,10 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                   Icon(
                                     Icons.info_outline,
                                     size: 20,
-                                    color: hasImage
-                                        ? Colors.white70
-                                        : colorScheme.primary,
+                                    color:
+                                        hasImage
+                                            ? Colors.white70
+                                            : colorScheme.primary,
                                   ),
                                 ],
                               ),
@@ -175,9 +183,10 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                 curve: Curves.easeOut,
                                 textStyle: textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  color: hasImage
-                                      ? Colors.white
-                                      : colorScheme.primary,
+                                  color:
+                                      hasImage
+                                          ? Colors.white
+                                          : colorScheme.primary,
                                 ),
                               ),
                             ],
@@ -190,9 +199,10 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                       Row(
                         children: [
                           IconButton.filled(
-                            onPressed: state.isParsingNlp
-                                ? null
-                                : () => showDialog(
+                            onPressed:
+                                state.isParsingNlp
+                                    ? null
+                                    : () => showDialog(
                                       context: context,
                                       builder: (_) {
                                         return BlocProvider.value(
@@ -212,8 +222,9 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                           Container(
                             height: 32,
                             width: 1,
-                            color: colorScheme.onPrimaryContainer
-                                .withValues(alpha: 0.2),
+                            color: colorScheme.onPrimaryContainer.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
@@ -231,13 +242,14 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                 decoration: InputDecoration(
                                   hintText: "Adicionar item",
                                   prefixIcon: ShaderMask(
-                                    shaderCallback: (bounds) => LinearGradient(
-                                      colors: [
-                                        colorScheme.primary,
-                                        colorScheme.secondary,
-                                        colorScheme.tertiary,
-                                      ],
-                                    ).createShader(bounds),
+                                    shaderCallback:
+                                        (bounds) => LinearGradient(
+                                          colors: [
+                                            colorScheme.primary,
+                                            colorScheme.secondary,
+                                            colorScheme.tertiary,
+                                          ],
+                                        ).createShader(bounds),
                                     child: const Icon(
                                       Icons.auto_awesome,
                                       color: Colors.white,
@@ -255,9 +267,10 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                                   ),
                                   suffixIcon: IconButton(
                                     icon: const Icon(Icons.send),
-                                    onPressed: state.isParsingNlp
-                                        ? null
-                                        : () => _submitNlp(context),
+                                    onPressed:
+                                        state.isParsingNlp
+                                            ? null
+                                            : () => _submitNlp(context),
                                     color: colorScheme.primary,
                                   ),
                                 ),

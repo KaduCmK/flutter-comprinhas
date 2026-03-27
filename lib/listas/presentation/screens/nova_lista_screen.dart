@@ -41,7 +41,10 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
 
     if (pickedFile != null) {
       setState(() {
@@ -70,10 +73,12 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
         imageFile: _selectedImage,
       ),
     );
-    
+
     // Mostramos snackbar para feedback
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(_isEditMode ? 'Salvando lista...' : 'Criando lista...')),
+      SnackBar(
+        content: Text(_isEditMode ? 'Salvando lista...' : 'Criando lista...'),
+      ),
     );
     context.pop();
   }
@@ -90,7 +95,10 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text("Nome da Lista", style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                "Nome da Lista",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _nameController,
@@ -98,7 +106,10 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
                 onSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 24),
-              Text("Imagem de fundo (opcional)", style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                "Imagem de fundo (opcional)",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
               InkWell(
                 onTap: _pickImage,
@@ -109,44 +120,52 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
                     color: colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: colorScheme.outlineVariant),
-                    image: _selectedImage != null
-                        ? DecorationImage(
-                            image: FileImage(_selectedImage!),
-                            fit: BoxFit.cover,
-                          )
-                        : _existingImageUrl != null
+                    image:
+                        _selectedImage != null
                             ? DecorationImage(
-                                image: NetworkImage(_existingImageUrl!),
-                                fit: BoxFit.cover,
-                              )
+                              image: FileImage(_selectedImage!),
+                              fit: BoxFit.cover,
+                            )
+                            : _existingImageUrl != null
+                            ? DecorationImage(
+                              image: NetworkImage(_existingImageUrl!),
+                              fit: BoxFit.cover,
+                            )
                             : null,
                   ),
-                  child: _selectedImage == null && _existingImageUrl == null
-                      ? Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate, size: 48, color: colorScheme.onSurfaceVariant),
-                            const SizedBox(height: 8),
-                            Text(
-                              "Toque para escolher da galeria",
-                              style: TextStyle(color: colorScheme.onSurfaceVariant),
-                            ),
-                          ],
-                        )
-                      : Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: CircleAvatar(
-                              backgroundColor: colorScheme.surface,
-                              child: IconButton(
-                                icon: const Icon(Icons.edit),
-                                onPressed: _pickImage,
-                                color: colorScheme.primary,
+                  child:
+                      _selectedImage == null && _existingImageUrl == null
+                          ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_photo_alternate,
+                                size: 48,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "Toque para escolher da galeria",
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          )
+                          : Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CircleAvatar(
+                                backgroundColor: colorScheme.surface,
+                                child: IconButton(
+                                  icon: const Icon(Icons.edit),
+                                  onPressed: _pickImage,
+                                  color: colorScheme.primary,
+                                ),
                               ),
                             ),
                           ),
-                        ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -157,9 +176,20 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
                   backgroundColor: colorScheme.primary,
                   foregroundColor: colorScheme.onPrimary,
                 ),
-                child: _isLoading 
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : Text(_isEditMode ? "Salvar" : "Criar Lista", style: const TextStyle(fontSize: 16)),
+                child:
+                    _isLoading
+                        ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                        : Text(
+                          _isEditMode ? "Salvar" : "Criar Lista",
+                          style: const TextStyle(fontSize: 16),
+                        ),
               ),
             ],
           ),

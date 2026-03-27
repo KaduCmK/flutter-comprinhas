@@ -38,6 +38,19 @@ class MercadoRepository {
     await _client.functions.invoke('scrape-nfce', body: {'chave_acesso': nfe});
   }
 
+  Future<PurchaseHistory> getNfeById(String notaFiscalId) async {
+    final response =
+        await _client
+            .from('notas_fiscais')
+            .select(
+              '*, users(*), mercados(*), itens_nota_fiscal(*, produtos(*))',
+            )
+            .eq('id', notaFiscalId)
+            .single();
+
+    return PurchaseHistory.fromMap(response);
+  }
+
   Future<List<PurchaseHistory>> getNfeHistory() async {
     // Busca notas fiscais, o nome do usuário que enviou, o mercado e os itens da nota com o nome dos produtos
     final response = await _client

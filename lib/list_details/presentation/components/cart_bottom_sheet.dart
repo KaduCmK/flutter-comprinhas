@@ -129,12 +129,31 @@ class CartBottomSheet extends StatelessWidget {
                       horizontal: 32,
                     ),
                     sliver: SliverToBoxAdapter(
-                      child: FilledButton.icon(
-                        onPressed:
-                            () =>
-                                context.read<CartBloc>().add(ConfirmPurchase()),
-                        icon: const Icon(Icons.payments),
-                        label: const Text("Finalizar Compras"),
+                      child: Column(
+                        children: [
+                          FilledButton.icon(
+                            onPressed:
+                                () => context.read<CartBloc>().add(
+                                  ConfirmPurchase(),
+                                ),
+                            icon: const Icon(Icons.payments),
+                            label: const Text("Finalizar compras"),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              final bloc = context.read<CartBloc>();
+                              final router = GoRouter.of(context);
+                              Navigator.of(context).pop();
+                              router.push(
+                                '/list/${bloc.listId}/close-with-nf',
+                                extra: bloc,
+                              );
+                            },
+                            icon: const Icon(Icons.receipt_long),
+                            label: const Text("Fechar compra com nota"),
+                          ),
+                        ],
                       ),
                     ),
                   ),

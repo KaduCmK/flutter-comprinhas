@@ -16,6 +16,8 @@ class MockUser extends Mock implements User {}
 void main() {
   setUpAll(() {
     registerFallbackValue(CartMode.shared);
+    registerFallbackValue(FakeRealtimeChannel());
+    registerFallbackValue(PostgresChangeEvent.all);
   });
 
   group('ListDetailsBloc', () {
@@ -48,6 +50,14 @@ void main() {
       });
 
       final mockChannel = MockRealtimeChannel();
+      when(
+        () => mockChannel.onPostgresChanges(
+          event: any(named: 'event'),
+          schema: any(named: 'schema'),
+          table: any(named: 'table'),
+          callback: any(named: 'callback'),
+        ),
+      ).thenReturn(mockChannel);
       when(() => mockChannel.subscribe(any())).thenReturn(mockChannel);
 
       when(() => mockSupabaseClient.auth).thenReturn(mockGotrueClient);

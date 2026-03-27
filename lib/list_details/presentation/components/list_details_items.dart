@@ -12,7 +12,8 @@ class ListDetailsItems extends StatefulWidget {
 }
 
 class _ListDetailsItemsState extends State<ListDetailsItems> {
-  final GlobalKey<SliverAnimatedListState> _listKey = GlobalKey<SliverAnimatedListState>();
+  final GlobalKey<SliverAnimatedListState> _listKey =
+      GlobalKey<SliverAnimatedListState>();
   final List<ListItem> _items = [];
 
   @override
@@ -68,9 +69,7 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
           item: item,
           inCart: false,
           onDelete: () {
-            context.read<ListDetailsBloc>().add(
-              RemoveItemFromList(item.id),
-            );
+            context.read<ListDetailsBloc>().add(RemoveItemFromList(item.id));
           },
           onEdit: () {
             // TODO: Implementar lógica de edição
@@ -100,7 +99,10 @@ class _ListDetailsItemsState extends State<ListDetailsItems> {
       final newItem = newItems[i];
       if (!_items.any((oi) => oi.id == newItem.id)) {
         _items.insert(i, newItem);
-        _listKey.currentState?.insertItem(i, duration: const Duration(milliseconds: 400));
+        _listKey.currentState?.insertItem(
+          i,
+          duration: const Duration(milliseconds: 400),
+        );
       }
     }
 

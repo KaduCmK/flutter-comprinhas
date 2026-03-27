@@ -92,30 +92,30 @@ class _GeminiBorderPainter extends CustomPainter {
     if (isParsing) {
       // Estado Carregando: Animação de rotação segmentada
       final double startAngle = animationValue * 4 * pi;
-      
-      final Paint paint = Paint()
-        ..shader = SweepGradient(
-          colors: [
-            ...gradientColors,
-            gradientColors.first.withValues(alpha: 0),
-            Colors.transparent,
-            gradientColors.first.withValues(alpha: 0),
-            ...gradientColors,
-          ],
-          stops: const [
-            0.0, 0.1, 0.4, 0.3, 0.5, 0.7, 0.8, 0.9, 1.0
-          ],
-          transform: GradientRotation(startAngle),
-        ).createShader(rect)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth
-        ..strokeCap = StrokeCap.round;
 
-      final Paint glowPaint = Paint()
-        ..shader = paint.shader
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth * 2
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+      final Paint paint =
+          Paint()
+            ..shader = SweepGradient(
+              colors: [
+                ...gradientColors,
+                gradientColors.first.withValues(alpha: 0),
+                Colors.transparent,
+                gradientColors.first.withValues(alpha: 0),
+                ...gradientColors,
+              ],
+              stops: const [0.0, 0.1, 0.4, 0.3, 0.5, 0.7, 0.8, 0.9, 1.0],
+              transform: GradientRotation(startAngle),
+            ).createShader(rect)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = borderWidth
+            ..strokeCap = StrokeCap.round;
+
+      final Paint glowPaint =
+          Paint()
+            ..shader = paint.shader
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = borderWidth * 2
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
       canvas.drawPath(path, glowPaint);
       canvas.drawPath(path, paint);
@@ -124,22 +124,27 @@ class _GeminiBorderPainter extends CustomPainter {
       // Usamos seno para criar o efeito pulsar (0 -> 1 -> 0)
       final double breath = (sin(animationValue * 2 * pi) + 1) / 2;
       final double opacity = 0.2 + (breath * 0.8);
-      
-      final Paint paint = Paint()
-        ..shader = LinearGradient(
-          colors: gradientColors.map((c) => c.withValues(alpha: opacity)).toList(),
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ).createShader(rect)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth
-        ..strokeCap = StrokeCap.round;
 
-      final Paint glowPaint = Paint()
-        ..shader = paint.shader
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = borderWidth * 1.5
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2 + (breath * 4));
+      final Paint paint =
+          Paint()
+            ..shader = LinearGradient(
+              colors:
+                  gradientColors
+                      .map((c) => c.withValues(alpha: opacity))
+                      .toList(),
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(rect)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = borderWidth
+            ..strokeCap = StrokeCap.round;
+
+      final Paint glowPaint =
+          Paint()
+            ..shader = paint.shader
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = borderWidth * 1.5
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, 2 + (breath * 4));
 
       canvas.drawPath(path, glowPaint);
       canvas.drawPath(path, paint);
@@ -148,6 +153,7 @@ class _GeminiBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _GeminiBorderPainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue || oldDelegate.isParsing != isParsing;
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.isParsing != isParsing;
   }
 }

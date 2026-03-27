@@ -36,23 +36,29 @@ class OverlappingAvatars extends StatelessWidget {
             height: size,
             width: size + (otherMembers.length - 1) * (size - overlap),
             child: Stack(
-              children: List.generate(otherMembers.length, (index) {
-                final member = otherMembers[index];
-                final url =
-                    member.user.userMetadata?["avatar_url"] ??
-                    member.user.userMetadata?["picture"];
-                return Positioned(
-                  left: index * (size - overlap),
-                  child: CircleAvatar(
-                    radius: size / 2,
-                    backgroundColor: Theme.of(context).colorScheme.surface,
-                    child: CircleAvatar(
-                      radius: size / 2 - 1.5,
-                      backgroundImage: url != null ? NetworkImage(url) : null,
-                      child: url == null ? const Icon(Icons.person, size: 16) : null,
-                    ),
-                  ),                );
-              }).reversed.toList(), // Reversed to have first items on top
+              children:
+                  List.generate(otherMembers.length, (index) {
+                    final member = otherMembers[index];
+                    final url =
+                        member.user.userMetadata?["avatar_url"] ??
+                        member.user.userMetadata?["picture"];
+                    return Positioned(
+                      left: index * (size - overlap),
+                      child: CircleAvatar(
+                        radius: size / 2,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        child: CircleAvatar(
+                          radius: size / 2 - 1.5,
+                          backgroundImage:
+                              url != null ? NetworkImage(url) : null,
+                          child:
+                              url == null
+                                  ? const Icon(Icons.person, size: 16)
+                                  : null,
+                        ),
+                      ),
+                    );
+                  }).reversed.toList(), // Reversed to have first items on top
             ),
           ),
       ],
@@ -71,7 +77,11 @@ class OverlappingAvatars extends StatelessWidget {
         Positioned(
           top: -8,
           right: -6,
-          child: Icon(Icons.workspace_premium, color: Colors.amber, size: size * 0.7),
+          child: Icon(
+            Icons.workspace_premium,
+            color: Colors.amber,
+            size: size * 0.7,
+          ),
         ),
       ],
     );

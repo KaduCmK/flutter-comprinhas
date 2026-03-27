@@ -27,7 +27,7 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
     try {
       final repo = sl<MercadoRepository>();
       final stats = await repo.getMercadoStatsById(widget.purchase.mercado!.id);
-      
+
       if (mounted && stats != null) {
         context.push('/mercado-details', extra: stats);
       }
@@ -52,9 +52,7 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: const Text("Nota Fiscal Eletrônica"),
-      ),
+      appBar: AppBar(title: const Text("Nota Fiscal Eletrônica")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -76,11 +74,16 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                       children: [
                         Text(
                           mercado?.nome.toUpperCase() ?? "MERCADO DESCONHECIDO",
-                          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         if (mercado?.cnpj != null)
-                          Text("CNPJ: ${mercado!.cnpj}", style: textTheme.bodySmall),
+                          Text(
+                            "CNPJ: ${mercado!.cnpj}",
+                            style: textTheme.bodySmall,
+                          ),
                         if (mercado?.endereco != null)
                           Text(
                             mercado!.endereco!,
@@ -90,29 +93,44 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                         const Divider(height: 24),
                         const Text(
                           "Extrato de Nota Fiscal de Consumidor Eletrônica",
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildNfInfo("DATA", DateFormat('dd/MM/yyyy HH:mm').format(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt)),
-                            _buildNfInfo("USUÁRIO", widget.purchase.confirmedBy?.toUpperCase() ?? "N/A"),
+                            _buildNfInfo(
+                              "DATA",
+                              DateFormat('dd/MM/yyyy HH:mm').format(
+                                widget.purchase.dataEmissao ??
+                                    widget.purchase.confirmedAt,
+                              ),
+                            ),
+                            _buildNfInfo(
+                              "USUÁRIO",
+                              widget.purchase.confirmedBy?.toUpperCase() ??
+                                  "N/A",
+                            ),
                           ],
                         ),
                       ],
                     ),
                     if (_isNavigatingToMercado)
                       const Positioned.fill(
-                        child: Center(
-                          child: CircularProgressIndicator(),
-                        ),
+                        child: Center(child: CircularProgressIndicator()),
                       )
                     else if (mercado != null)
                       const Positioned(
                         top: 0,
                         right: 0,
-                        child: Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+                        child: Icon(
+                          Icons.chevron_right,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
                       ),
                   ],
                 ),
@@ -121,57 +139,166 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
             const SizedBox(height: 24),
 
             // Tabela de Itens
-            const Text("DETALHE DOS ITENS", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+            const Text(
+              "DETALHE DOS ITENS",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+            ),
             const Divider(thickness: 2),
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Expanded(flex: 1, child: Text("CÓD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
-                  Expanded(flex: 4, child: Text("DESCRIÇÃO", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold))),
-                  Expanded(flex: 1, child: Text("QTD", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
-                  Expanded(flex: 1, child: Text("UN", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.center)),
-                  Expanded(flex: 2, child: Text("VLR.UN", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
-                  Expanded(flex: 2, child: Text("TOTAL", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      "CÓD",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: Text(
+                      "DESCRIÇÃO",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      "QTD",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Text(
+                      "UN",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "VLR.UN",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "TOTAL",
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.right,
+                    ),
+                  ),
                 ],
               ),
             ),
             const Divider(),
-            
+
             ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.purchase.items.length,
-              separatorBuilder: (context, index) => const Divider(height: 1, indent: 0),
+              separatorBuilder:
+                  (context, index) => const Divider(height: 1, indent: 0),
               itemBuilder: (context, index) {
                 final item = widget.purchase.items[index];
-                final double unitPrice = item.amount > 0 ? (item.valorTotal / item.amount) : 0;
+                final double unitPrice =
+                    item.amount > 0 ? (item.valorTotal / item.amount) : 0;
 
                 String displayCode = "---";
                 if (item.codigo != null && item.codigo!.isNotEmpty) {
-                  displayCode = item.codigo!.length > 4 ? item.codigo!.substring(0, 4) : item.codigo!;
+                  displayCode =
+                      item.codigo!.length > 4
+                          ? item.codigo!.substring(0, 4)
+                          : item.codigo!;
                 }
 
                 return InkWell(
-                  onTap: item.produtoId != null ? () => _showPriceEvolution(context, item) : null,
+                  onTap:
+                      item.produtoId != null
+                          ? () => _showPriceEvolution(context, item)
+                          : null,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                       children: [
-                        Expanded(flex: 1, child: Text(displayCode, style: const TextStyle(fontSize: 10))),
                         Expanded(
-                          flex: 4, 
+                          flex: 1,
                           child: Text(
-                            item.name.toUpperCase(), 
-                            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+                            displayCode,
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        ),
+                        Expanded(
+                          flex: 4,
+                          child: Text(
+                            item.name.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                          )
+                          ),
                         ),
-                        Expanded(flex: 1, child: Text(item.amount.toString(), style: const TextStyle(fontSize: 10), textAlign: TextAlign.right)),
-                        Expanded(flex: 1, child: Text(item.unit?.abbreviation.toUpperCase() ?? "UN", style: const TextStyle(fontSize: 10), textAlign: TextAlign.center)),
-                        Expanded(flex: 2, child: Text(unitPrice.toStringAsFixed(2), style: const TextStyle(fontSize: 10), textAlign: TextAlign.right)),
-                        Expanded(flex: 2, child: Text(item.valorTotal.toStringAsFixed(2), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold), textAlign: TextAlign.right)),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            item.amount.toString(),
+                            style: const TextStyle(fontSize: 10),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            item.unit?.abbreviation.toUpperCase() ?? "UN",
+                            style: const TextStyle(fontSize: 10),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            unitPrice.toStringAsFixed(2),
+                            style: const TextStyle(fontSize: 10),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                        Expanded(
+                          flex: 2,
+                          child: Text(
+                            item.valorTotal.toStringAsFixed(2),
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -179,12 +306,20 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
               },
             ),
             const Divider(thickness: 2),
-            
+
             // Totais
             const SizedBox(height: 16),
-            _buildTotalRow("Qtd. total de itens", widget.purchase.items.length.toString()),
-            _buildTotalRow("Valor total R\$", widget.purchase.valorTotal.toStringAsFixed(2), isBold: true, fontSize: 18),
-            
+            _buildTotalRow(
+              "Qtd. total de itens",
+              widget.purchase.items.length.toString(),
+            ),
+            _buildTotalRow(
+              "Valor total R\$",
+              widget.purchase.valorTotal.toStringAsFixed(2),
+              isBold: true,
+              fontSize: 18,
+            ),
+
             const SizedBox(height: 24),
 
             // Chave de Acesso (Movida para baixo dos itens)
@@ -192,16 +327,27 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("CHAVE DE ACESSO", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                    const Text(
+                      "CHAVE DE ACESSO",
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 4),
                     Text(
-                      widget.purchase.chaveAcesso!.replaceAllMapped(RegExp(r".{4}"), (match) => "${match.group(0)} "),
+                      widget.purchase.chaveAcesso!.replaceAllMapped(
+                        RegExp(r".{4}"),
+                        (match) => "${match.group(0)} ",
+                      ),
                       style: const TextStyle(fontSize: 11, letterSpacing: 1),
                     ),
                   ],
@@ -216,7 +362,10 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                   children: [
                     const Icon(Icons.qr_code_2, size: 100),
                     const SizedBox(height: 8),
-                    Text("Consulta via QR Code ou Chave de Acesso", style: textTheme.bodySmall),
+                    Text(
+                      "Consulta via QR Code ou Chave de Acesso",
+                      style: textTheme.bodySmall,
+                    ),
                   ],
                 ),
               ),
@@ -231,20 +380,44 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.grey)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 8,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,
+          ),
+        ),
         Text(value, style: const TextStyle(fontSize: 10)),
       ],
     );
   }
 
-  Widget _buildTotalRow(String label, String value, {bool isBold = false, double fontSize = 14}) {
+  Widget _buildTotalRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    double fontSize = 14,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: fontSize)),
-          Text(value, style: TextStyle(fontWeight: isBold ? FontWeight.bold : FontWeight.normal, fontSize: fontSize)),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: fontSize,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: fontSize,
+            ),
+          ),
         ],
       ),
     );
@@ -255,10 +428,12 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => PriceEvolutionSheet(
-        item: item,
-        currentPurchaseDate: widget.purchase.dataEmissao ?? widget.purchase.confirmedAt,
-      ),
+      builder:
+          (context) => PriceEvolutionSheet(
+            item: item,
+            currentPurchaseDate:
+                widget.purchase.dataEmissao ?? widget.purchase.confirmedAt,
+          ),
     );
   }
 }
@@ -288,20 +463,21 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
     sl<MercadoRepository>()
         .getProductPriceHistory(widget.item.produtoId!)
         .then((data) {
-      if (mounted) {
-        setState(() {
-          _history = data;
-          _loading = false;
+          if (mounted) {
+            setState(() {
+              _history = data;
+              _loading = false;
+            });
+          }
+        })
+        .catchError((e) {
+          if (mounted) {
+            setState(() {
+              _error = e;
+              _loading = false;
+            });
+          }
         });
-      }
-    }).catchError((e) {
-      if (mounted) {
-        setState(() {
-          _error = e;
-          _loading = false;
-        });
-      }
-    });
   }
 
   @override
@@ -311,17 +487,21 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
       minChildSize: 0.4,
       maxChildSize: 0.9,
       expand: false,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : _error != null
-                ? _buildError(context)
-                : _buildContent(context, scrollController, _history ?? []),
-      ),
+      builder:
+          (context, scrollController) => Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child:
+                _loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _error != null
+                    ? _buildError(context)
+                    : _buildContent(context, scrollController, _history ?? []),
+          ),
     );
   }
 
@@ -333,9 +513,16 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
         children: [
           const Icon(Icons.error_outline, color: Colors.red, size: 48),
           const SizedBox(height: 16),
-          Text("Erro ao carregar histórico", style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            "Erro ao carregar histórico",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 8),
-          Text("$_error", textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
+          Text(
+            "$_error",
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12),
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => Navigator.pop(context),
@@ -364,7 +551,10 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const Divider(height: 32),
-          const Text("Evolução de Preços", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            "Evolução de Preços",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
           if (history.isEmpty)
             const Padding(
@@ -374,7 +564,9 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
           else if (history.length < 2)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: Text("Histórico insuficiente para gerar gráfico.")),
+              child: Center(
+                child: Text("Histórico insuficiente para gerar gráfico."),
+              ),
             )
           else
             _buildChart(context, history, colorScheme),
@@ -394,31 +586,40 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
     ColorScheme colorScheme,
   ) {
     // Round to 2 decimals for calculations and display
-    final cleanHistory = history.map((e) {
-      final double rawPrice = e['preco_unitario'] as double;
-      return {
-        ...e,
-        'preco_unitario': double.parse(rawPrice.toStringAsFixed(2)),
-      };
-    }).toList();
+    final cleanHistory =
+        history.map((e) {
+          final double rawPrice = e['preco_unitario'] as double;
+          return {
+            ...e,
+            'preco_unitario': double.parse(rawPrice.toStringAsFixed(2)),
+          };
+        }).toList();
 
-    final prices = cleanHistory
-        .map((e) => e['preco_unitario'] as double)
-        .where((p) => p.isFinite)
-        .toList();
+    final prices =
+        cleanHistory
+            .map((e) => e['preco_unitario'] as double)
+            .where((p) => p.isFinite)
+            .toList();
 
     final double minPrice = prices.reduce((a, b) => a < b ? a : b);
     final double maxPrice = prices.reduce((a, b) => a > b ? a : b);
     final double range = maxPrice - minPrice;
 
     final double padding = range < 1e-9 ? 1.0 : range * 0.3;
-    final double effectiveMinY = (minPrice - padding).clamp(0.0, double.infinity);
+    final double effectiveMinY = (minPrice - padding).clamp(
+      0.0,
+      double.infinity,
+    );
     final double effectiveMaxY = maxPrice + padding;
 
     final double rawInterval = (effectiveMaxY - effectiveMinY) / 4;
-    final double yInterval = (rawInterval.isFinite && rawInterval > 1e-9) ? rawInterval : 1.0;
+    final double yInterval =
+        (rawInterval.isFinite && rawInterval > 1e-9) ? rawInterval : 1.0;
 
-    final double xInterval = (cleanHistory.length / 4).ceilToDouble().clamp(1.0, double.infinity);
+    final double xInterval = (cleanHistory.length / 4).ceilToDouble().clamp(
+      1.0,
+      double.infinity,
+    );
 
     return Container(
       height: 250,
@@ -432,19 +633,25 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
           LineChartData(
             lineTouchData: LineTouchData(
               touchTooltipData: LineTouchTooltipData(
-                getTooltipColor: (touchedSpot) => colorScheme.secondaryContainer,
+                getTooltipColor:
+                    (touchedSpot) => colorScheme.secondaryContainer,
                 getTooltipItems: (List<LineBarSpot> touchedSpots) {
                   return touchedSpots.map((LineBarSpot touchedSpot) {
                     final int idx = touchedSpot.x.toInt();
                     final date = cleanHistory[idx]['data'] as DateTime;
                     return LineTooltipItem(
                       'R\$ ${touchedSpot.y.toStringAsFixed(2)}\n',
-                      TextStyle(color: colorScheme.onSecondaryContainer, fontWeight: FontWeight.bold),
+                      TextStyle(
+                        color: colorScheme.onSecondaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
                       children: [
                         TextSpan(
                           text: DateFormat('dd/MM/yyyy').format(date),
                           style: TextStyle(
-                            color: colorScheme.onSecondaryContainer.withValues(alpha: 0.7),
+                            color: colorScheme.onSecondaryContainer.withValues(
+                              alpha: 0.7,
+                            ),
                             fontWeight: FontWeight.normal,
                             fontSize: 10,
                           ),
@@ -462,10 +669,11 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
             gridData: FlGridData(
               show: true,
               drawVerticalLine: false,
-              getDrawingHorizontalLine: (value) => FlLine(
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                strokeWidth: 1,
-              ),
+              getDrawingHorizontalLine:
+                  (value) => FlLine(
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    strokeWidth: 1,
+                  ),
             ),
             titlesData: FlTitlesData(
               bottomTitles: AxisTitles(
@@ -475,13 +683,17 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
                   interval: xInterval,
                   getTitlesWidget: (value, meta) {
                     final int idx = value.toInt();
-                    if (idx < 0 || idx >= cleanHistory.length) return const SizedBox.shrink();
+                    if (idx < 0 || idx >= cleanHistory.length)
+                      return const SizedBox.shrink();
                     final date = cleanHistory[idx]['data'] as DateTime;
                     return SideTitleWidget(
                       meta: meta,
                       child: Text(
                         DateFormat('dd/MM').format(date),
-                        style: TextStyle(fontSize: 10, color: colorScheme.outline),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colorScheme.outline,
+                        ),
                       ),
                     );
                   },
@@ -493,25 +705,36 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
                   reservedSize: 50,
                   interval: yInterval,
                   getTitlesWidget: (value, meta) {
-                    if (value == meta.min || value == meta.max) return const SizedBox.shrink();
+                    if (value == meta.min || value == meta.max)
+                      return const SizedBox.shrink();
                     return SideTitleWidget(
                       meta: meta,
                       child: Text(
                         "R\$${value.toStringAsFixed(2)}",
-                        style: TextStyle(fontSize: 10, color: colorScheme.outline),
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: colorScheme.outline,
+                        ),
                       ),
                     );
                   },
                 ),
               ),
-              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
             ),
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
                 spots: List.generate(cleanHistory.length, (i) {
-                  return FlSpot(i.toDouble(), cleanHistory[i]['preco_unitario'] as double);
+                  return FlSpot(
+                    i.toDouble(),
+                    cleanHistory[i]['preco_unitario'] as double,
+                  );
                 }),
                 isCurved: true,
                 preventCurveOverShooting: true,
@@ -522,7 +745,9 @@ class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
                   show: true,
                   getDotPainter: (spot, percent, barData, idx) {
                     final date = cleanHistory[idx]['data'] as DateTime;
-                    final bool isCurrent = date.isAtSameMomentAs(widget.currentPurchaseDate);
+                    final bool isCurrent = date.isAtSameMomentAs(
+                      widget.currentPurchaseDate,
+                    );
                     return FlDotCirclePainter(
                       radius: isCurrent ? 6 : 4,
                       color: isCurrent ? Colors.orange : colorScheme.primary,

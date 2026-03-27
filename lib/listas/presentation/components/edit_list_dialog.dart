@@ -33,7 +33,7 @@ class _EditListDialogState extends State<EditListDialog> {
     if (newName.isEmpty) return;
 
     setState(() => _isSaving = true);
-    
+
     context.read<ListasBloc>().add(
       UpsertListEvent(newName, listId: widget.list.id),
     );
@@ -75,7 +75,9 @@ class _EditListDialogState extends State<EditListDialog> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return BlocListener<ListasBloc, ListasState>(
-      listenWhen: (previous, current) => previous is ListasLoading && current is! ListasLoading,
+      listenWhen:
+          (previous, current) =>
+              previous is ListasLoading && current is! ListasLoading,
       listener: (context, state) {
         if (state is ListasLoaded) {
           if (mounted) Navigator.pop(context);

@@ -33,8 +33,9 @@ class ListItemCard extends StatelessWidget {
 
     final bool priceForecastEnabled =
         listDetailsState.list?.priceForecastEnabled ?? false;
-    final bool hasAnySuggestedPrice =
-        listDetailsState.items.any((i) => i.precoSugerido != null);
+    final bool hasAnySuggestedPrice = listDetailsState.items.any(
+      (i) => i.precoSugerido != null,
+    );
 
     final bool isSuggestingPrice =
         listDetailsState.suggestingPriceItemId == item.id;

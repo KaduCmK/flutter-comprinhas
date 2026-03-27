@@ -65,19 +65,20 @@ class ListCard extends StatelessWidget {
               ),
             Container(
               decoration: BoxDecoration(
-                gradient: hasImage
-                    ? const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black87,
-                          Colors.black12,
-                          Colors.black54,
-                          Colors.black87,
-                        ],
-                        stops: [0.0, 0.3, 0.7, 1.0],
-                      )
-                    : null,
+                gradient:
+                    hasImage
+                        ? const LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black87,
+                            Colors.black12,
+                            Colors.black54,
+                            Colors.black87,
+                          ],
+                          stops: [0.0, 0.3, 0.7, 1.0],
+                        )
+                        : null,
               ),
               padding: const EdgeInsets.all(12),
               child: Column(

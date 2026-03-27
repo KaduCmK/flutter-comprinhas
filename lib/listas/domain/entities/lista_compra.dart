@@ -45,7 +45,8 @@ class ListaCompra extends Equatable {
   String get createdAtFormatted => DateFormat('dd/MM/yyyy').format(createdAt);
 
   factory ListaCompra.fromMap(Map<String, dynamic> map) {
-    final membersList = (map['list_members'] as List<dynamic>?)
+    final membersList =
+        (map['list_members'] as List<dynamic>?)
             ?.map((e) => ListMember.fromMap(e as Map<String, dynamic>))
             .toList() ??
         [];

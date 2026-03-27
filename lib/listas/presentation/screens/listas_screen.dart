@@ -73,17 +73,17 @@ class ListasScreen extends StatelessWidget {
           slivers: [
             BlocBuilder<ListasBloc, ListasState>(
               builder: (context, state) {
-                if (state is ListasInitial || (state is ListasLoading && state.lists.isEmpty)) {
-                  return const SliverFillRemaining(
-                    child: HomeShimmer(),
-                  );
+                if (state is ListasInitial ||
+                    (state is ListasLoading && state.lists.isEmpty)) {
+                  return const SliverFillRemaining(child: HomeShimmer());
                 }
                 return const SliverToBoxAdapter(child: SizedBox.shrink());
               },
             ),
             BlocBuilder<ListasBloc, ListasState>(
               builder: (context, state) {
-                if (state is ListasLoading && state.lists.isEmpty || state is ListasInitial) {
+                if (state is ListasLoading && state.lists.isEmpty ||
+                    state is ListasInitial) {
                   return const SliverToBoxAdapter(child: SizedBox.shrink());
                 }
                 return SliverMainAxisGroup(
@@ -93,7 +93,8 @@ class ListasScreen extends StatelessWidget {
                       sliver: SliverToBoxAdapter(
                         child: BlocBuilder<GlobalCartBloc, GlobalCartState>(
                           builder: (context, state) {
-                            if (state.isLoading) return const LinearProgressIndicator();
+                            if (state.isLoading)
+                              return const LinearProgressIndicator();
                             if (state.error != null) return Text(state.error!);
 
                             final itemsCount = state.cartItems.length;
@@ -106,7 +107,10 @@ class ListasScreen extends StatelessWidget {
                                     spacing: 8,
                                     children: [
                                       const Icon(Icons.shopping_cart, size: 28),
-                                      Text("Carrinho", style: textTheme.titleLarge),
+                                      Text(
+                                        "Carrinho",
+                                        style: textTheme.titleLarge,
+                                      ),
                                       const Icon(Icons.chevron_right),
                                     ],
                                   ),
@@ -129,7 +133,10 @@ class ListasScreen extends StatelessWidget {
                       ),
                     ),
                     SliverToBoxAdapter(
-                      child: Text("Suas Listas", style: textTheme.headlineSmall),
+                      child: Text(
+                        "Suas Listas",
+                        style: textTheme.headlineSmall,
+                      ),
                     ),
                     if (state.lists.isEmpty)
                       const SliverFillRemaining(
@@ -137,11 +144,12 @@ class ListasScreen extends StatelessWidget {
                       )
                     else
                       SliverGrid.builder(
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          crossAxisCount: 2,
-                        ),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                              mainAxisSpacing: 4,
+                              crossAxisSpacing: 4,
+                              crossAxisCount: 2,
+                            ),
                         itemCount: state.lists.length,
                         itemBuilder: (context, index) {
                           final list = state.lists[index];

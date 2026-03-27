@@ -17,6 +17,7 @@ import 'package:flutter_comprinhas/home/presentation/screens/settings_screen.dar
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/close_purchase_with_nfe_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_history_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_info_screen.dart';
@@ -129,6 +130,16 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/list/:listId/close-with-nf',
+      builder: (context, state) {
+        final cartBloc = state.extra as CartBloc;
+        return BlocProvider.value(
+          value: cartBloc,
+          child: const ClosePurchaseWithNfeScreen(),
+        );
+      },
+    ),
+    GoRoute(
       path: '/list/:listId/info',
       builder: (context, state) {
         final list = state.extra as ListaCompra;
@@ -176,8 +187,14 @@ final _router = GoRouter(
     GoRoute(
       path: '/enviar-nfe',
       builder: (context, state) {
-        final bloc = state.extra as MercadoBloc;
-        return BlocProvider.value(value: bloc, child: const EnviarNotaScreen());
+        final extra = state.extra;
+        if (extra is MercadoBloc) {
+          return BlocProvider.value(
+            value: extra,
+            child: const EnviarNotaScreen(),
+          );
+        }
+        return const EnviarNotaScreen(returnAccessKey: true);
       },
     ),
     GoRoute(
