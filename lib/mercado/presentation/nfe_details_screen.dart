@@ -240,73 +240,103 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.6,
+        minChildSize: 0.4,
         maxChildSize: 0.9,
         expand: false,
-        builder: (context, scrollController) => FutureBuilder<List<Map<String, dynamic>>>(
-          future: sl<MercadoRepository>().getProductPriceHistory(item.produtoId!),
-          builder: (context, snapshot) {
-            final colorScheme = Theme.of(context).colorScheme;
-            
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    item.name.toUpperCase(),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  const Text("Evolução de Preços", style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 16),
-                  if (snapshot.connectionState == ConnectionState.waiting)
-                    const Center(child: CircularProgressIndicator())
-                  else if (snapshot.hasError)
-                    Text("Erro: ${snapshot.error}")
-                  else if (!snapshot.hasData || snapshot.data!.isEmpty)
-                    const Text("Sem dados históricos.")
-                  else ...[
-                    Expanded(
-                      child: ListView.builder(
-                        controller: scrollController,
-                        itemCount: snapshot.data!.length,
-                        itemBuilder: (context, index) {
-                          final hist = snapshot.data![index];
-                          final double price = hist['preco_unitario'];
-                          final DateTime date = hist['data'];
-                          final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: sl<MercadoRepository>().getProductPriceHistory(item.produtoId!),
+            builder: (context, snapshot) {
+              final colorScheme = Theme.of(context).colorScheme;
+              
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                          return ListTile(
-                            leading: Icon(
-                              Icons.history, 
-                              color: isCurrent ? colorScheme.primary : null
-                            ),
-                            title: Text(
-                              "R\$ ${price.toStringAsFixed(2)}",
-                              style: TextStyle(
-                                fontWeight: isCurrent ? FontWeight.bold : null,
-                                color: isCurrent ? colorScheme.primary : null
-                              ),
-                            ),
-                            subtitle: Text(DateFormat('dd/MM/yyyy').format(date)),
-                            trailing: isCurrent ? const Chip(label: Text("Nesta nota", style: TextStyle(fontSize: 10))) : null,
-                          );
-                        },
+              if (snapshot.hasError) {
+                return Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text("Erro: ${snapshot.error}"),
+                );
+              }
+
+              final history = snapshot.data ?? [];
+
+              return ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.all(24),
+                itemCount: history.isEmpty ? 5 : history.length + 4,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return Text(
+                      item.name.toUpperCase(),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    );
+                  }
+                  if (index == 1) return const Divider();
+                  if (index == 2) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text("Evolução de Preços", style: TextStyle(fontWeight: FontWeight.bold)),
+                    );
+                  }
+                  
+                  if (history.isEmpty) {
+                    if (index == 3) return const Text("Sem dados históricos.");
+                    if (index == 4) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 24),
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Fechar"),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }
+
+                  if (index < history.length + 3) {
+                    final hist = history[index - 3];
+                    final double price = hist['preco_unitario'];
+                    final DateTime date = hist['data'];
+                    final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
+
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        Icons.history, 
+                        color: isCurrent ? colorScheme.primary : null
                       ),
+                      title: Text(
+                        "R\$ ${price.toStringAsFixed(2)}",
+                        style: TextStyle(
+                          fontWeight: isCurrent ? FontWeight.bold : null,
+                          color: isCurrent ? colorScheme.primary : null
+                        ),
+                      ),
+                      subtitle: Text(DateFormat('dd/MM/yyyy').format(date)),
+                      trailing: isCurrent ? const Chip(label: Text("Nesta nota", style: TextStyle(fontSize: 10))) : null,
+                    );
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 24),
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Fechar"),
                     ),
-                  ],
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Fechar"),
-                  ),
-                ],
-              ),
-            );
-          }
+                  );
+                },
+              );
+            }
+          ),
         ),
       ),
     );
