@@ -318,18 +318,32 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
 
                   // Gráfico de evolução
                   if (index == 3) {
+                    final double firstTimestamp = (history.first['data'] as DateTime).millisecondsSinceEpoch.toDouble();
+                    final double lastTimestamp = (history.last['data'] as DateTime).millisecondsSinceEpoch.toDouble();
+                    
+                    // Se só tiver um ponto, não faz sentido mostrar gráfico de linha curva
+                    if (firstTimestamp == lastTimestamp) {
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 32),
+                        child: Center(child: Text("Histórico insuficiente para gerar gráfico.")),
+                      );
+                    }
+
                     return Container(
                       height: 200,
-                      padding: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
+                      padding: const EdgeInsets.only(right: 24, top: 16, bottom: 16),
                       child: LineChart(
                         LineChartData(
+                          minX: firstTimestamp,
+                          maxX: lastTimestamp,
                           gridData: const FlGridData(show: true, drawVerticalLine: false),
                           titlesData: FlTitlesData(
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 reservedSize: 22,
-                                interval: (history.last['data'] as DateTime).millisecondsSinceEpoch.toDouble() - (history.first['data'] as DateTime).millisecondsSinceEpoch.toDouble() > 0 ? ((history.last['data'] as DateTime).millisecondsSinceEpoch.toDouble() - (history.first['data'] as DateTime).millisecondsSinceEpoch.toDouble()) / 3 : 1,
+                                // Intervalo de segurança para não travar a UI
+                                interval: (lastTimestamp - firstTimestamp) / 2,
                                 getTitlesWidget: (value, meta) {
                                   final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
                                   return Padding(
@@ -373,7 +387,7 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                                   h['preco_unitario'] as double,
                                 );
                               }).toList(),
-                              isCurved: true,
+                              isCurved: history.length > 2,
                               color: colorScheme.primary,
                               barWidth: 3,
                               isStrokeCapRound: true,
