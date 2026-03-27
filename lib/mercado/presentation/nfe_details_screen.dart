@@ -318,11 +318,7 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
 
                   // Gráfico de evolução
                   if (index == 3) {
-                    final double firstTimestamp = (history.first['data'] as DateTime).millisecondsSinceEpoch.toDouble();
-                    final double lastTimestamp = (history.last['data'] as DateTime).millisecondsSinceEpoch.toDouble();
-                    
-                    // Se só tiver um ponto, não faz sentido mostrar gráfico de linha curva
-                    if (firstTimestamp == lastTimestamp) {
+                    if (history.length < 2) {
                       return const Padding(
                         padding: EdgeInsets.symmetric(vertical: 32),
                         child: Center(child: Text("Histórico insuficiente para gerar gráfico.")),
@@ -334,18 +330,25 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                       padding: const EdgeInsets.only(right: 24, top: 16, bottom: 16),
                       child: LineChart(
                         LineChartData(
-                          minX: firstTimestamp,
-                          maxX: lastTimestamp,
+                          minX: 0,
+                          maxX: (history.length - 1).toDouble(),
                           gridData: const FlGridData(show: true, drawVerticalLine: false),
                           titlesData: FlTitlesData(
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 reservedSize: 22,
-                                // Intervalo de segurança para não travar a UI
-                                interval: (lastTimestamp - firstTimestamp) / 2,
+                                interval: 1, // Um título por ponto
                                 getTitlesWidget: (value, meta) {
-                                  final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                                  final int index = value.toInt();
+                                  if (index < 0 || index >= history.length) return const SizedBox.shrink();
+                                  
+                                  // Mostrar apenas alguns labels se houver muitos pontos
+                                  if (history.length > 5 && index % (history.length ~/ 3) != 0 && index != history.length - 1) {
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  final date = history[index]['data'] as DateTime;
                                   return Padding(
                                     padding: const EdgeInsets.only(top: 4.0),
                                     child: Text(
@@ -380,21 +383,18 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                           ),
                           lineBarsData: [
                             LineChartBarData(
-                              spots: history.map((h) {
-                                final date = h['data'] as DateTime;
-                                return FlSpot(
-                                  date.millisecondsSinceEpoch.toDouble(),
-                                  h['preco_unitario'] as double,
-                                );
-                              }).toList(),
-                              isCurved: history.length > 2,
+                              spots: List.generate(history.length, (i) {
+                                return FlSpot(i.toDouble(), history[i]['preco_unitario'] as double);
+                              }),
+                              isCurved: true,
+                              preventCurveOverShooting: true,
                               color: colorScheme.primary,
                               barWidth: 3,
                               isStrokeCapRound: true,
                               dotData: FlDotData(
                                 show: true,
                                 getDotPainter: (spot, percent, barData, index) {
-                                  final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
+                                  final date = history[index]['data'] as DateTime;
                                   final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
                                   return FlDotCirclePainter(
                                     radius: isCurrent ? 6 : 3,
