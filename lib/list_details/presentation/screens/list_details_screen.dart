@@ -16,9 +16,6 @@ class ListDetailsScreen extends StatefulWidget {
 }
 
 class _ListDetailsScreenState extends State<ListDetailsScreen> {
-  // A _listKey foi removida pois não é mais necessária com a simplificação
-  // final _listKey = GlobalKey<SliverAnimatedListState>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -55,8 +55,11 @@ dependencies:
   logger: ^2.6.1
   mobile_scanner: ^7.0.1
   qr_flutter: ^4.1.0
+  sensors_plus: ^6.1.1
+  shared_preferences: ^2.5.3
   shimmer: ^3.0.0
   supabase_flutter: ^2.10.3
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   bloc_test: ^10.0.0

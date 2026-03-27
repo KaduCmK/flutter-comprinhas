@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -189,11 +188,7 @@ class ListDetailsAppbarActions extends StatelessWidget {
           },
         ),
         IconButton(
-          onPressed:
-              () => context.push(
-                '/list/${state.list!.id}/history',
-                extra: context.read<HistoryBloc>(),
-              ),
+          onPressed: () => context.push('/list/${state.list!.id}/history'),
           tooltip: "Histórico",
           icon: Icon(Icons.history),
         ),

@@ -255,200 +255,295 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
-        expand: false,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      builder: (context) => PriceEvolutionSheet(
+        item: item,
+        currentPurchaseDate: widget.purchase.dataEmissao ?? widget.purchase.confirmedAt,
+      ),
+    );
+  }
+}
+
+class PriceEvolutionSheet extends StatefulWidget {
+  final PurchaseHistoryItem item;
+  final DateTime currentPurchaseDate;
+
+  const PriceEvolutionSheet({
+    super.key,
+    required this.item,
+    required this.currentPurchaseDate,
+  });
+
+  @override
+  State<PriceEvolutionSheet> createState() => _PriceEvolutionSheetState();
+}
+
+class _PriceEvolutionSheetState extends State<PriceEvolutionSheet> {
+  List<Map<String, dynamic>>? _history;
+  Object? _error;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    sl<MercadoRepository>()
+        .getProductPriceHistory(widget.item.produtoId!)
+        .then((data) {
+      if (mounted) {
+        setState(() {
+          _history = data;
+          _loading = false;
+        });
+      }
+    }).catchError((e) {
+      if (mounted) {
+        setState(() {
+          _error = e;
+          _loading = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : _error != null
+                ? _buildError(context)
+                : _buildContent(context, scrollController, _history ?? []),
+      ),
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 48),
+          const SizedBox(height: 16),
+          Text("Erro ao carregar histórico", style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          Text("$_error", textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Fechar"),
           ),
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: sl<MercadoRepository>().getProductPriceHistory(item.produtoId!),
-            builder: (context, snapshot) {
-              final colorScheme = Theme.of(context).colorScheme;
-              
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+        ],
+      ),
+    );
+  }
 
-              if (snapshot.hasError) {
-                return Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Text("Erro: ${snapshot.error}"),
-                );
-              }
+  Widget _buildContent(
+    BuildContext context,
+    ScrollController scrollController,
+    List<Map<String, dynamic>> history,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
 
-              final history = snapshot.data ?? [];
+    return SingleChildScrollView(
+      controller: scrollController,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            widget.item.name.toUpperCase(),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const Divider(height: 32),
+          const Text("Evolução de Preços", style: TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          if (history.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: Text("Sem dados históricos.")),
+            )
+          else if (history.length < 2)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 32),
+              child: Center(child: Text("Histórico insuficiente para gerar gráfico.")),
+            )
+          else
+            _buildChart(context, history, colorScheme),
+          const SizedBox(height: 32),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Fechar"),
+          ),
+        ],
+      ),
+    );
+  }
 
-              return ListView.builder(
-                controller: scrollController,
-                padding: const EdgeInsets.all(24),
-                itemCount: history.isEmpty ? 5 : history.length + 5,
-                itemBuilder: (context, index) {
-                  if (index == 0) {
-                    return Text(
-                      item.name.toUpperCase(),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    );
-                  }
-                  if (index == 1) return const Divider();
-                  if (index == 2) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      child: Text("Evolução de Preços", style: TextStyle(fontWeight: FontWeight.bold)),
-                    );
-                  }
-                  
-                  if (history.isEmpty) {
-                    if (index == 3) return const Text("Sem dados históricos.");
-                    if (index == 4) {
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 24),
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Fechar"),
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  }
+  Widget _buildChart(
+    BuildContext context,
+    List<Map<String, dynamic>> history,
+    ColorScheme colorScheme,
+  ) {
+    // Round to 2 decimals for calculations and display
+    final cleanHistory = history.map((e) {
+      final double rawPrice = e['preco_unitario'] as double;
+      return {
+        ...e,
+        'preco_unitario': double.parse(rawPrice.toStringAsFixed(2)),
+      };
+    }).toList();
 
-                  // Gráfico de evolução
-                  if (index == 3) {
-                    if (history.length < 2) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 32),
-                        child: Center(child: Text("Histórico insuficiente para gerar gráfico.")),
-                      );
-                    }
+    final prices = cleanHistory
+        .map((e) => e['preco_unitario'] as double)
+        .where((p) => p.isFinite)
+        .toList();
 
-                    return Container(
-                      height: 200,
-                      padding: const EdgeInsets.only(right: 24, top: 16, bottom: 16),
-                      child: LineChart(
-                        LineChartData(
-                          minX: 0,
-                          maxX: (history.length - 1).toDouble(),
-                          gridData: const FlGridData(show: true, drawVerticalLine: false),
-                          titlesData: FlTitlesData(
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 22,
-                                interval: 1, // Um título por ponto
-                                getTitlesWidget: (value, meta) {
-                                  final int index = value.toInt();
-                                  if (index < 0 || index >= history.length) return const SizedBox.shrink();
-                                  
-                                  // Mostrar apenas alguns labels se houver muitos pontos
-                                  if (history.length > 5 && index % (history.length ~/ 3) != 0 && index != history.length - 1) {
-                                    return const SizedBox.shrink();
-                                  }
+    final double minPrice = prices.reduce((a, b) => a < b ? a : b);
+    final double maxPrice = prices.reduce((a, b) => a > b ? a : b);
+    final double range = maxPrice - minPrice;
 
-                                  final date = history[index]['data'] as DateTime;
-                                  return Padding(
-                                    padding: const EdgeInsets.only(top: 4.0),
-                                    child: Text(
-                                      DateFormat('dd/MM').format(date),
-                                      style: const TextStyle(fontSize: 9),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 45,
-                                getTitlesWidget: (value, meta) {
-                                  return Text(
-                                    "R\$${value.toStringAsFixed(2)}",
-                                    style: const TextStyle(fontSize: 9),
-                                  );
-                                },
-                              ),
-                            ),
-                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    final double padding = range < 1e-9 ? 1.0 : range * 0.3;
+    final double effectiveMinY = (minPrice - padding).clamp(0.0, double.infinity);
+    final double effectiveMaxY = maxPrice + padding;
+
+    final double rawInterval = (effectiveMaxY - effectiveMinY) / 4;
+    final double yInterval = (rawInterval.isFinite && rawInterval > 1e-9) ? rawInterval : 1.0;
+
+    final double xInterval = (cleanHistory.length / 4).ceilToDouble().clamp(1.0, double.infinity);
+
+    return Container(
+      height: 250,
+      padding: const EdgeInsets.only(right: 16, top: 16, bottom: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: RepaintBoundary(
+        child: LineChart(
+          LineChartData(
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (touchedSpot) => colorScheme.secondaryContainer,
+                getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                  return touchedSpots.map((LineBarSpot touchedSpot) {
+                    final int idx = touchedSpot.x.toInt();
+                    final date = cleanHistory[idx]['data'] as DateTime;
+                    return LineTooltipItem(
+                      'R\$ ${touchedSpot.y.toStringAsFixed(2)}\n',
+                      TextStyle(color: colorScheme.onSecondaryContainer, fontWeight: FontWeight.bold),
+                      children: [
+                        TextSpan(
+                          text: DateFormat('dd/MM/yyyy').format(date),
+                          style: TextStyle(
+                            color: colorScheme.onSecondaryContainer.withValues(alpha: 0.7),
+                            fontWeight: FontWeight.normal,
+                            fontSize: 10,
                           ),
-                          borderData: FlBorderData(
-                            show: true,
-                            border: Border(
-                              bottom: BorderSide(color: colorScheme.outlineVariant),
-                              left: BorderSide(color: colorScheme.outlineVariant),
-                            ),
-                          ),
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: List.generate(history.length, (i) {
-                                return FlSpot(i.toDouble(), history[i]['preco_unitario'] as double);
-                              }),
-                              isCurved: true,
-                              preventCurveOverShooting: true,
-                              color: colorScheme.primary,
-                              barWidth: 3,
-                              isStrokeCapRound: true,
-                              dotData: FlDotData(
-                                show: true,
-                                getDotPainter: (spot, percent, barData, index) {
-                                  final date = history[index]['data'] as DateTime;
-                                  final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
-                                  return FlDotCirclePainter(
-                                    radius: isCurrent ? 6 : 3,
-                                    color: isCurrent ? Colors.orange : colorScheme.primary,
-                                    strokeWidth: 2,
-                                    strokeColor: Colors.white,
-                                  );
-                                },
-                              ),
-                              belowBarData: BarAreaData(
-                                show: true,
-                                color: colorScheme.primary.withValues(alpha: 0.1),
-                              ),
-                            ),
-                          ],
                         ),
-                      ),
+                      ],
                     );
-                  }
-
-                  if (index < history.length + 4) {
-                    final hist = history[index - 4];
-                    final double price = hist['preco_unitario'];
-                    final DateTime date = hist['data'];
-                    final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
-
-                    return ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Icon(
-                        Icons.history, 
-                        color: isCurrent ? colorScheme.primary : null
-                      ),
-                      title: Text(
-                        "R\$ ${price.toStringAsFixed(2)}",
-                        style: TextStyle(
-                          fontWeight: isCurrent ? FontWeight.bold : null,
-                          color: isCurrent ? colorScheme.primary : null
-                        ),
-                      ),
-                      subtitle: Text(DateFormat('dd/MM/yyyy').format(date)),
-                      trailing: isCurrent ? const Chip(label: Text("Nesta nota", style: TextStyle(fontSize: 10))) : null,
-                    );
-                  }
-
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 24),
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Fechar"),
-                    ),
-                  );
+                  }).toList();
                 },
-              );
-            }
+              ),
+            ),
+            minX: 0,
+            maxX: (cleanHistory.length - 1).toDouble(),
+            minY: effectiveMinY,
+            maxY: effectiveMaxY,
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              getDrawingHorizontalLine: (value) => FlLine(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                strokeWidth: 1,
+              ),
+            ),
+            titlesData: FlTitlesData(
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 32,
+                  interval: xInterval,
+                  getTitlesWidget: (value, meta) {
+                    final int idx = value.toInt();
+                    if (idx < 0 || idx >= cleanHistory.length) return const SizedBox.shrink();
+                    final date = cleanHistory[idx]['data'] as DateTime;
+                    return SideTitleWidget(
+                      meta: meta,
+                      child: Text(
+                        DateFormat('dd/MM').format(date),
+                        style: TextStyle(fontSize: 10, color: colorScheme.outline),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 50,
+                  interval: yInterval,
+                  getTitlesWidget: (value, meta) {
+                    if (value == meta.min || value == meta.max) return const SizedBox.shrink();
+                    return SideTitleWidget(
+                      meta: meta,
+                      child: Text(
+                        "R\$${value.toStringAsFixed(2)}",
+                        style: TextStyle(fontSize: 10, color: colorScheme.outline),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            ),
+            borderData: FlBorderData(show: false),
+            lineBarsData: [
+              LineChartBarData(
+                spots: List.generate(cleanHistory.length, (i) {
+                  return FlSpot(i.toDouble(), cleanHistory[i]['preco_unitario'] as double);
+                }),
+                isCurved: true,
+                preventCurveOverShooting: true,
+                color: colorScheme.primary,
+                barWidth: 4,
+                isStrokeCapRound: true,
+                dotData: FlDotData(
+                  show: true,
+                  getDotPainter: (spot, percent, barData, idx) {
+                    final date = cleanHistory[idx]['data'] as DateTime;
+                    final bool isCurrent = date.isAtSameMomentAs(widget.currentPurchaseDate);
+                    return FlDotCirclePainter(
+                      radius: isCurrent ? 6 : 4,
+                      color: isCurrent ? Colors.orange : colorScheme.primary,
+                      strokeWidth: 2,
+                      strokeColor: colorScheme.surface,
+                    );
+                  },
+                ),
+                belowBarData: BarAreaData(
+                  show: true,
+                  gradient: LinearGradient(
+                    colors: [
+                      colorScheme.primary.withValues(alpha: 0.3),
+                      colorScheme.primary.withValues(alpha: 0.0),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

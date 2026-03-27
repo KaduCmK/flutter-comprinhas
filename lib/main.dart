@@ -6,12 +6,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/app_theme.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/splash_screen.dart';
+import 'package:flutter_comprinhas/core/config/app_settings_service.dart';
 import 'package:flutter_comprinhas/core/config/firebase_config.dart';
 import 'package:flutter_comprinhas/core/config/notification_service.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/global_cart/presentation/bloc/global_cart_bloc.dart';
 import 'package:flutter_comprinhas/global_cart/presentation/global_cart_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
+import 'package:flutter_comprinhas/home/presentation/screens/settings_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
@@ -40,6 +42,7 @@ void main() async {
   await dotenv.load(fileName: '.env');
 
   configureServiceLocator();
+  await sl<AppSettingsService>().init();
   await sl<NotificationService>().init();
 
   await configureFirebase();
@@ -72,6 +75,10 @@ final _router = GoRouter(
         GoRoute(
           path: '/home',
           builder: (context, state) => const HomeScreenProvider(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
         ),
         GoRoute(
           path: '/carrinho',

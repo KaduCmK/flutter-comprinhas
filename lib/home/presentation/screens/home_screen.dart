@@ -8,6 +8,7 @@ import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_comprinhas/mercado/presentation/mercado_screen.dart';
 import 'package:flutter_comprinhas/shared/widgets/user_avatar.dart';
 import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreenProvider extends StatelessWidget {
   const HomeScreenProvider({super.key});
@@ -25,7 +26,7 @@ class HomeScreenProvider extends StatelessWidget {
               (_) => MercadoBloc(
                 mercadoRepository: sl(),
                 notificationService: sl(),
-              ),
+              )..add(LoadNfeHistory()),
         ),
       ],
       child: const HomeScreen(),
@@ -91,6 +92,13 @@ class _HomeScreenState extends State<HomeScreen> {
         appBar: AppBar(
           title: const Text("Comprinhas"),
           leading: const UserAvatar(),
+          actions: [
+            IconButton(
+              onPressed: () => context.push('/settings'),
+              icon: const Icon(Icons.settings_outlined),
+              tooltip: 'Configurações',
+            ),
+          ],
         ),
         backgroundColor: Theme.of(context).colorScheme.surface,
         floatingActionButtonLocation: ExpandableFab.location,
