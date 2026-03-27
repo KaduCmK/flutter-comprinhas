@@ -76,4 +76,45 @@ class MercadoRepository {
     
     return statsList;
   }
+
+  Future<MercadoStats?> getMercadoStatsById(String mercadoId) async {
+    final userId = _client.auth.currentUser?.id;
+    if (userId == null) return null;
+
+    final response = await _client
+        .from('notas_fiscais')
+        .select('valor_total, mercados(*)')
+        .eq('user_id', userId)
+        .eq('mercado_id', mercadoId);
+
+    if ((response as List).isEmpty) return null;
+
+    double totalGasto = 0;
+    for (final nota in response) {
+      totalGasto += (nota['valor_total'] as num).toDouble();
+    }
+
+    return MercadoStats(
+      mercado: Mercado.fromMap(response[0]['mercados']),
+      totalNotas: response.length,
+      valorTotalGasto: totalGasto,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getProductPriceHistory(String produtoId) async {
+    final response = await _client
+        .from('itens_nota_fiscal')
+        .select('quantidade, valor_total_item, notas_fiscais(data_de_emissao)')
+        .eq('produto_id', produtoId)
+        .order('notas_fiscais(data_de_emissao)', ascending: true);
+
+    return (response as List).map((item) {
+      final double total = (item['valor_total_item'] as num).toDouble();
+      final double qtd = (item['quantidade'] as num).toDouble();
+      return {
+        'data': DateTime.parse(item['notas_fiscais']['data_de_emissao']),
+        'preco_unitario': qtd > 0 ? total / qtd : 0.0,
+      };
+    }).toList();
+  }
 }

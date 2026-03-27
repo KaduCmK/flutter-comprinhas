@@ -5,18 +5,22 @@ import 'package:flutter_comprinhas/shared/entities/purchase_history_item.dart';
 class PurchaseHistory extends Equatable {
   final String id;
   final DateTime confirmedAt;
+  final DateTime? dataEmissao;
   final String? confirmedBy;
   final List<PurchaseHistoryItem> items;
   final double valorTotal;
   final Mercado? mercado;
+  final String? chaveAcesso;
 
   const PurchaseHistory({
     required this.id,
     required this.confirmedAt,
+    this.dataEmissao,
     this.confirmedBy,
     required this.items,
     required this.valorTotal,
     this.mercado,
+    this.chaveAcesso,
   });
 
   factory PurchaseHistory.fromMap(Map<String, dynamic> map) {
@@ -30,9 +34,11 @@ class PurchaseHistory extends Equatable {
     return PurchaseHistory(
       id: map['id'] as String,
       confirmedAt: DateTime.parse(map['created_at'] as String),
+      dataEmissao: map['data_de_emissao'] != null ? DateTime.parse(map['data_de_emissao'] as String) : null,
       confirmedBy: userName ?? 'Desconhecido',
       valorTotal: (map['valor_total'] as num).toDouble(),
       mercado: map['mercados'] != null ? Mercado.fromMap(map['mercados']) : null,
+      chaveAcesso: map['chave_acesso'] as String?,
       items:
           (map['itens_nota_fiscal'] as List<dynamic>?)
               ?.map(
@@ -45,5 +51,5 @@ class PurchaseHistory extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, confirmedAt, confirmedBy, items, valorTotal, mercado];
+  List<Object?> get props => [id, confirmedAt, dataEmissao, confirmedBy, items, valorTotal, mercado, chaveAcesso];
 }

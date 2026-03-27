@@ -6,19 +6,28 @@ class PurchaseHistoryItem extends Equatable {
   final num amount;
   final num valorTotal;
   final Unit? unit;
+  final String? produtoId;
+  final String? codigo;
 
   const PurchaseHistoryItem({
     required this.name,
     required this.amount,
     required this.valorTotal,
     this.unit,
+    this.produtoId,
+    this.codigo,
   });
 
   factory PurchaseHistoryItem.fromMap(Map<String, dynamic> map) {
     // Para itens_nota_fiscal, o nome do produto vem da relação 'produtos'
     String productName = 'Item desconhecido';
+    String? prodId;
+    String? prodCodigo;
+
     if (map['produtos'] != null) {
       productName = map['produtos']['nome'] as String;
+      prodId = map['produtos']['id'] as String?;
+      prodCodigo = map['produtos']['codigo'] as String?;
     } else if (map['name'] != null) {
       productName = map['name'] as String;
     }
@@ -34,9 +43,11 @@ class PurchaseHistoryItem extends Equatable {
       amount: (map['quantidade'] ?? map['amount'] ?? 0) as num,
       valorTotal: (map['valor_total_item'] ?? 0) as num,
       unit: unit,
+      produtoId: prodId,
+      codigo: prodCodigo,
     );
   }
 
   @override
-  List<Object?> get props => [name, amount, valorTotal, unit];
+  List<Object?> get props => [name, amount, valorTotal, unit, produtoId, codigo];
 }
