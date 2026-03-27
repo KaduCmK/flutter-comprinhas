@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
@@ -53,19 +54,6 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
         title: const Text("Nota Fiscal Eletrônica"),
-        actions: [
-          if (mercado != null)
-            _isNavigatingToMercado
-                ? const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                  )
-                : IconButton(
-                    icon: const Icon(Icons.store),
-                    onPressed: _goToMercadoDetails,
-                    tooltip: "Ver Mercado",
-                  ),
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -73,65 +61,63 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Cabeçalho da Nota (Simulando NF brasileira)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                border: Border.all(color: colorScheme.outlineVariant),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    mercado?.nome.toUpperCase() ?? "MERCADO DESCONHECIDO",
-                    style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (mercado?.cnpj != null)
-                    Text("CNPJ: ${mercado!.cnpj}", style: textTheme.bodySmall),
-                  if (mercado?.endereco != null)
-                    Text(
-                      mercado!.endereco!,
-                      style: textTheme.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  const Divider(height: 24),
-                  const Text(
-                    "Extrato de Nota Fiscal de Consumidor Eletrônica",
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildNfInfo("DATA", DateFormat('dd/MM/yyyy HH:mm').format(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt)),
-                      _buildNfInfo("USUÁRIO", widget.purchase.confirmedBy?.toUpperCase() ?? "N/A"),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            
-            // Chave de Acesso
-            if (widget.purchase.chaveAcesso != null)
-              Container(
-                padding: const EdgeInsets.all(8),
+            InkWell(
+              onTap: _goToMercadoDetails,
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: colorScheme.outlineVariant),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Stack(
                   children: [
-                    const Text("CHAVE DE ACESSO", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(
-                      widget.purchase.chaveAcesso!.replaceAllMapped(RegExp(r".{4}"), (match) => "${match.group(0)} "),
-                      style: const TextStyle(fontSize: 11, letterSpacing: 1),
+                    Column(
+                      children: [
+                        Text(
+                          mercado?.nome.toUpperCase() ?? "MERCADO DESCONHECIDO",
+                          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (mercado?.cnpj != null)
+                          Text("CNPJ: ${mercado!.cnpj}", style: textTheme.bodySmall),
+                        if (mercado?.endereco != null)
+                          Text(
+                            mercado!.endereco!,
+                            style: textTheme.bodySmall,
+                            textAlign: TextAlign.center,
+                          ),
+                        const Divider(height: 24),
+                        const Text(
+                          "Extrato de Nota Fiscal de Consumidor Eletrônica",
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            _buildNfInfo("DATA", DateFormat('dd/MM/yyyy HH:mm').format(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt)),
+                            _buildNfInfo("USUÁRIO", widget.purchase.confirmedBy?.toUpperCase() ?? "N/A"),
+                          ],
+                        ),
+                      ],
                     ),
+                    if (_isNavigatingToMercado)
+                      const Positioned.fill(
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      )
+                    else if (mercado != null)
+                      const Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+                      ),
                   ],
                 ),
               ),
+            ),
             const SizedBox(height: 24),
 
             // Tabela de Itens
@@ -161,13 +147,18 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                 final item = widget.purchase.items[index];
                 final double unitPrice = item.amount > 0 ? (item.valorTotal / item.amount) : 0;
 
+                String displayCode = "---";
+                if (item.codigo != null && item.codigo!.isNotEmpty) {
+                  displayCode = item.codigo!.length > 4 ? item.codigo!.substring(0, 4) : item.codigo!;
+                }
+
                 return InkWell(
                   onTap: item.produtoId != null ? () => _showPriceEvolution(context, item) : null,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                       children: [
-                        Expanded(flex: 1, child: Text(item.codigo?.substring(0, 4) ?? "---", style: const TextStyle(fontSize: 10))),
+                        Expanded(flex: 1, child: Text(displayCode, style: const TextStyle(fontSize: 10))),
                         Expanded(
                           flex: 4, 
                           child: Text(
@@ -194,6 +185,29 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
             _buildTotalRow("Qtd. total de itens", widget.purchase.items.length.toString()),
             _buildTotalRow("Valor total R\$", widget.purchase.valorTotal.toStringAsFixed(2), isBold: true, fontSize: 18),
             
+            const SizedBox(height: 24),
+
+            // Chave de Acesso (Movida para baixo dos itens)
+            if (widget.purchase.chaveAcesso != null)
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("CHAVE DE ACESSO", style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.purchase.chaveAcesso!.replaceAllMapped(RegExp(r".{4}"), (match) => "${match.group(0)} "),
+                      style: const TextStyle(fontSize: 11, letterSpacing: 1),
+                    ),
+                  ],
+                ),
+              ),
+
             const SizedBox(height: 40),
             Center(
               child: Opacity(
@@ -272,7 +286,7 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
               return ListView.builder(
                 controller: scrollController,
                 padding: const EdgeInsets.all(24),
-                itemCount: history.isEmpty ? 5 : history.length + 4,
+                itemCount: history.isEmpty ? 5 : history.length + 5,
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return Text(
@@ -302,8 +316,93 @@ class _NfeDetailsScreenState extends State<NfeDetailsScreen> {
                     return const SizedBox.shrink();
                   }
 
-                  if (index < history.length + 3) {
-                    final hist = history[index - 3];
+                  // Gráfico de evolução
+                  if (index == 3) {
+                    return Container(
+                      height: 200,
+                      padding: const EdgeInsets.only(right: 16, top: 16, bottom: 16),
+                      child: LineChart(
+                        LineChartData(
+                          gridData: const FlGridData(show: true, drawVerticalLine: false),
+                          titlesData: FlTitlesData(
+                            bottomTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 22,
+                                interval: (history.last['data'] as DateTime).millisecondsSinceEpoch.toDouble() - (history.first['data'] as DateTime).millisecondsSinceEpoch.toDouble() > 0 ? ((history.last['data'] as DateTime).millisecondsSinceEpoch.toDouble() - (history.first['data'] as DateTime).millisecondsSinceEpoch.toDouble()) / 3 : 1,
+                                getTitlesWidget: (value, meta) {
+                                  final date = DateTime.fromMillisecondsSinceEpoch(value.toInt());
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: Text(
+                                      DateFormat('dd/MM').format(date),
+                                      style: const TextStyle(fontSize: 9),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                            leftTitles: AxisTitles(
+                              sideTitles: SideTitles(
+                                showTitles: true,
+                                reservedSize: 45,
+                                getTitlesWidget: (value, meta) {
+                                  return Text(
+                                    "R\$${value.toStringAsFixed(2)}",
+                                    style: const TextStyle(fontSize: 9),
+                                  );
+                                },
+                              ),
+                            ),
+                            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                          ),
+                          borderData: FlBorderData(
+                            show: true,
+                            border: Border(
+                              bottom: BorderSide(color: colorScheme.outlineVariant),
+                              left: BorderSide(color: colorScheme.outlineVariant),
+                            ),
+                          ),
+                          lineBarsData: [
+                            LineChartBarData(
+                              spots: history.map((h) {
+                                final date = h['data'] as DateTime;
+                                return FlSpot(
+                                  date.millisecondsSinceEpoch.toDouble(),
+                                  h['preco_unitario'] as double,
+                                );
+                              }).toList(),
+                              isCurved: true,
+                              color: colorScheme.primary,
+                              barWidth: 3,
+                              isStrokeCapRound: true,
+                              dotData: FlDotData(
+                                show: true,
+                                getDotPainter: (spot, percent, barData, index) {
+                                  final date = DateTime.fromMillisecondsSinceEpoch(spot.x.toInt());
+                                  final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
+                                  return FlDotCirclePainter(
+                                    radius: isCurrent ? 6 : 3,
+                                    color: isCurrent ? Colors.orange : colorScheme.primary,
+                                    strokeWidth: 2,
+                                    strokeColor: Colors.white,
+                                  );
+                                },
+                              ),
+                              belowBarData: BarAreaData(
+                                show: true,
+                                color: colorScheme.primary.withValues(alpha: 0.1),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (index < history.length + 4) {
+                    final hist = history[index - 4];
                     final double price = hist['preco_unitario'];
                     final DateTime date = hist['data'];
                     final bool isCurrent = date.isAtSameMomentAs(widget.purchase.dataEmissao ?? widget.purchase.confirmedAt);
