@@ -941,6 +941,8 @@ class ShinyTiltCard extends StatefulWidget {
 }
 
 class _ShinyTiltCardState extends State<ShinyTiltCard> {
+  static const double _gradientMotionMultiplier = 1.45;
+
   StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
 
   Offset _gradientOffset = Offset.zero;
@@ -984,7 +986,10 @@ class _ShinyTiltCardState extends State<ShinyTiltCard> {
         -1.0,
         1.0,
       );
-      final targetOffset = Offset(diagonalX * 138, diagonalY * 138);
+      final targetOffset = Offset(
+        diagonalX * 138 * _gradientMotionMultiplier,
+        diagonalY * 138 * _gradientMotionMultiplier,
+      );
 
       setState(() {
         _hasSensorEvent = true;

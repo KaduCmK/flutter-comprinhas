@@ -254,6 +254,58 @@ Essa é a principal pipeline de ingestão de dados de mercado do app. O fluxo at
 
 Essas migrations locais não representam todo o histórico do schema atual. Antes de alterar banco, confirme sempre o estado real via MCP.
 
+## Gestão de ideias durante a conversa
+Quando o usuário despejar ideias, insights, rascunhos de feature, preocupações arquiteturais ou oportunidades de produto no prompt, trate isso como material de gestão de projeto e não apenas como conversa solta.
+
+Fluxo esperado do agente:
+- capturar e estruturar a ideia sem exigir que o usuário entregue o texto já formatado
+- inferir um título curto, contexto, problema, hipótese, próxima ação e tipo
+- registrar no sistema de docs do repositório, preservando linguagem em pt-BR
+- escolher o destino correto conforme maturidade e impacto
+
+Destinos padrão:
+- ideia ainda crua ou jogada rapidamente: adicionar em `docs/backlog.md`, seção `Inbox`
+- ideia com contexto suficiente e valor claro: criar ou atualizar arquivo em `docs/ideas/`
+- mudança com trade-offs amplos, impacto arquitetural, modelagem relevante ou decisão que precise ser registrada: criar RFC em `docs/rfcs/`
+
+Classificação padrão:
+- `produto`
+- `ux`
+- `backend`
+- `dados`
+- `dívida técnica`
+- `observabilidade`
+
+Template mínimo para captura no backlog:
+
+```md
+### Título curto
+- contexto: onde a ideia surgiu
+- problema: qual dor, risco ou oportunidade apareceu
+- hipótese: o que pode resolver ou melhorar
+- próxima ação: investigar | prototipar | implementar depois
+- tipo: produto | ux | backend | dados | dívida técnica | observabilidade
+```
+
+Regras operacionais:
+- não esperar o usuário pedir explicitamente para "documentar" se a intenção for claramente despejar ideias para guardar
+- consolidar ideias duplicadas em vez de criar entradas redundantes
+- se o usuário mandar várias ideias em lote, separar em itens independentes
+- se a ideia estiver ambígua, registrar uma versão mínima com hipótese conservadora em vez de bloquear
+- ao finalizar, informar objetivamente onde cada ideia foi registrada
+- sempre preferir o menor artefato útil: backlog antes de `idea`, `idea` antes de RFC
+
+Gatilhos comuns:
+- "anota isso"
+- "guarda essa ideia"
+- "me ocorreu uma coisa"
+- "não quero perder isso"
+- blocos soltos de brainstorming sobre produto, arquitetura, scraping, preços, UX ou operação
+
+Se houver dúvida entre `docs/ideas/` e RFC:
+- use `docs/ideas/` quando ainda for exploração
+- use RFC quando a principal necessidade for tomar e registrar uma decisão
+
 ## Build, Test, and Development Commands
 Run the standard Flutter workflow from the repo root:
 
