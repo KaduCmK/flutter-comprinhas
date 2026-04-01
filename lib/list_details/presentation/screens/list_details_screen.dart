@@ -40,8 +40,15 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     builder:
-                        (_) => BlocProvider.value(
-                          value: context.read<CartBloc>(),
+                        (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(
+                              value: context.read<CartBloc>(),
+                            ),
+                            BlocProvider.value(
+                              value: context.read<ListDetailsBloc>(),
+                            ),
+                          ],
                           child: const CartBottomSheet(),
                         ),
                   );

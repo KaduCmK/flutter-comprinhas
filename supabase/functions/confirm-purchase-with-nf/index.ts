@@ -7,10 +7,76 @@ import {
   type CartItemForMatching,
 } from "../_shared/nfce.ts";
 
+async function rollbackPurchaseWithInvoice({
+  supabaseAdmin,
+  historyId,
+  notaFiscalId,
+}: {
+  supabaseAdmin: any;
+  historyId: string | null;
+  notaFiscalId: string | null;
+}) {
+  if (historyId) {
+    const { error: historyItemsRollbackError } = await supabaseAdmin
+      .from("purchase_history_items")
+      .delete()
+      .eq("purchase_history_id", historyId);
+    if (historyItemsRollbackError) {
+      console.error(
+        "Erro ao remover purchase_history_items no rollback:",
+        historyItemsRollbackError.message,
+      );
+    }
+
+    const { error: historyRollbackError } = await supabaseAdmin
+      .from("purchase_history")
+      .delete()
+      .eq("id", historyId);
+    if (historyRollbackError) {
+      console.error(
+        "Erro ao remover purchase_history no rollback:",
+        historyRollbackError.message,
+      );
+    }
+  }
+
+  if (notaFiscalId) {
+    const { error: invoiceItemsRollbackError } = await supabaseAdmin
+      .from("itens_nota_fiscal")
+      .delete()
+      .eq("nota_fiscal_id", notaFiscalId);
+    if (invoiceItemsRollbackError) {
+      console.error(
+        "Erro ao remover itens_nota_fiscal no rollback:",
+        invoiceItemsRollbackError.message,
+      );
+    }
+
+    const { error: invoiceRollbackError } = await supabaseAdmin
+      .from("notas_fiscais")
+      .delete()
+      .eq("id", notaFiscalId);
+    if (invoiceRollbackError) {
+      console.error(
+        "Erro ao remover notas_fiscais no rollback:",
+        invoiceRollbackError.message,
+      );
+    }
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  let createdHistoryId: string | null = null;
+  let createdNotaFiscalId: string | null = null;
 
   try {
     const { cart_items_ids, chave_acesso, manual_matches } = await req.json();
@@ -37,11 +103,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
 
     const { data: cartItems, error: cartError } = await supabaseAdmin
       .from("cart_items")
@@ -75,8 +136,6 @@ Deno.serve(async (req) => {
 
     const invoice = await scrapeNfce(chave_acesso);
     const preview = await previewInvoiceMatches(reviewItems, invoice);
-    const persistedInvoice = await persistInvoiceData(supabaseAdmin, user.id, invoice);
-
     const manualMatchMap = new Map<string, string | null>(
       Object.entries((manual_matches ?? {}) as Record<string, string | null>),
     );
@@ -117,6 +176,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (matchedCartEntries.length === 0) {
+      throw new Error(
+        "Nenhum item da cesta foi conciliado com a nota fiscal. Revise os matches antes de confirmar.",
+      );
+    }
+
+    const persistedInvoice = await persistInvoiceData(supabaseAdmin, user.id, invoice);
+    createdNotaFiscalId = persistedInvoice.notaFiscalId;
+
     const { data: history, error: historyError } = await supabaseAdmin
       .from("purchase_history")
       .insert({
@@ -129,6 +197,7 @@ Deno.serve(async (req) => {
     if (historyError || !history) {
       throw new Error(`Erro ao criar histórico da compra: ${historyError?.message ?? ""}`);
     }
+    createdHistoryId = history.id;
 
     const historyItemsToInsert = matchedCartEntries.map((entry) => {
       const invoiceItem = invoice.produtos.find((item) => item.temp_id === entry.invoiceTempId)!;
@@ -188,18 +257,35 @@ Deno.serve(async (req) => {
     const confirmedCartItemIds = matchedCartEntries.map((entry) => entry.cartItem.cart_item_id);
     const confirmedListItemIds = matchedCartEntries.map((entry) => entry.cartItem.list_item_id);
 
-    if (confirmedCartItemIds.isNotEmpty) {
-      const [cartDeleteResult, listDeleteResult] = await Promise.all([
-        supabaseAdmin.from("cart_items").delete().in("id", confirmedCartItemIds),
-        supabaseAdmin.from("list_items").delete().in("id", confirmedListItemIds),
-      ]);
+    const [cartDeleteResult, listDeleteResult] = await Promise.all([
+      supabaseAdmin.from("cart_items").delete().in("id", confirmedCartItemIds).select("id"),
+      supabaseAdmin.from("list_items").delete().in("id", confirmedListItemIds).select("id"),
+    ]);
 
-      if (cartDeleteResult.error) {
-        throw new Error(`Erro ao limpar carrinho: ${cartDeleteResult.error.message}`);
-      }
-      if (listDeleteResult.error) {
-        throw new Error(`Erro ao limpar itens da lista: ${listDeleteResult.error.message}`);
-      }
+    if (cartDeleteResult.error) {
+      throw new Error(`Erro ao limpar carrinho: ${cartDeleteResult.error.message}`);
+    }
+    if (listDeleteResult.error) {
+      throw new Error(`Erro ao limpar itens da lista: ${listDeleteResult.error.message}`);
+    }
+
+    const deletedCartIds = new Set(
+      (cartDeleteResult.data ?? []).map((item: { id: string }) => item.id),
+    );
+    const deletedListIds = new Set(
+      (listDeleteResult.data ?? []).map((item: { id: string }) => item.id),
+    );
+
+    if (deletedCartIds.size !== confirmedCartItemIds.length) {
+      throw new Error(
+        `Limpeza inconsistente do carrinho. Esperado remover ${confirmedCartItemIds.length} item(ns), mas removeu ${deletedCartIds.size}.`,
+      );
+    }
+
+    if (deletedListIds.size !== confirmedListItemIds.length) {
+      throw new Error(
+        `Limpeza inconsistente da lista. Esperado remover ${confirmedListItemIds.length} item(ns), mas removeu ${deletedListIds.size}.`,
+      );
     }
 
     return new Response(
@@ -217,6 +303,12 @@ Deno.serve(async (req) => {
       },
     );
   } catch (error) {
+    await rollbackPurchaseWithInvoice({
+      supabaseAdmin,
+      historyId: createdHistoryId,
+      notaFiscalId: createdNotaFiscalId,
+    });
+
     return new Response(
       JSON.stringify({ error: error.message }),
       {

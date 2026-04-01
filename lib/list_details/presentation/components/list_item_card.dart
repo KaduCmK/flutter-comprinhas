@@ -29,18 +29,22 @@ class ListItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final listDetailsState = context.watch<ListDetailsBloc>().state;
+    final listDetailsBloc = context.watch<ListDetailsBloc?>();
+    final listDetailsState = listDetailsBloc?.state;
 
     final bool priceForecastEnabled =
-        listDetailsState.list?.priceForecastEnabled ?? false;
-    final bool hasAnySuggestedPrice = listDetailsState.items.any(
+        listDetailsState?.list?.priceForecastEnabled ?? false;
+    final bool hasAnySuggestedPrice =
+        listDetailsState?.items.any(
       (i) => i.precoSugerido != null,
-    );
+    ) ??
+        false;
 
     final bool isSuggestingPrice =
-        listDetailsState.suggestingPriceItemId == item.id;
+        listDetailsState?.suggestingPriceItemId == item.id;
 
     final bool showSuggestButton =
+        listDetailsBloc != null &&
         !priceForecastEnabled &&
         hasAnySuggestedPrice &&
         item.precoSugerido == null;
@@ -76,7 +80,7 @@ class ListItemCard extends StatelessWidget {
           ),
       ],
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(16, 12, 4, 12),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -193,7 +197,7 @@ class ListItemCard extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 4),
                 child: TextButton.icon(
                   onPressed: () {
-                    context.read<ListDetailsBloc>().add(SugerirPreco(item));
+                    listDetailsBloc!.add(SugerirPreco(item));
                   },
                   icon: const Icon(Icons.auto_awesome, size: 16),
                   label: const Text(
