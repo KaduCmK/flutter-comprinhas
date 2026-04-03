@@ -14,8 +14,10 @@ class ProductMatch extends Equatable {
   factory ProductMatch.fromMap(Map<String, dynamic> map) {
     // O Supabase retorna o join como um objeto aninhado com o nome da tabela/relação
     // Geralmente no singular se for uma relação 1:1
-    final produto = map['produtos'] as Map<String, dynamic>? ?? map['produto'] as Map<String, dynamic>?;
-    
+    final produto =
+        map['produtos'] as Map<String, dynamic>? ??
+        map['produto'] as Map<String, dynamic>?;
+
     if (produto == null) {
       throw Exception('Dados do produto não encontrados no mapa: $map');
     }

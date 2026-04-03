@@ -1,83 +1,293 @@
+import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/components/gemini_animated_border.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/list_details_appbar_actions.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/new_item_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
+import 'package:flutter_comprinhas/shared/widgets/overlapping_avatars.dart';
+import 'package:go_router/go_router.dart';
 
-class ListDetailsAppBar extends StatelessWidget {
+class ListDetailsAppBar extends StatefulWidget {
   const ListDetailsAppBar({super.key});
+
+  @override
+  State<ListDetailsAppBar> createState() => _ListDetailsAppBarState();
+}
+
+class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
+  final _nlpController = TextEditingController();
+  final _nlpFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _nlpController.dispose();
+    _nlpFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _submitNlp(BuildContext context) {
+    final query = _nlpController.text.trim();
+    if (query.isNotEmpty) {
+      context.read<ListDetailsBloc>().add(AddNaturalLanguageItemToList(query));
+      _nlpController.clear();
+      _nlpFocusNode.unfocus();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return BlocBuilder<ListDetailsBloc, ListDetailsState>(
+    return BlocConsumer<ListDetailsBloc, ListDetailsState>(
+      listenWhen:
+          (previous, current) => previous.isParsingNlp != current.isParsingNlp,
+      listener: (context, state) {
+        if (state.error != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.error!)));
+        }
+      },
       builder: (context, state) {
+        final hasImage = state.list?.backgroundImage != null;
+
         return SafeArea(
           child: Card(
             elevation: 2,
-            color: colorScheme.primaryContainer,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
+            clipBehavior: Clip.antiAlias,
+            color: hasImage ? Colors.transparent : colorScheme.primaryContainer,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (hasImage)
+                  Image.network(
+                    state.list!.backgroundImage!,
+                    fit: BoxFit.cover,
+                    frameBuilder: (
+                      context,
+                      child,
+                      frame,
+                      wasSynchronouslyLoaded,
+                    ) {
+                      if (wasSynchronouslyLoaded) return child;
+                      return AnimatedOpacity(
+                        opacity: frame == null ? 0 : 1,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOut,
+                        child: child,
+                      );
+                    },
+                  ),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient:
+                        hasImage
+                            ? const LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.black87,
+                                Colors.black54,
+                                Colors.black87,
+                              ],
+                              stops: [0.0, 0.5, 1.0],
+                            )
+                            : null,
+                  ),
+                  padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              if (state.list != null) {
+                                context.push(
+                                  '/list/${state.list!.id}/info',
+                                  extra: state.list,
+                                );
+                              }
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0,
+                                vertical: 4.0,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      state.list?.name ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: textTheme.headlineMedium?.copyWith(
+                                        color:
+                                            hasImage
+                                                ? Colors.white
+                                                : colorScheme
+                                                    .onPrimaryContainer,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.info_outline,
+                                    size: 20,
+                                    color:
+                                        hasImage
+                                            ? Colors.white70
+                                            : colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (state.list != null &&
+                              state.list!.members.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                OverlappingAvatars(
+                                  list: state.list!,
+                                  size: 20,
+                                  overlap: 8,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                state.list?.name ?? '',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: textTheme.headlineMedium?.copyWith(
-                                  color: colorScheme.onPrimaryContainer,
-                                  fontWeight: FontWeight.bold,
+                                "Total estimado: ",
+                                style: textTheme.titleMedium?.copyWith(
+                                  color: hasImage ? Colors.white70 : null,
                                 ),
-                                textAlign: TextAlign.center,
                               ),
-                              Text(
-                                "Total estimado: R\$ --,--",
-                                style: textTheme.titleMedium,
+                              AnimatedFlipCounter(
+                                value: state.estimatedTotal,
+                                prefix: "R\$ ",
+                                fractionDigits: 2,
+                                decimalSeparator: ',',
+                                thousandSeparator: '.',
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeOut,
+                                textStyle: textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      hasImage
+                                          ? Colors.white
+                                          : colorScheme.primary,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ElevatedButton(
-                        onPressed:
-                            () => showDialog(
-                              context: context,
-                              builder: (_) {
-                                return BlocProvider.value(
-                                  value: context.read<ListDetailsBloc>(),
-                                  child: NewItemDialog(),
-                                );
-                              },
-                            ),
-                        child: const Text("Adicionar"),
+                        ],
                       ),
-
+                      const Spacer(),
                       ListDetailsAppbarActions(state: state),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          IconButton.filled(
+                            onPressed:
+                                state.isParsingNlp
+                                    ? null
+                                    : () => showDialog(
+                                      context: context,
+                                      builder: (_) {
+                                        return BlocProvider.value(
+                                          value:
+                                              context.read<ListDetailsBloc>(),
+                                          child: const NewItemDialog(),
+                                        );
+                                      },
+                                    ),
+                            icon: const Icon(Icons.add),
+                            style: IconButton.styleFrom(
+                              backgroundColor: colorScheme.primary,
+                              foregroundColor: colorScheme.onPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            height: 32,
+                            width: 1,
+                            color: colorScheme.onPrimaryContainer.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: GeminiAnimatedBorder(
+                              isParsing: state.isParsingNlp,
+                              gradientColors: [
+                                colorScheme.primary,
+                                colorScheme.secondary,
+                                colorScheme.tertiary,
+                              ],
+                              child: TextFormField(
+                                controller: _nlpController,
+                                focusNode: _nlpFocusNode,
+                                enabled: !state.isParsingNlp,
+                                decoration: InputDecoration(
+                                  hintText: "Adicionar item",
+                                  prefixIcon: ShaderMask(
+                                    shaderCallback:
+                                        (bounds) => LinearGradient(
+                                          colors: [
+                                            colorScheme.primary,
+                                            colorScheme.secondary,
+                                            colorScheme.tertiary,
+                                          ],
+                                        ).createShader(bounds),
+                                    child: const Icon(
+                                      Icons.auto_awesome,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: colorScheme.surface,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 0,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(24),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                  suffixIcon: IconButton(
+                                    icon: const Icon(Icons.send),
+                                    onPressed:
+                                        state.isParsingNlp
+                                            ? null
+                                            : () => _submitNlp(context),
+                                    color: colorScheme.primary,
+                                  ),
+                                ),
+                                textInputAction: TextInputAction.send,
+                                onFieldSubmitted: (_) => _submitNlp(context),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      state.isLoading
+                          ? const LinearProgressIndicator()
+                          : const SizedBox(height: 4),
                     ],
                   ),
-                  state.isLoading
-                      ? const LinearProgressIndicator()
-                      : SizedBox(height: 4),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

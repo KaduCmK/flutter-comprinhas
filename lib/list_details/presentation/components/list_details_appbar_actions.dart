@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:go_router/go_router.dart';
 
@@ -15,17 +14,16 @@ class ListDetailsAppbarActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
-      spacing: 4,
-      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
       children: [
         IconButton(
-          onPressed: () => context.read<ListDetailsBloc>().add(
-                TogglePriceForecast(),
-          ),
+          onPressed:
+              () => context.read<ListDetailsBloc>().add(TogglePriceForecast()),
+          tooltip: "Previsão de preços",
           icon: Icon(
             Icons.currency_exchange,
             color: colorScheme.primary.withValues(
@@ -36,39 +34,161 @@ class ListDetailsAppbarActions extends StatelessWidget {
         MenuAnchor(
           menuChildren: [
             MenuItemButton(
-              leadingIcon: Icon(Icons.sort_by_alpha),
-              child: Text("Alfabético"),
-              onPressed:
-                  () => context.read<ListDetailsBloc>().add(
-                    SortList(SortOption.name),
-                  ),
-            ),
-            MenuItemButton(
-              leadingIcon: Icon(Icons.event),
+              leadingIcon: Icon(
+                state.sortOption == SortOption.name
+                    ? Icons.check_circle
+                    : Icons.sort_by_alpha,
+                color:
+                    state.sortOption == SortOption.name
+                        ? colorScheme.primary
+                        : null,
+              ),
               child: Text(
-                "Quantidade",
-                style: textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+                "Alfabético",
+                style: TextStyle(
+                  fontWeight:
+                      state.sortOption == SortOption.name
+                          ? FontWeight.bold
+                          : null,
                 ),
               ),
               onPressed:
                   () => context.read<ListDetailsBloc>().add(
-                    SortList(SortOption.date),
+                    SortList(SortOption.name, state.sortOrder),
+                  ),
+            ),
+            MenuItemButton(
+              leadingIcon: Icon(
+                state.sortOption == SortOption.date
+                    ? Icons.check_circle
+                    : Icons.calendar_today,
+                color:
+                    state.sortOption == SortOption.date
+                        ? colorScheme.primary
+                        : null,
+              ),
+              child: Text(
+                "Data de Adição",
+                style: TextStyle(
+                  fontWeight:
+                      state.sortOption == SortOption.date
+                          ? FontWeight.bold
+                          : null,
+                ),
+              ),
+              onPressed:
+                  () => context.read<ListDetailsBloc>().add(
+                    SortList(SortOption.date, state.sortOrder),
+                  ),
+            ),
+            MenuItemButton(
+              leadingIcon: Icon(
+                state.sortOption == SortOption.price
+                    ? Icons.check_circle
+                    : Icons.attach_money,
+                color:
+                    state.sortOption == SortOption.price
+                        ? colorScheme.primary
+                        : null,
+              ),
+              child: Text(
+                "Preço Sugerido",
+                style: TextStyle(
+                  fontWeight:
+                      state.sortOption == SortOption.price
+                          ? FontWeight.bold
+                          : null,
+                ),
+              ),
+              onPressed:
+                  () => context.read<ListDetailsBloc>().add(
+                    SortList(SortOption.price, state.sortOrder),
+                  ),
+            ),
+            const Divider(),
+            MenuItemButton(
+              leadingIcon: Icon(
+                state.sortOrder == SortOrder.ascending
+                    ? Icons.check_circle
+                    : Icons.arrow_upward,
+                color:
+                    state.sortOrder == SortOrder.ascending
+                        ? colorScheme.primary
+                        : null,
+              ),
+              child: Text(
+                "Crescente",
+                style: TextStyle(
+                  fontWeight:
+                      state.sortOrder == SortOrder.ascending
+                          ? FontWeight.bold
+                          : null,
+                ),
+              ),
+              onPressed:
+                  () => context.read<ListDetailsBloc>().add(
+                    SortList(state.sortOption, SortOrder.ascending),
+                  ),
+            ),
+            MenuItemButton(
+              leadingIcon: Icon(
+                state.sortOrder == SortOrder.descending
+                    ? Icons.check_circle
+                    : Icons.arrow_downward,
+                color:
+                    state.sortOrder == SortOrder.descending
+                        ? colorScheme.primary
+                        : null,
+              ),
+              child: Text(
+                "Decrescente",
+                style: TextStyle(
+                  fontWeight:
+                      state.sortOrder == SortOrder.descending
+                          ? FontWeight.bold
+                          : null,
+                ),
+              ),
+              onPressed:
+                  () => context.read<ListDetailsBloc>().add(
+                    SortList(state.sortOption, SortOrder.descending),
                   ),
             ),
           ],
-          builder:
-              (context, controller, child) => IconButton(
-                onPressed: () => controller.open(),
-                icon: Icon(Icons.sort),
+          builder: (context, controller, child) {
+            IconData sortIcon;
+            if (state.sortOption == SortOption.name) {
+              sortIcon = Icons.sort_by_alpha;
+            } else if (state.sortOption == SortOption.price) {
+              sortIcon = Icons.monetization_on;
+            } else {
+              sortIcon = Icons.calendar_today;
+            }
+
+            return IconButton(
+              onPressed: () => controller.open(),
+              tooltip: "Ordenação",
+              icon: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  Icon(sortIcon),
+                  Transform.translate(
+                    offset: const Offset(4, 4),
+                    child: Icon(
+                      state.sortOrder == SortOrder.ascending
+                          ? Icons.arrow_drop_up
+                          : Icons.arrow_drop_down,
+                      size: 18,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
               ),
+            );
+          },
         ),
         IconButton(
-          onPressed:
-              () => context.push(
-                '/list/${state.list!.id}/history',
-                extra: context.read<HistoryBloc>(),
-              ),
+          onPressed: () => context.push('/list/${state.list!.id}/history'),
           tooltip: "Histórico",
           icon: Icon(Icons.history),
         ),

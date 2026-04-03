@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
+import 'package:flutter_comprinhas/list_details/domain/entities/purchase_with_nfe_preview.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
@@ -33,10 +35,17 @@ class ListasRepositoryImpl implements ListasRepository {
     try {
       final response = await _client
           .from('lists')
-          .select('*, list_members!inner(*)')
+          .select(
+            '*, list_members!inner(user_id), all_members:list_members(*, users(*))',
+          )
           .eq('list_members.user_id', _client.auth.currentUser!.id);
 
-      final lists = response.map((list) => ListaCompra.fromMap(list)).toList();
+      final lists =
+          response.map((list) {
+            // Mapeia all_members de volta para list_members para o fromMap da entidade funcionar
+            list['list_members'] = list['all_members'];
+            return ListaCompra.fromMap(list);
+          }).toList();
       return lists;
     } catch (e) {
       debugPrint(e.toString());
@@ -58,7 +67,11 @@ class ListasRepositoryImpl implements ListasRepository {
   Future<ListaCompra> getListById(String listId) async {
     try {
       final response =
-          await _client.from('lists').select().eq('id', listId).single();
+          await _client
+              .from('lists')
+              .select('*, list_members(*, users(*))')
+              .eq('id', listId)
+              .single();
       return ListaCompra.fromMap(response);
     } catch (e) {
       _logger.e('Erro ao buscar lista por id: $e');
@@ -79,7 +92,12 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
-  Future<void> upsertList(String name, {String? listId}) async {
+  Future<String> upsertList(
+    String name, {
+    String? listId,
+    String? backgroundImageUrl,
+  }) async {
+    debugPrint('Upsert list: $name, id: $listId');
     final userId = _client.auth.currentUser?.id;
     if (userId == null) {
       throw 'Usuario nao autenticado';
@@ -87,9 +105,28 @@ class ListasRepositoryImpl implements ListasRepository {
 
     try {
       if (listId == null) {
-        await _client.from('lists').insert({'name': name});
+        final Map<String, dynamic> data = {'name': name, 'owner_id': userId};
+        if (backgroundImageUrl != null)
+          data['background_image'] = backgroundImageUrl;
+
+        final response =
+            await _client.from('lists').insert(data).select('id').single();
+        return response['id'] as String;
       } else {
-        await _client.from('lists').update({'name': name}).eq('id', listId);
+        final Map<String, dynamic> data = {'name': name};
+        if (backgroundImageUrl != null)
+          data['background_image'] = backgroundImageUrl;
+
+        final response = await _client
+            .from('lists')
+            .update(data)
+            .eq('id', listId)
+            .select('id');
+
+        if (response.isEmpty) {
+          throw 'Não foi possível atualizar a lista. Verifique se você tem permissão.';
+        }
+        return listId;
       }
     } catch (e) {
       _logger.e(e.toString());
@@ -98,8 +135,35 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
+  Future<String?> uploadBackgroundImage(File imageFile, String listId) async {
+    try {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final filePath = '$listId/$fileName';
+
+      await _client.storage
+          .from('list_backgrounds')
+          .upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+          );
+
+      return _client.storage.from('list_backgrounds').getPublicUrl(filePath);
+    } catch (e) {
+      _logger.e('Erro ao fazer upload da imagem de fundo: $e');
+      return null;
+    }
+  }
+
+  @override
   Future<void> deleteList(String listId) async {
     try {
+      // Tentamos deletar primeiro os itens e historico para evitar erro de constraint caso nao haja cascade no banco
+      await _client
+          .from('purchase_history_items')
+          .delete()
+          .eq('list_id', listId);
+      await _client.from('list_items').delete().eq('list_id', listId);
       await _client.from("lists").delete().eq('id', listId);
     } catch (e) {
       _logger.e(e);
@@ -113,7 +177,7 @@ class ListasRepositoryImpl implements ListasRepository {
       final response = await _client
           .from('list_items')
           .select(
-            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), units(*), preco_sugerido',
+            'id, created_at, name, amount, list:lists(*), created_by:created_by_id(*), units(*), preco_sugerido, unidade_preco_sugerido',
           )
           .eq('list_id', listId);
 
@@ -142,12 +206,36 @@ class ListasRepositoryImpl implements ListasRepository {
       'amount': amount,
       'list_id': listId,
       'unit_id': unitId,
+      'created_by_id': currentUserId,
     };
 
     try {
       await _client.from('list_items').insert(dbRecord);
     } catch (e) {
       _logger.e(e.toString());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> parseNaturalLanguageItem(
+    String query,
+    List<Unit> units,
+  ) async {
+    try {
+      final response = await _client.functions.invoke(
+        'parse-item-nlp',
+        body: {'query': query, 'units': units.map((u) => u.toMap()).toList()},
+      );
+
+      if (response.status != 200) {
+        throw 'Erro ao parsear item com IA: ${response.status}';
+      }
+
+      return response.data as Map<String, dynamic>;
+    } catch (e) {
+      _logger.e('Erro ao processar linguagem natural: $e');
+      rethrow;
     }
   }
 
@@ -157,6 +245,20 @@ class ListasRepositoryImpl implements ListasRepository {
       await _client.from('list_items').delete().eq('id', itemId);
     } catch (e) {
       _logger.e('Erro ao deletar item: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> sugerirPreco(ListItem item) async {
+    try {
+      final record = item.toMap();
+      record['id'] = item.id;
+      record['created_at'] = item.createdAt.toIso8601String();
+
+      await _client.functions.invoke('sugerir-preco', body: {'record': record});
+    } catch (e) {
+      _logger.e('Erro ao sugerir preço: $e');
       rethrow;
     }
   }
@@ -271,23 +373,69 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
+  Future<PurchaseWithNfePreview> previewPurchaseWithNfe(
+    List<String> cartItemIds,
+    String chaveAcesso,
+  ) async {
+    try {
+      final response = await _client.functions.invoke(
+        'preview-purchase-with-nf',
+        body: {'cart_items_ids': cartItemIds, 'chave_acesso': chaveAcesso},
+      );
+
+      if (response.status != 200) {
+        throw response.data['error'] ?? 'Falha ao revisar a nota fiscal.';
+      }
+
+      return PurchaseWithNfePreview.fromMap(
+        response.data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      _logger.e('Erro ao revisar compra com NF: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> confirmPurchaseWithNfe(
+    List<String> cartItemIds,
+    String chaveAcesso,
+    Map<String, String?> manualMatches,
+  ) async {
+    try {
+      final response = await _client.functions.invoke(
+        'confirm-purchase-with-nf',
+        body: {
+          'cart_items_ids': cartItemIds,
+          'chave_acesso': chaveAcesso,
+          'manual_matches': manualMatches,
+        },
+      );
+
+      if (response.status != 200) {
+        throw response.data['error'] ?? 'Falha ao confirmar compra com NF.';
+      }
+    } catch (e) {
+      _logger.e('Erro ao confirmar compra com NF: $e');
+      rethrow;
+    }
+  }
+
+  @override
   Future<List<PurchaseHistory>> getPurchaseHistory(String listId) async {
     try {
       final response = await _client
           .from('purchase_history')
           .select(
-            'id, created_at, users!inner(user_metadata), purchase_history_items!inner(*, units(*))',
+            'id, created_at, nota_fiscal_id, users!inner(user_metadata), notas_fiscais(id, chave_acesso, data_de_emissao, valor_total, mercados(*)), purchase_history_items!inner(*, units(*))',
           )
           .eq('purchase_history_items.list_id', listId)
           .order('created_at', ascending: false);
 
-      _logger.i(response);
-
       final history =
-          (response as List<dynamic>).map((e) {
-            _logger.i(e);
-            return PurchaseHistory.fromMap(e as Map<String, dynamic>);
-          }).toList();
+          (response as List<dynamic>)
+              .map((e) => PurchaseHistory.fromMap(e as Map<String, dynamic>))
+              .toList();
 
       return history;
     } catch (e) {

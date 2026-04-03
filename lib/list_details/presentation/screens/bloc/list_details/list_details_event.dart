@@ -11,9 +11,10 @@ class LoadListDetails extends ListDetailsEvent {}
 
 class SortList extends ListDetailsEvent {
   final SortOption sortOption;
-  const SortList(this.sortOption);
+  final SortOrder sortOrder;
+  const SortList(this.sortOption, this.sortOrder);
   @override
-  List<Object> get props => [sortOption];
+  List<Object> get props => [sortOption, sortOrder];
 }
 
 class AddItemToList extends ListDetailsEvent {
@@ -31,11 +32,31 @@ class AddItemToList extends ListDetailsEvent {
   List<Object> get props => [itemName, amount, unitId];
 }
 
+class AddNaturalLanguageItemToList extends ListDetailsEvent {
+  final String query;
+
+  const AddNaturalLanguageItemToList(this.query);
+
+  @override
+  List<Object> get props => [query];
+}
+
 class RemoveItemFromList extends ListDetailsEvent {
   final String itemId;
+
   const RemoveItemFromList(this.itemId);
+
   @override
   List<Object> get props => [itemId];
+}
+
+class SugerirPreco extends ListDetailsEvent {
+  final ListItem item;
+
+  const SugerirPreco(this.item);
+
+  @override
+  List<Object> get props => [item];
 }
 
 class TogglePriceForecast extends ListDetailsEvent {}

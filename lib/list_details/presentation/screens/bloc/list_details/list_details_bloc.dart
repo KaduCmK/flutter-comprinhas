@@ -8,6 +8,7 @@ import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/c
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
+import 'package:flutter_comprinhas/shared/utils/unit_converter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'list_details_event.dart';
@@ -20,7 +21,7 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
   final String listId;
   StreamSubscription? _cartSubscription;
 
-  List<ListItem> _originalItems = [];
+  final List<ListItem> _originalItems = [];
 
   late final RealtimeChannel _itemChannel;
 
@@ -29,10 +30,10 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     required this.listId,
     required SupabaseClient client,
     required CartBloc cartBloc,
-  })  : _repository = repository,
-        _client = client,
-        _cartBloc = cartBloc,
-        super(ListDetailsState.initial()) {
+  }) : _repository = repository,
+       _client = client,
+       _cartBloc = cartBloc,
+       super(ListDetailsState.initial()) {
     _setupRealtime();
     _cartSubscription = _cartBloc.stream.listen((cartState) {
       add(_CartUpdated(cartState.cartItems));
@@ -42,7 +43,9 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     on<LoadListDetails>(_onLoadListDetails);
     on<SortList>(_onSortList);
     on<AddItemToList>(_onAddItemToList);
+    on<AddNaturalLanguageItemToList>(_onAddNaturalLanguageItemToList);
     on<RemoveItemFromList>(_onRemoveItemFromList);
+    on<SugerirPreco>(_onSugerirPreco);
     on<_CartUpdated>(_onCartUpdated);
   }
 
@@ -58,18 +61,40 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
         _cartBloc.state.cartItems.map((item) => item.listItem.id).toSet();
     final itemsToBuy =
         _originalItems.where((item) => !cartItemIds.contains(item.id)).toList();
-    final sortedItems = _sortItems(itemsToBuy, state.sortOption);
+    final sortedItems = _sortItems(
+      itemsToBuy,
+      state.sortOption,
+      state.sortOrder,
+    );
     emit(state.copyWith(items: sortedItems));
   }
 
-  List<ListItem> _sortItems(List<ListItem> items, SortOption option) {
+  List<ListItem> _sortItems(
+    List<ListItem> items,
+    SortOption option,
+    SortOrder order,
+  ) {
     final sortedList = List<ListItem>.from(items);
+    final multiplier = order == SortOrder.ascending ? 1 : -1;
+
     switch (option) {
       case SortOption.name:
-        sortedList.sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+        sortedList.sort(
+          (a, b) =>
+              a.name.toLowerCase().compareTo(b.name.toLowerCase()) * multiplier,
+        );
         break;
       case SortOption.date:
-        sortedList.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        sortedList.sort(
+          (a, b) => a.createdAt.compareTo(b.createdAt) * multiplier,
+        );
+        break;
+      case SortOption.price:
+        sortedList.sort((a, b) {
+          final priceA = a.precoSugerido ?? 0;
+          final priceB = b.precoSugerido ?? 0;
+          return priceA.compareTo(priceB) * multiplier;
+        });
         break;
     }
     return sortedList;
@@ -83,7 +108,10 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     try {
       final list = await _repository.getListById(listId);
       final units = await _repository.getUnits();
-      _originalItems = await _repository.getListItems(listId);
+      final items = await _repository.getListItems(listId);
+
+      _originalItems.clear();
+      _originalItems.addAll(items);
 
       emit(state.copyWith(isLoading: false, list: list, units: units));
       _filterAndSortItems(emit);
@@ -96,8 +124,40 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     SortList event,
     Emitter<ListDetailsState> emit,
   ) async {
-    emit(state.copyWith(sortOption: event.sortOption));
+    emit(
+      state.copyWith(sortOption: event.sortOption, sortOrder: event.sortOrder),
+    );
     _filterAndSortItems(emit);
+  }
+
+  Future<void> _onAddNaturalLanguageItemToList(
+    AddNaturalLanguageItemToList event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    if (state.units == null || state.units!.isEmpty) return;
+
+    emit(state.copyWith(isParsingNlp: true, error: null));
+    try {
+      final parsedData = await _repository.parseNaturalLanguageItem(
+        event.query,
+        state.units!,
+      );
+
+      await _repository.addItemToList(
+        listId,
+        parsedData['name'],
+        parsedData['amount'],
+        parsedData['unit_id'],
+      );
+      emit(state.copyWith(isParsingNlp: false));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isParsingNlp: false,
+          error: 'Não foi possível interpretar o item.',
+        ),
+      );
+    }
   }
 
   Future<void> _onAddItemToList(
@@ -127,13 +187,30 @@ class ListDetailsBloc extends Bloc<ListDetailsEvent, ListDetailsState> {
     }
   }
 
+  Future<void> _onSugerirPreco(
+    SugerirPreco event,
+    Emitter<ListDetailsState> emit,
+  ) async {
+    emit(state.copyWith(suggestingPriceItemId: event.item.id));
+    try {
+      await _repository.sugerirPreco(event.item);
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    } finally {
+      emit(state.copyWith(suggestingPriceItemId: null));
+    }
+  }
+
   Future<void> _onTogglePriceForecast(
     TogglePriceForecast event,
     Emitter<ListDetailsState> emit,
   ) async {
     emit(state.copyWith(isLoading: true));
     try {
-      await _repository.togglePriceForecast(listId, state.list!.priceForecastEnabled);
+      await _repository.togglePriceForecast(
+        listId,
+        state.list!.priceForecastEnabled,
+      );
       add(LoadListDetails());
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));

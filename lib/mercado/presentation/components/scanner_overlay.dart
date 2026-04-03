@@ -10,10 +10,11 @@ class ScannerOverlay extends CustomPainter {
     final backgroundPath = Path()..addRect(Rect.largest);
     final cutoutPath = Path()..addRect(scanWindow);
 
-    final backgroundPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.5)
-      ..style = PaintingStyle.fill
-      ..blendMode = BlendMode.dstOut;
+    final backgroundPaint =
+        Paint()
+          ..color = Colors.black.withValues(alpha: 0.5)
+          ..style = PaintingStyle.fill
+          ..blendMode = BlendMode.dstOut;
 
     final backgroundWithCutout = Path.combine(
       PathOperation.difference,
@@ -21,10 +22,11 @@ class ScannerOverlay extends CustomPainter {
       cutoutPath,
     );
 
-    final borderPaint = Paint()
-      ..color = Colors.deepPurple
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0;
+    final borderPaint =
+        Paint()
+          ..color = Colors.deepPurple
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4.0;
 
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
     canvas.drawRect(scanWindow, borderPaint);

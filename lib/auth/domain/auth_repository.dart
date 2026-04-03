@@ -1,3 +1,1 @@
-abstract class AuthRepository {
-  
-}
+abstract class AuthRepository {}

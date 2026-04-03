@@ -11,36 +11,53 @@ void main() {
     late MockListasRepository mockListasRepository;
 
     final mockListas = [
-      ListaCompra(id: '1', name: 'Lista 1', ownerId: 'user-1', createdAt: DateTime.now()),
-      ListaCompra(id: '2', name: 'Lista 2', ownerId: 'user-1', createdAt: DateTime.now()),
+      ListaCompra(
+        id: '1',
+        name: 'Lista 1',
+        ownerId: 'user-1',
+        createdAt: DateTime.now(),
+      ),
+      ListaCompra(
+        id: '2',
+        name: 'Lista 2',
+        ownerId: 'user-1',
+        createdAt: DateTime.now(),
+      ),
     ];
     final mockUnits = [
-      Unit(id: '1', name: 'kg', abbreviation: 'kg', createdAt: DateTime.now())
+      Unit(id: '1', name: 'kg', abbreviation: 'kg', createdAt: DateTime.now()),
     ];
 
     setUp(() {
       mockListasRepository = MockListasRepository();
-      
-      when(() => mockListasRepository.getUserLists())
-          .thenAnswer((_) async => mockListas);
-      when(() => mockListasRepository.getUnits())
-          .thenAnswer((_) async => mockUnits);
-      when(() => mockListasRepository.upsertList(any(), listId: any(named: 'listId')))
-          .thenAnswer((_) async {});
+
+      when(
+        () => mockListasRepository.getUserLists(),
+      ).thenAnswer((_) async => mockListas);
+      when(
+        () => mockListasRepository.getUnits(),
+      ).thenAnswer((_) async => mockUnits);
+      when(
+        () => mockListasRepository.upsertList(
+          any(),
+          listId: any(named: 'listId'),
+          backgroundImageUrl: any(named: 'backgroundImageUrl'),
+        ),
+      ).thenAnswer((_) async => 'mocked-id');
     });
 
     test('o estado inicial deve ser ListasInitial', () {
-      expect(ListasBloc(repository: mockListasRepository).state, isA<ListasInitial>());
+      expect(
+        ListasBloc(repository: mockListasRepository).state,
+        isA<ListasInitial>(),
+      );
     });
 
     blocTest<ListasBloc, ListasState>(
       'deve emitir [ListasLoading, ListasLoaded] quando GetListsEvent é adicionado.',
       build: () => ListasBloc(repository: mockListasRepository),
       act: (bloc) => bloc.add(GetListsEvent()),
-      expect: () => [
-        isA<ListasLoading>(),
-        isA<ListasLoaded>(),
-      ],
+      expect: () => [isA<ListasLoading>(), isA<ListasLoaded>()],
       verify: (_) {
         verify(() => mockListasRepository.getUserLists()).called(1);
         verify(() => mockListasRepository.getUnits()).called(1);
@@ -51,10 +68,7 @@ void main() {
       'deve emitir [ListasLoading, ListasLoaded] quando UpsertListEvent é adicionado.',
       build: () => ListasBloc(repository: mockListasRepository),
       act: (bloc) => bloc.add(const UpsertListEvent('Nova Lista')),
-      expect: () => [
-        isA<ListasLoading>(),
-        isA<ListasLoaded>(),
-      ],
+      expect: () => [isA<ListasLoading>(), isA<ListasLoaded>()],
       verify: (_) {
         verify(() => mockListasRepository.upsertList('Nova Lista')).called(1);
         verify(() => mockListasRepository.getUserLists()).called(1);
@@ -64,14 +78,13 @@ void main() {
     blocTest<ListasBloc, ListasState>(
       'deve emitir [ListasLoading, ListasError] quando o repositório lança um erro.',
       build: () {
-        when(() => mockListasRepository.getUserLists()).thenThrow(Exception('Erro de Teste'));
+        when(
+          () => mockListasRepository.getUserLists(),
+        ).thenThrow(Exception('Erro de Teste'));
         return ListasBloc(repository: mockListasRepository);
       },
       act: (bloc) => bloc.add(GetListsEvent()),
-      expect: () => [
-        isA<ListasLoading>(),
-        isA<ListasError>(),
-      ],
+      expect: () => [isA<ListasLoading>(), isA<ListasError>()],
     );
   });
 }

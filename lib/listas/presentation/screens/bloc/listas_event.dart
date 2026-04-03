@@ -12,11 +12,18 @@ class GetListsEvent extends ListasEvent {}
 class UpsertListEvent extends ListasEvent {
   final String name;
   final String? listId;
+  final String? backgroundImageUrl;
+  final File? imageFile;
 
-  const UpsertListEvent(this.name, {this.listId});
+  const UpsertListEvent(
+    this.name, {
+    this.listId,
+    this.backgroundImageUrl,
+    this.imageFile,
+  });
 
   @override
-  List<Object?> get props => [name, listId];
+  List<Object?> get props => [name, listId, backgroundImageUrl, imageFile];
 }
 
 class DeleteListEvent extends ListasEvent {

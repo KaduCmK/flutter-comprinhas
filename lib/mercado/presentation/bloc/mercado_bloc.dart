@@ -16,20 +16,29 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
   MercadoBloc({
     required MercadoRepository mercadoRepository,
     required NotificationService notificationService,
-  })  : _repository = mercadoRepository,
-        _notificationService = notificationService,
-        super(const MercadoState()) {
+  }) : _repository = mercadoRepository,
+       _notificationService = notificationService,
+       super(const MercadoState()) {
     on<LoadNfeHistory>((event, emit) async {
       emit(state.copyWith(status: MercadoStatus.loading));
       try {
         final history = await _repository.getNfeHistory();
-        emit(state.copyWith(status: MercadoStatus.success, history: history));
+        final topMercados = await _repository.getTopMercados();
+        emit(
+          state.copyWith(
+            status: MercadoStatus.success,
+            history: history,
+            topMercados: topMercados,
+          ),
+        );
       } catch (e) {
         _logger.e(e);
-        emit(state.copyWith(
-          status: MercadoStatus.error,
-          errorMessage: e.toString(),
-        ));
+        emit(
+          state.copyWith(
+            status: MercadoStatus.error,
+            errorMessage: e.toString(),
+          ),
+        );
       }
     });
 
@@ -42,10 +51,12 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
       _logger.d('Enviando NF-e | $accessKey');
 
       if (accessKey.length != 44 || BigInt.tryParse(accessKey) == null) {
-        emit(state.copyWith(
-          status: MercadoStatus.error,
-          errorMessage: "Chave de acesso com formato inválido recebida.",
-        ));
+        emit(
+          state.copyWith(
+            status: MercadoStatus.error,
+            errorMessage: "Chave de acesso com formato inválido recebida.",
+          ),
+        );
         return;
       }
 
@@ -69,10 +80,12 @@ class MercadoBloc extends Bloc<MercadoEvent, MercadoState> {
           title: 'Erro ao Enviar Nota Fiscal',
           body: e.toString(),
         );
-        emit(state.copyWith(
-          status: MercadoStatus.error,
-          errorMessage: e.toString(),
-        ));
+        emit(
+          state.copyWith(
+            status: MercadoStatus.error,
+            errorMessage: e.toString(),
+          ),
+        );
       }
     });
   }

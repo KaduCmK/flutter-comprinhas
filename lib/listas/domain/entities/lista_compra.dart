@@ -1,7 +1,25 @@
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 enum CartMode { shared, individual }
+
+class ListMember extends Equatable {
+  final User user;
+  final DateTime joinedAt;
+
+  const ListMember({required this.user, required this.joinedAt});
+
+  factory ListMember.fromMap(Map<String, dynamic> map) {
+    return ListMember(
+      user: User.fromJson(map['users'] as Map<String, dynamic>)!,
+      joinedAt: DateTime.parse(map['created_at'] as String),
+    );
+  }
+
+  @override
+  List<Object?> get props => [user, joinedAt];
+}
 
 class ListaCompra extends Equatable {
   final String id;
@@ -10,6 +28,8 @@ class ListaCompra extends Equatable {
   final DateTime createdAt;
   final CartMode cartMode;
   final bool priceForecastEnabled;
+  final List<ListMember> members;
+  final String? backgroundImage;
 
   const ListaCompra({
     required this.id,
@@ -18,11 +38,19 @@ class ListaCompra extends Equatable {
     required this.createdAt,
     this.cartMode = CartMode.shared,
     this.priceForecastEnabled = false,
+    this.members = const [],
+    this.backgroundImage,
   });
 
   String get createdAtFormatted => DateFormat('dd/MM/yyyy').format(createdAt);
 
   factory ListaCompra.fromMap(Map<String, dynamic> map) {
+    final membersList =
+        (map['list_members'] as List<dynamic>?)
+            ?.map((e) => ListMember.fromMap(e as Map<String, dynamic>))
+            .toList() ??
+        [];
+
     return ListaCompra(
       id: map['id'] as String,
       name: map['name'] as String,
@@ -33,6 +61,8 @@ class ListaCompra extends Equatable {
         orElse: () => CartMode.shared,
       ),
       priceForecastEnabled: map['price_forecast_enabled'] as bool? ?? false,
+      members: membersList,
+      backgroundImage: map['background_image'] as String?,
     );
   }
 
@@ -43,6 +73,7 @@ class ListaCompra extends Equatable {
       'owner_id': ownerId,
       'cart_mode': cartMode.name,
       'price_forecast_enabled': priceForecastEnabled,
+      if (backgroundImage != null) 'background_image': backgroundImage,
     };
   }
 
@@ -54,5 +85,7 @@ class ListaCompra extends Equatable {
     createdAt,
     cartMode,
     priceForecastEnabled,
+    members,
+    backgroundImage,
   ];
 }

@@ -14,13 +14,12 @@ class _NewItemDialogState extends State<NewItemDialog> {
 
   final _itemNameController = TextEditingController();
   final _nameFocusNode = FocusNode();
-  
+
   final _unitController = TextEditingController();
   String? _selectedUnitId;
 
   final _amountController = TextEditingController(text: "1");
   final _amountFocusNode = FocusNode();
-
 
   @override
   void dispose() {
@@ -35,7 +34,6 @@ class _NewItemDialogState extends State<NewItemDialog> {
   void _submitForm() {
     if (_formKey.currentState?.validate() ?? false) {
       if (_selectedUnitId == null) {
-        // Opcional: mostrar um snackbar se nenhuma unidade for selecionada
         return;
       }
 
@@ -57,7 +55,11 @@ class _NewItemDialogState extends State<NewItemDialog> {
         final units = state.units ?? [];
         final initialUnit = units.firstWhere(
           (u) => u.abbreviation == "un",
-          orElse: () => units.first,
+          orElse:
+              () =>
+                  units.isNotEmpty
+                      ? units.first
+                      : throw Exception("No units found"),
         );
 
         _selectedUnitId ??= initialUnit.id;
@@ -137,8 +139,8 @@ class _NewItemDialogState extends State<NewItemDialog> {
           ),
           actions: [
             TextButton(
-              child: const Text("Cancelar"),
               onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancelar"),
             ),
             FilledButton(onPressed: _submitForm, child: const Text("Salvar")),
           ],

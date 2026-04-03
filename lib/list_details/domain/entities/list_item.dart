@@ -12,6 +12,7 @@ class ListItem extends Equatable {
   final DateTime createdAt;
   final ListaCompra list;
   final num? precoSugerido;
+  final String? unidadePrecoSugerido;
 
   const ListItem({
     required this.id,
@@ -22,6 +23,7 @@ class ListItem extends Equatable {
     required this.createdAt,
     required this.list,
     this.precoSugerido,
+    this.unidadePrecoSugerido,
   });
 
   factory ListItem.fromMap(Map<String, dynamic> map) {
@@ -34,6 +36,7 @@ class ListItem extends Equatable {
       createdAt: DateTime.parse(map['created_at'] as String),
       list: ListaCompra.fromMap(map['list'] as Map<String, dynamic>),
       precoSugerido: map['preco_sugerido'] as num?,
+      unidadePrecoSugerido: map['unidade_preco_sugerido'] as String?,
     );
   }
 
@@ -45,7 +48,8 @@ class ListItem extends Equatable {
       'unit_id': unit.id,
       'list_id': list.id,
       'created_by_id': createdBy.id,
-      'preco_sugerido': precoSugerido
+      'preco_sugerido': precoSugerido,
+      'unidade_preco_sugerido': unidadePrecoSugerido,
     };
   }
 
@@ -58,6 +62,7 @@ class ListItem extends Equatable {
     createdBy,
     createdAt,
     list,
-    precoSugerido
+    precoSugerido,
+    unidadePrecoSugerido,
   ];
 }

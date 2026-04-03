@@ -1,37 +1,49 @@
 import 'dart:convert';
 
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/app_theme.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/splash_screen.dart';
+import 'package:flutter_comprinhas/core/config/app_settings_service.dart';
 import 'package:flutter_comprinhas/core/config/firebase_config.dart';
 import 'package:flutter_comprinhas/core/config/notification_service.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/global_cart/presentation/bloc/global_cart_bloc.dart';
 import 'package:flutter_comprinhas/global_cart/presentation/global_cart_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
+import 'package:flutter_comprinhas/home/presentation/screens/settings_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/close_purchase_with_nfe_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_details_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/list_history_screen.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/list_info_screen.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
+import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
 import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_comprinhas/mercado/presentation/enviar_nota_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/mercado_details_screen.dart';
+import 'package:flutter_comprinhas/mercado/presentation/nfe_details_screen.dart';
+import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('pt_BR', null);
   await dotenv.load(fileName: '.env');
 
   configureServiceLocator();
+  await sl<AppSettingsService>().init();
   await sl<NotificationService>().init();
 
   await configureFirebase();
@@ -64,6 +76,10 @@ final _router = GoRouter(
         GoRoute(
           path: '/home',
           builder: (context, state) => const HomeScreenProvider(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
         ),
         GoRoute(
           path: '/carrinho',
@@ -114,6 +130,23 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/list/:listId/close-with-nf',
+      builder: (context, state) {
+        final cartBloc = state.extra as CartBloc;
+        return BlocProvider.value(
+          value: cartBloc,
+          child: const ClosePurchaseWithNfeScreen(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/list/:listId/info',
+      builder: (context, state) {
+        final list = state.extra as ListaCompra;
+        return ListInfoScreen(list: list);
+      },
+    ),
+    GoRoute(
       path: '/nova-lista',
       builder: (context, state) {
         debugPrint(state.extra.toString());
@@ -154,8 +187,28 @@ final _router = GoRouter(
     GoRoute(
       path: '/enviar-nfe',
       builder: (context, state) {
-        final bloc = state.extra as MercadoBloc;
-        return BlocProvider.value(value: bloc, child: const EnviarNotaScreen());
+        final extra = state.extra;
+        if (extra is MercadoBloc) {
+          return BlocProvider.value(
+            value: extra,
+            child: const EnviarNotaScreen(),
+          );
+        }
+        return const EnviarNotaScreen(returnAccessKey: true);
+      },
+    ),
+    GoRoute(
+      path: '/nfe-details',
+      builder: (context, state) {
+        final purchase = state.extra as PurchaseHistory;
+        return NfeDetailsScreen(purchase: purchase);
+      },
+    ),
+    GoRoute(
+      path: '/mercado-details',
+      builder: (context, state) {
+        final stats = state.extra as MercadoStats;
+        return MercadoDetailsScreen(stats: stats);
       },
     ),
   ],
@@ -166,12 +219,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'Comprinhas',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      routerConfig: _router,
+    return DynamicColorBuilder(
+      builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
+        return MaterialApp.router(
+          title: 'Comprinhas',
+          theme: AppTheme.light(colorScheme: lightDynamic),
+          darkTheme: AppTheme.dark(colorScheme: darkDynamic),
+          themeMode: ThemeMode.system,
+          routerConfig: _router,
+        );
+      },
     );
   }
 }

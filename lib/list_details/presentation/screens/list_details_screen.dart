@@ -16,9 +16,6 @@ class ListDetailsScreen extends StatefulWidget {
 }
 
 class _ListDetailsScreenState extends State<ListDetailsScreen> {
-  // A _listKey foi removida pois não é mais necessária com a simplificação
-  // final _listKey = GlobalKey<SliverAnimatedListState>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,8 +40,15 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
                     builder:
-                        (_) => BlocProvider.value(
-                          value: context.read<CartBloc>(),
+                        (_) => MultiBlocProvider(
+                          providers: [
+                            BlocProvider.value(
+                              value: context.read<CartBloc>(),
+                            ),
+                            BlocProvider.value(
+                              value: context.read<ListDetailsBloc>(),
+                            ),
+                          ],
                           child: const CartBottomSheet(),
                         ),
                   );
@@ -78,7 +82,7 @@ class _ListDetailsScreenState extends State<ListDetailsScreen> {
                 snap: true,
                 floating: true,
                 automaticallyImplyLeading: true,
-                expandedHeight: 160,
+                expandedHeight: 230,
                 backgroundColor: Colors.transparent,
                 surfaceTintColor: Colors.transparent,
                 flexibleSpace: FlexibleSpaceBar(

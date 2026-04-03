@@ -84,6 +84,7 @@ void main() {
         'created_by_id': 'user-123',
         'unit_id': 'kg',
         'preco_sugerido': null,
+        'unidade_preco_sugerido': null,
       };
 
       expect(result, expectedMap);

@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 class EnviarNotaScreen extends StatefulWidget {
-  const EnviarNotaScreen({super.key});
+  final bool returnAccessKey;
+
+  const EnviarNotaScreen({super.key, this.returnAccessKey = false});
 
   @override
   State<EnviarNotaScreen> createState() => _EnviarNotaScreenState();
@@ -45,10 +47,13 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
       isProcessing = true;
     });
 
-    // Sai da tela
+    if (widget.returnAccessKey) {
+      context.pop(accessKey);
+      return;
+    }
+
     context.pop();
 
-    // Mostra a snackbar de sucesso na tela anterior
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('QR Code lido com sucesso! Enviando nota...'),
@@ -56,7 +61,6 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
       ),
     );
 
-    // Envia a chave JÁ VALIDADA para o BLoC
     context.read<MercadoBloc>().add(SendNfe(accessKey));
   }
 

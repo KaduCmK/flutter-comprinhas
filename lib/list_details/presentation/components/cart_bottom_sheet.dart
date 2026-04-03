@@ -26,12 +26,13 @@ class CartBottomSheet extends StatelessWidget {
         final isIndividualMode = state.cartMode == CartMode.individual;
 
         // Agrupa por usuário se for modo individual
-        final groupedItems = isIndividualMode
-            ? groupBy(
-                cartItems,
-                (CartItem item) => item.user.email ?? 'Anônimo',
-              )
-            : <String, List<CartItem>>{};
+        final groupedItems =
+            isIndividualMode
+                ? groupBy(
+                  cartItems,
+                  (CartItem item) => item.user.email ?? 'Anônimo',
+                )
+                : <String, List<CartItem>>{};
 
         return DraggableScrollableSheet(
           initialChildSize: 0.5,
@@ -112,9 +113,10 @@ class CartBottomSheet extends StatelessWidget {
                               ),
                             ],
                             selected: {state.cartMode},
-                            onSelectionChanged: (mode) => context
-                                .read<CartBloc>()
-                                .add(SetCartMode(mode.first)),
+                            onSelectionChanged:
+                                (mode) => context.read<CartBloc>().add(
+                                  SetCartMode(mode.first),
+                                ),
                           ),
                         ],
                       ),
@@ -122,14 +124,36 @@ class CartBottomSheet extends StatelessWidget {
                   ),
 
                   SliverPadding(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 32),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 4,
+                      horizontal: 32,
+                    ),
                     sliver: SliverToBoxAdapter(
-                      child: FilledButton.icon(
-                        onPressed: () =>
-                            context.read<CartBloc>().add(ConfirmPurchase()),
-                        icon: const Icon(Icons.payments),
-                        label: const Text("Finalizar Compras"),
+                      child: Column(
+                        children: [
+                          FilledButton.icon(
+                            onPressed:
+                                () => context.read<CartBloc>().add(
+                                  ConfirmPurchase(),
+                                ),
+                            icon: const Icon(Icons.payments),
+                            label: const Text("Finalizar compras"),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: () {
+                              final bloc = context.read<CartBloc>();
+                              final router = GoRouter.of(context);
+                              Navigator.of(context).pop();
+                              router.push(
+                                '/list/${bloc.listId}/close-with-nf',
+                                extra: bloc,
+                              );
+                            },
+                            icon: const Icon(Icons.receipt_long),
+                            label: const Text("Fechar compra com nota"),
+                          ),
+                        ],
                       ),
                     ),
                   ),
