@@ -545,7 +545,10 @@ export async function persistInvoiceData(
     .maybeSingle();
 
   if (existingInvoice) {
-    throw new Error("Esta nota fiscal já foi processada anteriormente.");
+    throw new HttpError(
+      409,
+      "Esta nota fiscal já foi processada anteriormente.",
+    );
   }
 
   const { data: mercado, error: mercadoError } = await supabaseAdmin

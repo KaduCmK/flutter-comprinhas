@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   corsHeaders,
+  HttpError,
   persistInvoiceData,
   scrapeNfce,
 } from "../_shared/nfce.ts";
@@ -14,7 +15,7 @@ serve(async (req) => {
   try {
     const { chave_acesso } = await req.json();
     if (!chave_acesso) {
-      throw new Error("Chave de acesso é obrigatória");
+      throw new HttpError(400, "Chave de acesso é obrigatória");
     }
 
     const authHeader = req.headers.get("Authorization");
@@ -28,7 +29,7 @@ serve(async (req) => {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      throw new Error("Usuário não autenticado.");
+      throw new HttpError(401, "Usuário não autenticado.");
     }
 
     const invoice = await scrapeNfce(chave_acesso);
@@ -50,10 +51,11 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error(error);
+    const status = error instanceof HttpError ? error.status : 500;
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        status: 500,
+        status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       },
     );
