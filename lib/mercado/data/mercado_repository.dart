@@ -35,7 +35,18 @@ class MercadoRepository {
   MercadoRepository({required SupabaseClient client}) : _client = client;
 
   Future<void> sendNfe(String nfe) async {
-    await _client.functions.invoke('scrape-nfce', body: {'chave_acesso': nfe});
+    final response = await _client.functions.invoke(
+      'scrape-nfce',
+      body: {'chave_acesso': nfe},
+    );
+
+    if (response.status != 200) {
+      final data = response.data;
+      if (data is Map<String, dynamic> && data['error'] is String) {
+        throw data['error'] as String;
+      }
+      throw 'Falha ao enviar nota fiscal.';
+    }
   }
 
   Future<PurchaseHistory> getNfeById(String notaFiscalId) async {

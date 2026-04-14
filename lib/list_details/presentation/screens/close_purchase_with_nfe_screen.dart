@@ -19,10 +19,12 @@ class ClosePurchaseWithNfeScreen extends StatefulWidget {
 
 class _ClosePurchaseWithNfeScreenState
     extends State<ClosePurchaseWithNfeScreen> {
+  static const String _ignoreCartItemSelection = '__ignore_cart_item__';
+
   final _keyController = TextEditingController();
   final _repository = sl<ListasRepository>();
   PurchaseWithNfePreview? _preview;
-  Map<String, String?> _manualMatches = {};
+  Map<String, String> _manualMatches = {};
   bool _isLoading = false;
   bool _isConfirming = false;
   String? _error;
@@ -62,7 +64,8 @@ class _ClosePurchaseWithNfeScreenState
 
       if (item.status == CartReviewStatus.ambiguous) {
         final manualSelection = _manualMatches[item.cartItemId];
-        if (manualSelection != null) {
+        if (manualSelection != null &&
+            manualSelection != _ignoreCartItemSelection) {
           selectedIds.add(manualSelection);
         }
       }
@@ -102,7 +105,10 @@ class _ClosePurchaseWithNfeScreenState
           matchedItemsCount += 1;
           break;
         case CartReviewStatus.ambiguous:
-          if (_manualMatches[item.cartItemId] != null) {
+          final manualSelection = _manualMatches[item.cartItemId];
+          if (manualSelection == _ignoreCartItemSelection) {
+            unmatchedItemsCount += 1;
+          } else if (manualSelection != null) {
             matchedItemsCount += 1;
           } else {
             ambiguousItemsCount += 1;
@@ -166,12 +172,7 @@ class _ClosePurchaseWithNfeScreenState
       if (!mounted) return;
       setState(() {
         _preview = preview;
-        _manualMatches = {
-          for (final item in preview.cartItems.where(
-            (item) => item.needsReview,
-          ))
-            item.cartItemId: null,
-        };
+        _manualMatches = {};
       });
     } catch (e) {
       if (!mounted) return;
@@ -195,7 +196,11 @@ class _ClosePurchaseWithNfeScreenState
       await _repository.confirmPurchaseWithNfe(
         _cartItemIds,
         _keyController.text.trim(),
-        _manualMatches,
+        {
+          for (final entry in _manualMatches.entries)
+            entry.key:
+                entry.value == _ignoreCartItemSelection ? null : entry.value,
+        },
       );
       if (!mounted) return;
       context.read<CartBloc>().add(LoadCart());
@@ -242,8 +247,16 @@ class _ClosePurchaseWithNfeScreenState
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return WillPopScope(
-      onWillPop: _confirmExit,
+    return PopScope<void>(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+
+        final shouldLeave = await _confirmExit();
+        if (shouldLeave && context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
       child: Scaffold(
         appBar: AppBar(title: const Text('Fechar compra com nota')),
         body: ListView(
@@ -426,8 +439,8 @@ class _ClosePurchaseWithNfeScreenState
                   border: OutlineInputBorder(),
                 ),
                 items: [
-                  const DropdownMenuItem<String?>(
-                    value: null,
+                  const DropdownMenuItem<String>(
+                    value: _ignoreCartItemSelection,
                     child: Text(
                       'Desconsiderar item da cesta',
                       overflow: TextOverflow.ellipsis,
@@ -473,7 +486,11 @@ class _ClosePurchaseWithNfeScreenState
                     ],
                 onChanged: (value) {
                   setState(() {
-                    _manualMatches[item.cartItemId] = value;
+                    if (value == null) {
+                      _manualMatches.remove(item.cartItemId);
+                    } else {
+                      _manualMatches[item.cartItemId] = value;
+                    }
                   });
                 },
               ),
