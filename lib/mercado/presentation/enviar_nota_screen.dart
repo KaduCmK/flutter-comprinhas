@@ -52,16 +52,18 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
       return;
     }
 
+    final messenger = ScaffoldMessenger.of(context);
+    final mercadoBloc = context.read<MercadoBloc>();
     context.pop();
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       const SnackBar(
         content: Text('QR Code lido com sucesso! Enviando nota...'),
         backgroundColor: Colors.blue,
       ),
     );
 
-    context.read<MercadoBloc>().add(SendNfe(accessKey));
+    mercadoBloc.add(SendNfe(accessKey));
   }
 
   void _showErrorSnackBar(String message) {

@@ -31,6 +31,7 @@ class ListItemCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final listDetailsBloc = context.watch<ListDetailsBloc?>();
     final listDetailsState = listDetailsBloc?.state;
+    final avatarUrl = item.createdBy.userMetadata?['picture'] as String?;
 
     final bool priceForecastEnabled =
         listDetailsState?.list?.priceForecastEnabled ?? false;
@@ -130,11 +131,17 @@ class ListItemCard extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(24),
-                        child: Image.network(
-                          item.createdBy.userMetadata?['picture'],
-                          height: 20,
-                          width: 20,
-                        ),
+                        child:
+                            avatarUrl != null
+                                ? Image.network(
+                                  avatarUrl,
+                                  height: 20,
+                                  width: 20,
+                                  errorBuilder: (_, _, _) {
+                                    return _buildAvatarFallback(context);
+                                  },
+                                )
+                                : _buildAvatarFallback(context),
                       ),
                       const SizedBox(width: 4),
                       const Icon(Icons.calendar_month, size: 14),
@@ -233,6 +240,16 @@ class ListItemCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildAvatarFallback(BuildContext context) {
+    return Container(
+      width: 20,
+      height: 20,
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      alignment: Alignment.center,
+      child: const Icon(Icons.person, size: 14),
     );
   }
 }
