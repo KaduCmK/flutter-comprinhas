@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/core/config/push_token_sync_service.dart';
+import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +35,7 @@ class LoginScreen extends StatelessWidget {
 
     if (response.user != null) {
       debugPrint("logado como ${response.user!.email}");
+      await sl<PushTokenSyncService>().start();
 
       if (context.mounted) {
         context.go('/home');
