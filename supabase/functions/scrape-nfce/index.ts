@@ -33,14 +33,11 @@ serve(async (req) => {
     }
 
     const invoice = await scrapeNfce(chave_acesso);
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
     const persistedInvoice = await persistInvoiceData(
-      supabaseAdmin,
+      supabase,
       user.id,
       invoice,
+      { authorizationHeader: authHeader ?? undefined },
     );
 
     return new Response(

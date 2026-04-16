@@ -160,7 +160,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    const persistedInvoice = await persistInvoiceData(supabaseAdmin, user.id, invoice);
+    const persistedInvoice = await persistInvoiceData(
+      supabaseAdmin,
+      user.id,
+      invoice,
+      { authorizationHeader: authHeader ?? undefined },
+    );
     createdNotaFiscalId = persistedInvoice.notaFiscalId;
 
     const { data: history, error: historyError } = await supabaseAdmin

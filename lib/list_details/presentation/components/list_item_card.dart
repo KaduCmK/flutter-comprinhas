@@ -31,15 +31,14 @@ class ListItemCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final listDetailsBloc = context.watch<ListDetailsBloc?>();
     final listDetailsState = listDetailsBloc?.state;
-    final avatarUrl = item.createdBy.userMetadata?['picture'] as String?;
+    final avatarUrl =
+        item.createdBy.userMetadata?['avatar_url'] as String? ??
+        item.createdBy.userMetadata?['picture'] as String?;
 
     final bool priceForecastEnabled =
         listDetailsState?.list?.priceForecastEnabled ?? false;
     final bool hasAnySuggestedPrice =
-        listDetailsState?.items.any(
-      (i) => i.precoSugerido != null,
-    ) ??
-        false;
+        listDetailsState?.items.any((i) => i.precoSugerido != null) ?? false;
 
     final bool isSuggestingPrice =
         listDetailsState?.suggestingPriceItemId == item.id;

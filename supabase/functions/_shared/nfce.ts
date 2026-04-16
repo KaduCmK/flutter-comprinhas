@@ -534,11 +534,14 @@ export async function loadAuthorizedCartItemsForInvoiceFlow({
 }
 
 export async function persistInvoiceData(
-  supabaseAdmin: any,
+  supabaseClient: any,
   userId: string,
   invoice: CleanedInvoiceData,
+  options?: {
+    authorizationHeader?: string;
+  },
 ): Promise<PersistedInvoiceData> {
-  const { data: existingInvoice } = await supabaseAdmin
+  const { data: existingInvoice } = await supabaseClient
     .from("notas_fiscais")
     .select("id")
     .eq("chave_acesso", invoice.chave_acesso)
@@ -551,7 +554,7 @@ export async function persistInvoiceData(
     );
   }
 
-  const { data: mercado, error: mercadoError } = await supabaseAdmin
+  const { data: mercado, error: mercadoError } = await supabaseClient
     .from("mercados")
     .upsert(
       {
@@ -582,7 +585,7 @@ export async function persistInvoiceData(
     ).values(),
   );
 
-  const { data: persistedProducts, error: productsError } = await supabaseAdmin
+  const { data: persistedProducts, error: productsError } = await supabaseClient
     .from("produtos")
     .upsert(
       uniqueProducts.map((product) => ({
@@ -604,7 +607,7 @@ export async function persistInvoiceData(
     productByLookup.set(lookupKey, product.id);
   }
 
-  const { data: notaFiscal, error: notaFiscalError } = await supabaseAdmin
+  const { data: notaFiscal, error: notaFiscalError } = await supabaseClient
     .from("notas_fiscais")
     .insert({
       chave_acesso: invoice.chave_acesso,
@@ -633,7 +636,7 @@ export async function persistInvoiceData(
     };
   });
 
-  const { data: invoiceItems, error: invoiceItemsError } = await supabaseAdmin
+  const { data: invoiceItems, error: invoiceItemsError } = await supabaseClient
     .from("itens_nota_fiscal")
     .insert(
       invoiceRows.map((row) => ({
@@ -662,12 +665,18 @@ export async function persistInvoiceData(
     });
   });
 
+  const batchEmbedHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    apikey: Deno.env.get("SUPABASE_ANON_KEY")!,
+  };
+
+  if (options?.authorizationHeader) {
+    batchEmbedHeaders.Authorization = options.authorizationHeader;
+  }
+
   fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/batch-embed`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
-    },
+    headers: batchEmbedHeaders,
     body: JSON.stringify({}),
   }).catch(() => {});
 

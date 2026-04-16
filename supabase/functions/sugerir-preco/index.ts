@@ -32,18 +32,24 @@ async function clearDerivedSuggestionData(
   supabaseClient: ReturnType<typeof createClient>,
   itemId: string,
 ) {
-  await supabaseClient
+  const { error: deleteMatchesError } = await supabaseClient
     .from("list_item_product_matches")
     .delete()
     .eq("list_item_id", itemId);
+  if (deleteMatchesError) {
+    throw deleteMatchesError;
+  }
 
-  await supabaseClient
+  const { error: clearSuggestionError } = await supabaseClient
     .from("list_items")
     .update({
       preco_sugerido: null,
       unidade_preco_sugerido: null,
     })
     .eq("id", itemId);
+  if (clearSuggestionError) {
+    throw clearSuggestionError;
+  }
 }
 
 serve(async (req) => {
@@ -96,8 +102,11 @@ serve(async (req) => {
       return new Response(JSON.stringify({ message: "Nenhum produto compatível encontrado." }), { status: 200 });
     }
 
-    // Atualiza matches
-    await supabaseClient.from("list_item_product_matches").delete().eq("list_item_id", itemId);
+    const { error: deleteMatchesError } = await supabaseClient
+      .from("list_item_product_matches")
+      .delete()
+      .eq("list_item_id", itemId);
+    if (deleteMatchesError) throw deleteMatchesError;
     
     const newMatches = matchedProducts.map((product: any) => ({
       list_item_id: itemId,
@@ -105,7 +114,10 @@ serve(async (req) => {
       similarity_score: product.similarity
     }));
 
-    await supabaseClient.from("list_item_product_matches").insert(newMatches);
+    const { error: insertMatchesError } = await supabaseClient
+      .from("list_item_product_matches")
+      .insert(newMatches);
+    if (insertMatchesError) throw insertMatchesError;
 
     // CORREÇÃO: Encontra o produto MAIS SIMILAR que tenha preço (o primeiro da lista com preço)
     // matchedProducts já vem ordenado por similaridade decrescente da RPC
@@ -119,17 +131,25 @@ serve(async (req) => {
         .eq("id", bestMatch.id)
         .single();
 
-      await supabaseClient.from("list_items").update({
-        preco_sugerido: bestMatch.valor_unitario,
-        unidade_preco_sugerido: productData?.unidade_medida || null
-      }).eq("id", itemId);
+      const { error: updateSuggestionError } = await supabaseClient
+        .from("list_items")
+        .update({
+          preco_sugerido: bestMatch.valor_unitario,
+          unidade_preco_sugerido: productData?.unidade_medida || null
+        })
+        .eq("id", itemId);
+      if (updateSuggestionError) throw updateSuggestionError;
 
       console.log(`Preço sugerido de ${bestMatch.valor_unitario} (Unidade: ${productData?.unidade_medida}) para "${itemName}" (baseado no match mais similar: "${bestMatch.nome}" com ${(bestMatch.similarity * 100).toFixed(1)}%).`);
     } else {
-      await supabaseClient.from("list_items").update({
-        preco_sugerido: null,
-        unidade_preco_sugerido: null
-      }).eq("id", itemId);
+      const { error: clearSuggestionError } = await supabaseClient
+        .from("list_items")
+        .update({
+          preco_sugerido: null,
+          unidade_preco_sugerido: null
+        })
+        .eq("id", itemId);
+      if (clearSuggestionError) throw clearSuggestionError;
       console.log(`Produtos similares a "${itemName}" encontrados, mas nenhum com preço.`);
     }
 
