@@ -54,7 +54,7 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
 
     final messenger = ScaffoldMessenger.of(context);
     final mercadoBloc = context.read<MercadoBloc>();
-    context.pop();
+    mercadoBloc.add(SendNfe(accessKey));
 
     messenger.showSnackBar(
       const SnackBar(
@@ -63,7 +63,7 @@ class _EnviarNotaScreenState extends State<EnviarNotaScreen> {
       ),
     );
 
-    mercadoBloc.add(SendNfe(accessKey));
+    context.pop();
   }
 
   void _showErrorSnackBar(String message) {

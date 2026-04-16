@@ -7,14 +7,16 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final metadata = supabase.auth.currentUser?.userMetadata;
     final avatarUrl =
-        supabase.auth.currentUser?.userMetadata?['avatar_url'] as String?;
+        metadata?['avatar_url'] as String? ?? metadata?['picture'] as String?;
 
     return Padding(
       padding: const EdgeInsets.all(6),
       child: CircleAvatar(
         radius: size / 2,
         foregroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
+        onForegroundImageError: (_, _) {},
         child: avatarUrl == null ? const Icon(Icons.person_outline) : null,
       ),
     );
