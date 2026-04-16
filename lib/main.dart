@@ -15,6 +15,7 @@ import 'package:flutter_comprinhas/global_cart/presentation/global_cart_screen.d
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/settings_screen.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/close_purchase_with_nfe/close_purchase_with_nfe_cubit.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/history/history_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/close_purchase_with_nfe_screen.dart';
@@ -27,6 +28,7 @@ import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
 import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
+import 'package:flutter_comprinhas/mercado/presentation/bloc/nfe_details_cubit.dart';
 import 'package:flutter_comprinhas/mercado/presentation/bloc/mercado_bloc.dart';
 import 'package:flutter_comprinhas/mercado/presentation/enviar_nota_screen.dart';
 import 'package:flutter_comprinhas/mercado/presentation/mercado_details_screen.dart';
@@ -133,8 +135,19 @@ final _router = GoRouter(
       path: '/list/:listId/close-with-nf',
       builder: (context, state) {
         final cartBloc = state.extra as CartBloc;
-        return BlocProvider.value(
-          value: cartBloc,
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: cartBloc),
+            BlocProvider(
+              create:
+                  (_) => ClosePurchaseWithNfeCubit(
+                    repository: sl<ListasRepository>(),
+                    cartItemIdsResolver:
+                        () => _resolveClosePurchaseCartItemIds(cartBloc),
+                    onPurchaseConfirmed: () => cartBloc.add(LoadCart()),
+                  ),
+            ),
+          ],
           child: const ClosePurchaseWithNfeScreen(),
         );
       },
@@ -143,7 +156,13 @@ final _router = GoRouter(
       path: '/list/:listId/info',
       builder: (context, state) {
         final list = state.extra as ListaCompra;
-        return ListInfoScreen(list: list);
+        return BlocProvider(
+          create:
+              (_) =>
+                  ListasBloc(repository: sl<ListasRepository>())
+                    ..add(GetListsEvent()),
+          child: ListInfoScreen(list: list),
+        );
       },
     ),
     GoRoute(
@@ -201,7 +220,10 @@ final _router = GoRouter(
       path: '/nfe-details',
       builder: (context, state) {
         final purchase = state.extra as PurchaseHistory;
-        return NfeDetailsScreen(purchase: purchase);
+        return BlocProvider(
+          create: (_) => NfeDetailsCubit(mercadoRepository: sl()),
+          child: NfeDetailsScreen(purchase: purchase),
+        );
       },
     ),
     GoRoute(
@@ -213,6 +235,18 @@ final _router = GoRouter(
     ),
   ],
 );
+
+List<String> _resolveClosePurchaseCartItemIds(CartBloc cartBloc) {
+  final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+  if (cartBloc.state.cartMode == CartMode.individual && currentUserId != null) {
+    return cartBloc.state.cartItems
+        .where((item) => item.user.id == currentUserId)
+        .map((item) => item.id)
+        .toList();
+  }
+
+  return cartBloc.state.cartItems.map((item) => item.id).toList();
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

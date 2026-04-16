@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/core/config/push_token_sync_service.dart';
+import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:go_router/go_router.dart';
 
@@ -19,6 +21,8 @@ class _SplashScreenState extends State<SplashScreen> {
     if (session == null) {
       context.go('/login');
     } else {
+      await sl<PushTokenSyncService>().start();
+      if (!mounted) return;
       context.go('/home');
     }
   }

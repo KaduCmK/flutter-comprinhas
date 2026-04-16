@@ -15,6 +15,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   final ListasRepository _repository;
   final SupabaseClient _client;
   final String listId;
+  final Future<bool> Function(String listItemId)? _isCurrentListItemOverride;
   final _logger = Logger();
   late final RealtimeChannel _cartChannel;
 
@@ -22,8 +23,10 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     required ListasRepository repository,
     required SupabaseClient client,
     required this.listId,
+    Future<bool> Function(String listItemId)? isCurrentListItem,
   }) : _repository = repository,
        _client = client,
+       _isCurrentListItemOverride = isCurrentListItem,
        super(const CartState()) {
     _setupRealtime();
     on<LoadCart>(_onLoadCart);
@@ -122,10 +125,59 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         event: PostgresChangeEvent.all,
         schema: 'public',
         table: 'cart_items',
-        callback: (payload) {
-          if (!isClosed) add(LoadCart());
+        callback: (payload) async {
+          if (isClosed) return;
+
+          final shouldReload = await _shouldReloadForPayload(payload);
+          if (shouldReload && !isClosed) add(LoadCart());
         },
       ).subscribe();
+  }
+
+  Future<bool> _shouldReloadForPayload(PostgresChangePayload payload) async {
+    final listItemId = _extractAffectedListItemId(payload);
+    if (listItemId == null) return false;
+
+    final currentCartItemIds =
+        state.cartItems.map((item) => item.listItem.id).toSet();
+    if (currentCartItemIds.contains(listItemId)) return true;
+
+    return _isCurrentListItem(listItemId);
+  }
+
+  String? _extractAffectedListItemId(PostgresChangePayload payload) {
+    final newListItemId = payload.newRecord['list_item_id'];
+    if (newListItemId is String && newListItemId.isNotEmpty) {
+      return newListItemId;
+    }
+
+    final oldListItemId = payload.oldRecord['list_item_id'];
+    if (oldListItemId is String && oldListItemId.isNotEmpty) {
+      return oldListItemId;
+    }
+
+    return null;
+  }
+
+  Future<bool> _isCurrentListItem(String listItemId) async {
+    final isCurrentListItemOverride = _isCurrentListItemOverride;
+    if (isCurrentListItemOverride != null) {
+      return isCurrentListItemOverride(listItemId);
+    }
+
+    try {
+      final response =
+          await _client
+              .from('list_items')
+              .select('list_id')
+              .eq('id', listItemId)
+              .maybeSingle();
+
+      return response?['list_id'] == listId;
+    } catch (e) {
+      _logger.w('Erro ao validar escopo do realtime do carrinho: $e');
+      return false;
+    }
   }
 
   @override

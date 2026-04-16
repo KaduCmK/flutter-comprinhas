@@ -21,7 +21,7 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
   bool _isEditMode = false;
   File? _selectedImage;
   String? _existingImageUrl;
-  bool _isLoading = false;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
@@ -49,7 +49,7 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
-        _existingImageUrl = null; // Remove URL existente se escolher nova
+        _existingImageUrl = null;
       });
     }
   }
@@ -63,7 +63,7 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    setState(() => _isSubmitting = true);
 
     context.read<ListasBloc>().add(
       UpsertListEvent(
@@ -73,125 +73,145 @@ class _NovaListaScreenState extends State<NovaListaScreen> {
         imageFile: _selectedImage,
       ),
     );
-
-    // Mostramos snackbar para feedback
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isEditMode ? 'Salvando lista...' : 'Criando lista...'),
-      ),
-    );
-    context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(title: Text('${_isEditMode ? 'Editar' : 'Nova'} Lista')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                "Nome da Lista",
-                style: Theme.of(context).textTheme.titleMedium,
+    return BlocListener<ListasBloc, ListasState>(
+      listener: (context, state) {
+        if (!_isSubmitting) return;
+
+        if (state is ListasLoaded) {
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                _isEditMode
+                    ? 'Lista salva com sucesso.'
+                    : 'Lista criada com sucesso.',
               ),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                onSubmitted: (_) => _submit(),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                "Imagem de fundo (opcional)",
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              InkWell(
-                onTap: _pickImage,
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.outlineVariant),
-                    image:
-                        _selectedImage != null
-                            ? DecorationImage(
-                              image: FileImage(_selectedImage!),
-                              fit: BoxFit.cover,
-                            )
-                            : _existingImageUrl != null
-                            ? DecorationImage(
-                              image: NetworkImage(_existingImageUrl!),
-                              fit: BoxFit.cover,
-                            )
-                            : null,
+            ),
+          );
+          context.pop();
+        } else if (state is ListasError) {
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text('${_isEditMode ? 'Editar' : 'Nova'} Lista')),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Nome da Lista",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
                   ),
-                  child:
-                      _selectedImage == null && _existingImageUrl == null
-                          ? Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.add_photo_alternate,
-                                size: 48,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "Toque para escolher da galeria",
-                                style: TextStyle(
+                  onSubmitted: (_) => _submit(),
+                  enabled: !_isSubmitting,
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Imagem de fundo (opcional)",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                InkWell(
+                  onTap: _isSubmitting ? null : _pickImage,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    height: 150,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outlineVariant),
+                      image:
+                          _selectedImage != null
+                              ? DecorationImage(
+                                image: FileImage(_selectedImage!),
+                                fit: BoxFit.cover,
+                              )
+                              : _existingImageUrl != null
+                              ? DecorationImage(
+                                image: NetworkImage(_existingImageUrl!),
+                                fit: BoxFit.cover,
+                              )
+                              : null,
+                    ),
+                    child:
+                        _selectedImage == null && _existingImageUrl == null
+                            ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate,
+                                  size: 48,
                                   color: colorScheme.onSurfaceVariant,
                                 ),
-                              ),
-                            ],
-                          )
-                          : Align(
-                            alignment: Alignment.bottomRight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: CircleAvatar(
-                                backgroundColor: colorScheme.surface,
-                                child: IconButton(
-                                  icon: const Icon(Icons.edit),
-                                  onPressed: _pickImage,
-                                  color: colorScheme.primary,
+                                const SizedBox(height: 8),
+                                Text(
+                                  "Toque para escolher da galeria",
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            )
+                            : Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: CircleAvatar(
+                                  backgroundColor: colorScheme.surface,
+                                  child: IconButton(
+                                    icon: const Icon(Icons.edit),
+                                    onPressed:
+                                        _isSubmitting ? null : _pickImage,
+                                    color: colorScheme.primary,
+                                  ),
                                 ),
                               ),
                             ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: _isSubmitting ? null : _submit,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                  ),
+                  child:
+                      _isSubmitting
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                          : Text(
+                            _isEditMode ? "Salvar" : "Criar Lista",
+                            style: const TextStyle(fontSize: 16),
                           ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                ),
-                child:
-                    _isLoading
-                        ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                        : Text(
-                          _isEditMode ? "Salvar" : "Criar Lista",
-                          style: const TextStyle(fontSize: 16),
-                        ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

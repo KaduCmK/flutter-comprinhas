@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
@@ -7,7 +6,6 @@ import 'package:flutter_comprinhas/list_details/domain/entities/purchase_with_nf
 import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
-import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:logger/logger.dart';
@@ -25,12 +23,6 @@ class ListasRepositoryImpl implements ListasRepository {
     if (userId == null) {
       throw 'Usuário não autenticado'; // TODO: implement failure cases
     }
-
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    await supabase
-        .from('users')
-        .update({'fcm_token': fcmToken})
-        .eq('id', supabase.auth.currentUser!.id);
 
     try {
       final response = await _client

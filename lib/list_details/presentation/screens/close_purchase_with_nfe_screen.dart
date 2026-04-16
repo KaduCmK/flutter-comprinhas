@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/purchase_with_nfe_preview.dart';
-import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/cart/cart_bloc.dart';
-import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
-import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/close_purchase_with_nfe/close_purchase_with_nfe_cubit.dart';
+import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/close_purchase_with_nfe/close_purchase_with_nfe_state.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClosePurchaseWithNfeScreen extends StatefulWidget {
   const ClosePurchaseWithNfeScreen({super.key});
@@ -19,114 +16,7 @@ class ClosePurchaseWithNfeScreen extends StatefulWidget {
 
 class _ClosePurchaseWithNfeScreenState
     extends State<ClosePurchaseWithNfeScreen> {
-  static const String _ignoreCartItemSelection = '__ignore_cart_item__';
-
   final _keyController = TextEditingController();
-  final _repository = sl<ListasRepository>();
-  PurchaseWithNfePreview? _preview;
-  Map<String, String> _manualMatches = {};
-  bool _isLoading = false;
-  bool _isConfirming = false;
-  String? _error;
-
-  List<String> get _cartItemIds {
-    final cartBloc = context.read<CartBloc>();
-    final currentUserId = Supabase.instance.client.auth.currentUser?.id;
-    if (cartBloc.state.cartMode == CartMode.individual &&
-        currentUserId != null) {
-      return cartBloc.state.cartItems
-          .where((item) => item.user.id == currentUserId)
-          .map((item) => item.id)
-          .toList();
-    }
-    return cartBloc.state.cartItems.map((item) => item.id).toList();
-  }
-
-  bool get _canConfirm {
-    if (_preview == null || _isConfirming) return false;
-    for (final item in _preview!.cartItems.where((item) => item.needsReview)) {
-      if (!_manualMatches.containsKey(item.cartItemId)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  Set<String> get _selectedInvoiceItemTempIds {
-    if (_preview == null) return const {};
-
-    final selectedIds = <String>{};
-    for (final item in _preview!.cartItems) {
-      if (item.status == CartReviewStatus.matched &&
-          item.selectedInvoiceItemTempId != null) {
-        selectedIds.add(item.selectedInvoiceItemTempId!);
-      }
-
-      if (item.status == CartReviewStatus.ambiguous) {
-        final manualSelection = _manualMatches[item.cartItemId];
-        if (manualSelection != null &&
-            manualSelection != _ignoreCartItemSelection) {
-          selectedIds.add(manualSelection);
-        }
-      }
-    }
-
-    return selectedIds;
-  }
-
-  List<InvoiceExtraItem> get _displayedExtraItems {
-    final preview = _preview;
-    if (preview == null) return const [];
-
-    final selectedIds = _selectedInvoiceItemTempIds;
-    return preview.extraItems
-        .where((item) => !selectedIds.contains(item.invoiceItemTempId))
-        .toList();
-  }
-
-  ReviewSummary get _displayedSummary {
-    final preview = _preview;
-    if (preview == null) {
-      return const ReviewSummary(
-        matchedItemsCount: 0,
-        ambiguousItemsCount: 0,
-        unmatchedItemsCount: 0,
-        invoiceExtraItemsCount: 0,
-      );
-    }
-
-    var matchedItemsCount = 0;
-    var ambiguousItemsCount = 0;
-    var unmatchedItemsCount = 0;
-
-    for (final item in preview.cartItems) {
-      switch (item.status) {
-        case CartReviewStatus.matched:
-          matchedItemsCount += 1;
-          break;
-        case CartReviewStatus.ambiguous:
-          final manualSelection = _manualMatches[item.cartItemId];
-          if (manualSelection == _ignoreCartItemSelection) {
-            unmatchedItemsCount += 1;
-          } else if (manualSelection != null) {
-            matchedItemsCount += 1;
-          } else {
-            ambiguousItemsCount += 1;
-          }
-          break;
-        case CartReviewStatus.unmatched:
-          unmatchedItemsCount += 1;
-          break;
-      }
-    }
-
-    return ReviewSummary(
-      matchedItemsCount: matchedItemsCount,
-      ambiguousItemsCount: ambiguousItemsCount,
-      unmatchedItemsCount: unmatchedItemsCount,
-      invoiceExtraItemsCount: _displayedExtraItems.length,
-    );
-  }
 
   String _manualMatchLabel({
     required String productName,
@@ -145,77 +35,19 @@ class _ClosePurchaseWithNfeScreenState
     final accessKey = await context.push<String>('/enviar-nfe');
     if (!mounted || accessKey == null) return;
     _keyController.text = accessKey;
-    await _loadPreview();
+    await context.read<ClosePurchaseWithNfeCubit>().loadPreview(accessKey);
   }
 
   Future<void> _loadPreview() async {
-    final chaveAcesso = _keyController.text.trim();
-    if (chaveAcesso.length != 44) {
-      setState(
-        () => _error = 'Informe uma chave de acesso válida com 44 dígitos.',
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _error = null;
-      _preview = null;
-      _manualMatches = {};
-    });
-
-    try {
-      final preview = await _repository.previewPurchaseWithNfe(
-        _cartItemIds,
-        chaveAcesso,
-      );
-      if (!mounted) return;
-      setState(() {
-        _preview = preview;
-        _manualMatches = {};
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _error = e.toString());
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
+    await context.read<ClosePurchaseWithNfeCubit>().loadPreview(
+      _keyController.text,
+    );
   }
 
   Future<void> _confirm() async {
-    if (!_canConfirm) return;
-
-    setState(() {
-      _isConfirming = true;
-      _error = null;
-    });
-
-    try {
-      await _repository.confirmPurchaseWithNfe(
-        _cartItemIds,
-        _keyController.text.trim(),
-        {
-          for (final entry in _manualMatches.entries)
-            entry.key:
-                entry.value == _ignoreCartItemSelection ? null : entry.value,
-        },
-      );
-      if (!mounted) return;
-      context.read<CartBloc>().add(LoadCart());
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Compra com nota fiscal registrada.')),
-      );
-      context.pop();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _error = e.toString());
-    } finally {
-      if (mounted) {
-        setState(() => _isConfirming = false);
-      }
-    }
+    await context.read<ClosePurchaseWithNfeCubit>().confirmPurchase(
+      _keyController.text,
+    );
   }
 
   Future<bool> _confirmExit() async {
@@ -257,122 +89,150 @@ class _ClosePurchaseWithNfeScreenState
           Navigator.of(context).pop();
         }
       },
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Fechar compra com nota')),
-        body: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Text(
-              'Escaneie ou cole a chave da NF para revisar os matches antes de concluir a compra.',
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _keyController,
-              decoration: const InputDecoration(
-                labelText: 'Chave de acesso',
-                border: OutlineInputBorder(),
+      child: BlocConsumer<ClosePurchaseWithNfeCubit, ClosePurchaseWithNfeState>(
+        listener: (context, state) {
+          if (state.status == ClosePurchaseWithNfeStatus.success) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Compra com nota fiscal registrada.'),
               ),
-              keyboardType: TextInputType.number,
-              maxLength: 44,
-            ),
-            const SizedBox(height: 12),
-            Row(
+            );
+            context.read<ClosePurchaseWithNfeCubit>().acknowledgeSuccess();
+            context.pop();
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Fechar compra com nota')),
+            body: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _isLoading || _isConfirming ? null : _scanQrCode,
-                    icon: const Icon(Icons.qr_code_scanner),
-                    label: const Text('Escanear QR Code'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: _isLoading || _isConfirming ? null : _loadPreview,
-                    child: const Text('Revisar nota'),
-                  ),
-                ),
-              ],
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Card(
-                color: theme.colorScheme.errorContainer,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Text(
-                    _error!,
-                    style: TextStyle(color: theme.colorScheme.onErrorContainer),
-                  ),
-                ),
-              ),
-            ],
-            if (_isLoading) ...[
-              const SizedBox(height: 24),
-              const Center(child: CircularProgressIndicator()),
-            ],
-            if (_preview != null) ...[
-              const SizedBox(height: 24),
-              _InvoiceSummaryCard(
-                invoice: _preview!.invoice,
-                summary: _displayedSummary,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Itens da cesta',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ..._preview!.cartItems.map(_buildCartReviewCard),
-              if (_displayedExtraItems.isNotEmpty) ...[
-                const SizedBox(height: 16),
                 Text(
-                  'Itens extras da nota',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  'Escaneie ou cole a chave da NF para revisar os matches antes de concluir a compra.',
+                  style: theme.textTheme.bodyMedium,
                 ),
-                const SizedBox(height: 8),
-                ..._displayedExtraItems.map(
-                  (item) => Card(
-                    child: ListTile(
-                      title: Text(item.productName),
-                      subtitle: Text(
-                        '${item.quantity.toStringAsFixed(2)} ${item.unitLabel ?? 'UN'}',
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _keyController,
+                  decoration: const InputDecoration(
+                    labelText: 'Chave de acesso',
+                    border: OutlineInputBorder(),
+                  ),
+                  keyboardType: TextInputType.number,
+                  maxLength: 44,
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed:
+                            state.isLoadingPreview || state.isConfirming
+                                ? null
+                                : _scanQrCode,
+                        icon: const Icon(Icons.qr_code_scanner),
+                        label: const Text('Escanear QR Code'),
                       ),
-                      trailing: Text(
-                        'R\$ ${item.totalPrice.toStringAsFixed(2)}',
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed:
+                            state.isLoadingPreview || state.isConfirming
+                                ? null
+                                : _loadPreview,
+                        child: const Text('Revisar nota'),
+                      ),
+                    ),
+                  ],
+                ),
+                if (state.errorMessage != null) ...[
+                  const SizedBox(height: 16),
+                  Card(
+                    color: theme.colorScheme.errorContainer,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        state.errorMessage!,
+                        style: TextStyle(
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
+                if (state.isLoadingPreview) ...[
+                  const SizedBox(height: 24),
+                  const Center(child: CircularProgressIndicator()),
+                ],
+                if (state.preview != null) ...[
+                  const SizedBox(height: 24),
+                  _InvoiceSummaryCard(
+                    invoice: state.preview!.invoice,
+                    summary: state.displayedSummary,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Itens da cesta',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...state.preview!.cartItems.map(
+                    (item) => _buildCartReviewCard(item, state),
+                  ),
+                  if (state.displayedExtraItems.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Itens extras da nota',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...state.displayedExtraItems.map(
+                      (item) => Card(
+                        child: ListTile(
+                          title: Text(item.productName),
+                          subtitle: Text(
+                            '${item.quantity.toStringAsFixed(2)} ${item.unitLabel ?? 'UN'}',
+                          ),
+                          trailing: Text(
+                            'R\$ ${item.totalPrice.toStringAsFixed(2)}',
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: state.canConfirm ? _confirm : null,
+                    icon:
+                        state.isConfirming
+                            ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                            : const Icon(Icons.receipt_long),
+                    label: const Text('Confirmar compra com nota'),
+                  ),
+                ],
               ],
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _canConfirm ? _confirm : null,
-                icon:
-                    _isConfirming
-                        ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                        : const Icon(Icons.receipt_long),
-                label: const Text('Confirmar compra com nota'),
-              ),
-            ],
-          ],
-        ),
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildCartReviewCard(CartReviewItem item) {
+  Widget _buildCartReviewCard(
+    CartReviewItem item,
+    ClosePurchaseWithNfeState state,
+  ) {
     final theme = Theme.of(context);
-    final selectedManualMatch = _manualMatches[item.cartItemId];
+    final selectedManualMatch = state.manualMatches[item.cartItemId];
     InvoiceMatchCandidate? selectedCandidate;
     for (final candidate in item.candidates) {
       if (candidate.invoiceItemTempId == selectedManualMatch) {
@@ -440,7 +300,7 @@ class _ClosePurchaseWithNfeScreenState
                 ),
                 items: [
                   const DropdownMenuItem<String>(
-                    value: _ignoreCartItemSelection,
+                    value: ClosePurchaseWithNfeUi.ignoreCartItemSelection,
                     child: Text(
                       'Desconsiderar item da cesta',
                       overflow: TextOverflow.ellipsis,
@@ -485,13 +345,10 @@ class _ClosePurchaseWithNfeScreenState
                       ),
                     ],
                 onChanged: (value) {
-                  setState(() {
-                    if (value == null) {
-                      _manualMatches.remove(item.cartItemId);
-                    } else {
-                      _manualMatches[item.cartItemId] = value;
-                    }
-                  });
+                  context.read<ClosePurchaseWithNfeCubit>().setManualMatch(
+                    item.cartItemId,
+                    value,
+                  );
                 },
               ),
               if (selectedCandidate != null) ...[

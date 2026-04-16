@@ -1,12 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_comprinhas/core/config/service_locator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
-import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 
 class ListInfoScreen extends StatefulWidget {
   final ListaCompra list;
@@ -18,14 +17,7 @@ class ListInfoScreen extends StatefulWidget {
 }
 
 class _ListInfoScreenState extends State<ListInfoScreen> {
-  late ListaCompra _currentList;
-  bool _isUploading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentList = widget.list;
-  }
+  bool _isUploadingBackgroundImage = false;
 
   Future<void> _pickAndUploadImage() async {
     final picker = ImagePicker();
@@ -34,294 +26,316 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
       imageQuality: 70,
     );
 
-    if (pickedFile == null) return;
+    if (!mounted || pickedFile == null) return;
 
-    setState(() => _isUploading = true);
+    setState(() => _isUploadingBackgroundImage = true);
 
-    try {
-      final repository = sl<ListasRepository>();
-      final file = File(pickedFile.path);
+    context.read<ListasBloc>().add(
+      UpsertListEvent(
+        widget.list.name,
+        listId: widget.list.id,
+        backgroundImageUrl: widget.list.backgroundImage,
+        imageFile: File(pickedFile.path),
+      ),
+    );
+  }
 
-      final uploadedUrl = await repository.uploadBackgroundImage(
-        file,
-        _currentList.id,
-      );
+  @override
+  Widget build(BuildContext context) {
+    ListaCompra resolveList(ListasState state) {
+      for (final list in state.lists) {
+        if (list.id == widget.list.id) return list;
+      }
+      return widget.list;
+    }
 
-      if (uploadedUrl != null) {
-        await repository.upsertList(
-          _currentList.name,
-          listId: _currentList.id,
-          backgroundImageUrl: uploadedUrl,
-        );
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-        // Atualiza a UI localmente
-        setState(() {
-          _currentList = ListaCompra(
-            id: _currentList.id,
-            name: _currentList.name,
-            ownerId: _currentList.ownerId,
-            createdAt: _currentList.createdAt,
-            cartMode: _currentList.cartMode,
-            priceForecastEnabled: _currentList.priceForecastEnabled,
-            members: _currentList.members,
-            backgroundImage: uploadedUrl,
-          );
-        });
+    return BlocListener<ListasBloc, ListasState>(
+      listener: (context, state) {
+        if (!_isUploadingBackgroundImage) return;
 
-        if (mounted) {
+        if (state is ListasLoaded) {
+          setState(() => _isUploadingBackgroundImage = false);
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Imagem de fundo atualizada com sucesso!'),
             ),
           );
+        } else if (state is ListasError) {
+          setState(() => _isUploadingBackgroundImage = false);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
         }
-      } else {
-        throw 'Falha ao fazer upload da imagem.';
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Erro: $e')));
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isUploading = false);
-      }
-    }
-  }
+      },
+      child: BlocBuilder<ListasBloc, ListasState>(
+        builder: (context, state) {
+          final currentList = resolveList(state);
+          final isOwner = supabase.auth.currentUser?.id == currentList.ownerId;
+          final hasImage = currentList.backgroundImage != null;
 
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-    final isOwner = supabase.auth.currentUser?.id == _currentList.ownerId;
-    final hasImage = _currentList.backgroundImage != null;
-
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 250.0,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding: const EdgeInsets.only(
-                left: 16,
-                bottom: 16,
-                right: 16,
-              ),
-              title: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _currentList.name,
-                    style: TextStyle(
-                      color: hasImage ? Colors.white : null,
-                      fontWeight: FontWeight.bold,
-                      shadows:
-                          hasImage
-                              ? [
-                                const Shadow(
-                                  color: Colors.black54,
-                                  blurRadius: 4,
-                                ),
-                              ]
-                              : null,
-                    ),
-                  ),
-                  Text(
-                    "Criada em ${_currentList.createdAtFormatted}",
-                    style: TextStyle(
-                      fontSize: 10,
-                      color:
-                          hasImage
-                              ? Colors.white70
-                              : colorScheme.onSurfaceVariant,
-                      shadows:
-                          hasImage
-                              ? [
-                                const Shadow(
-                                  color: Colors.black54,
-                                  blurRadius: 4,
-                                ),
-                              ]
-                              : null,
-                    ),
-                  ),
-                ],
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (hasImage) ...[
-                    Image.network(
-                      _currentList.backgroundImage!,
-                      fit: BoxFit.cover,
-                      frameBuilder: (
-                        context,
-                        child,
-                        frame,
-                        wasSynchronouslyLoaded,
-                      ) {
-                        if (wasSynchronouslyLoaded) return child;
-                        return AnimatedOpacity(
-                          opacity: frame == null ? 0 : 1,
-                          duration: const Duration(milliseconds: 500),
-                          curve: Curves.easeOut,
-                          child: child,
-                        );
-                      },
-                    ),
-                    Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black54,
-                            Colors.transparent,
-                            Colors.black87,
-                          ],
-                          stops: [0.0, 0.5, 1.0],
-                        ),
-                      ),
-                    ),
-                  ] else ...[
-                    Container(color: colorScheme.surfaceContainerHighest),
-                    Center(
-                      child: Icon(
-                        Icons.shopping_basket,
-                        size: 80,
-                        color: colorScheme.onSurfaceVariant.withValues(
-                          alpha: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                  if (isOwner)
-                    Positioned(
-                      top: MediaQuery.of(context).padding.top + 8,
+          return Scaffold(
+            body: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 250.0,
+                  pinned: true,
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.only(
+                      left: 16,
+                      bottom: 16,
                       right: 16,
-                      child:
-                          _isUploading
-                              ? const CircularProgressIndicator()
-                              : CircleAvatar(
-                                backgroundColor: colorScheme.surface,
-                                child: IconButton(
-                                  icon: const Icon(Icons.add_photo_alternate),
-                                  color: colorScheme.primary,
-                                  tooltip: "Alterar imagem de fundo",
-                                  onPressed: _pickAndUploadImage,
-                                ),
-                              ),
                     ),
-                ],
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Card(
-                    elevation: 2,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.people),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Participantes (${_currentList.members.length})",
-                                style: textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          ListView.separated(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: _currentList.members.length,
-                            separatorBuilder:
-                                (context, index) => const Divider(),
-                            itemBuilder: (context, index) {
-                              final member = _currentList.members[index];
-                              final isMemberOwner =
-                                  member.user.id == _currentList.ownerId;
-                              final url =
-                                  member.user.userMetadata?["avatar_url"] ??
-                                  member.user.userMetadata?["picture"];
-                              final name =
-                                  member.user.userMetadata?["name"] ??
-                                  member.user.userMetadata?["full_name"] ??
-                                  'Usuário';
-
-                              return ListTile(
-                                contentPadding: EdgeInsets.zero,
-                                leading: CircleAvatar(
-                                  backgroundImage:
-                                      url != null ? NetworkImage(url) : null,
-                                  child:
-                                      url == null
-                                          ? const Icon(Icons.person)
-                                          : null,
-                                ),
-                                title: Row(
-                                  children: [
-                                    Text(name),
-                                    if (isMemberOwner) ...[
-                                      const SizedBox(width: 4),
-                                      const Icon(
-                                        Icons.workspace_premium,
-                                        color: Colors.amber,
-                                        size: 16,
+                    title: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentList.name,
+                          style: TextStyle(
+                            color: hasImage ? Colors.white : null,
+                            fontWeight: FontWeight.bold,
+                            shadows:
+                                hasImage
+                                    ? [
+                                      const Shadow(
+                                        color: Colors.black54,
+                                        blurRadius: 4,
                                       ),
-                                    ],
-                                  ],
-                                ),
-                                subtitle: Text(
-                                  "Entrou em ${DateFormat('dd/MM/yyyy').format(member.joinedAt)}",
-                                ),
+                                    ]
+                                    : null,
+                          ),
+                        ),
+                        Text(
+                          "Criada em ${currentList.createdAtFormatted}",
+                          style: TextStyle(
+                            fontSize: 10,
+                            color:
+                                hasImage
+                                    ? Colors.white70
+                                    : colorScheme.onSurfaceVariant,
+                            shadows:
+                                hasImage
+                                    ? [
+                                      const Shadow(
+                                        color: Colors.black54,
+                                        blurRadius: 4,
+                                      ),
+                                    ]
+                                    : null,
+                          ),
+                        ),
+                      ],
+                    ),
+                    background: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (hasImage) ...[
+                          Image.network(
+                            currentList.backgroundImage!,
+                            fit: BoxFit.cover,
+                            frameBuilder: (
+                              context,
+                              child,
+                              frame,
+                              wasSynchronouslyLoaded,
+                            ) {
+                              if (wasSynchronouslyLoaded) return child;
+                              return AnimatedOpacity(
+                                opacity: frame == null ? 0 : 1,
+                                duration: const Duration(milliseconds: 500),
+                                curve: Curves.easeOut,
+                                child: child,
                               );
                             },
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  if (isOwner)
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        // TODO: Implementar exclusão
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Use a tela inicial para excluir a lista.',
+                          Container(
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.black54,
+                                  Colors.transparent,
+                                  Colors.black87,
+                                ],
+                                stops: [0.0, 0.5, 1.0],
+                              ),
                             ),
                           ),
-                        );
-                      },
-                      icon: const Icon(Icons.delete),
-                      label: const Text("Excluir Lista"),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: colorScheme.error,
-                        backgroundColor: colorScheme.errorContainer,
-                      ),
+                        ] else ...[
+                          Container(color: colorScheme.surfaceContainerHighest),
+                          Center(
+                            child: Icon(
+                              Icons.shopping_basket,
+                              size: 80,
+                              color: colorScheme.onSurfaceVariant.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (isOwner)
+                          Positioned(
+                            top: MediaQuery.of(context).padding.top + 8,
+                            right: 16,
+                            child:
+                                _isUploadingBackgroundImage
+                                    ? const CircularProgressIndicator()
+                                    : CircleAvatar(
+                                      backgroundColor: colorScheme.surface,
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.add_photo_alternate,
+                                        ),
+                                        color: colorScheme.primary,
+                                        tooltip: "Alterar imagem de fundo",
+                                        onPressed:
+                                            state is ListasLoading
+                                                ? null
+                                                : _pickAndUploadImage,
+                                      ),
+                                    ),
+                          ),
+                      ],
                     ),
-                ],
-              ),
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.people),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Participantes (${currentList.members.length})",
+                                      style: textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                ListView.separated(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: currentList.members.length,
+                                  separatorBuilder:
+                                      (context, index) => const Divider(),
+                                  itemBuilder: (context, index) {
+                                    final member = currentList.members[index];
+                                    final isMemberOwner =
+                                        member.user.id == currentList.ownerId;
+                                    final url =
+                                        member
+                                            .user
+                                            .userMetadata?["avatar_url"] ??
+                                        '';
+
+                                    return ListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      leading: CircleAvatar(
+                                        backgroundImage:
+                                            url.isNotEmpty
+                                                ? NetworkImage(url)
+                                                : null,
+                                        child:
+                                            url.isEmpty
+                                                ? const Icon(Icons.person)
+                                                : null,
+                                      ),
+                                      title: Text(
+                                        member.user.userMetadata?["name"] ??
+                                            'Usuário',
+                                      ),
+                                      subtitle: Text(member.user.email ?? ''),
+                                      trailing:
+                                          isMemberOwner
+                                              ? Chip(
+                                                label: const Text('Dono'),
+                                                backgroundColor:
+                                                    colorScheme
+                                                        .primaryContainer,
+                                              )
+                                              : null,
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.info_outline),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Detalhes da Lista',
+                                      style: textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: Icon(
+                                    Icons.calendar_today_outlined,
+                                    color: colorScheme.primary,
+                                  ),
+                                  title: const Text('Data de Criação'),
+                                  subtitle: Text(
+                                    currentList.createdAtFormatted,
+                                  ),
+                                ),
+                                const Divider(),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  leading: Icon(
+                                    Icons.currency_exchange,
+                                    color: colorScheme.primary,
+                                  ),
+                                  title: const Text('Previsão de Preços'),
+                                  subtitle: Text(
+                                    currentList.priceForecastEnabled
+                                        ? 'Ativada'
+                                        : 'Desativada',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
