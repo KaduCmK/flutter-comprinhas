@@ -306,6 +306,104 @@ Se houver dúvida entre `docs/ideas/` e RFC:
 - use `docs/ideas/` quando ainda for exploração
 - use RFC quando a principal necessidade for tomar e registrar uma decisão
 
+## Fluxo de desenvolvimento assistido por IA
+Este projeto adota um fluxo de desenvolvimento em que a IA participa tanto da descoberta do trabalho quanto da implementação. O objetivo é não perder ideias, elevar a qualidade das issues antes da execução e manter um caminho previsível até release e publicação.
+
+### 1. Criação de draft issue
+- Quando surgir um bug, sugestão, melhoria, refatoração interna, hipótese de feature ou oportunidade técnica, o primeiro passo é abrir uma `draft issue`.
+- A `draft issue` existe para captura rápida e exploração inicial. Ela não precisa nascer perfeitamente formatada.
+- O propósito dessa fase é registrar o trabalho sem depender de memória e sem forçar clareza prematura.
+- A draft pode conter contexto parcial, sintomas, motivação, dúvidas, caminhos possíveis e referências soltas.
+- Se a ideia ainda estiver crua demais para virar issue, ela pode nascer primeiro em `docs/backlog.md` e depois ser promovida.
+
+Template sugerido para draft issue:
+
+```md
+## Tipo
+bug | feature | melhoria | refatoração | investigação | dívida técnica
+
+## Contexto
+
+## Oportunidade ou problema
+
+## Ideias iniciais
+
+## Referências
+
+## Dúvidas
+
+## Próximo passo
+```
+
+### 2. Triagem com IA e transformação da draft em issue pronta
+- A IA deve ser usada para ler a draft issue, inspecionar o código relevante e ajudar na triagem.
+- Nessa etapa, a IA pode levantar hipóteses, apontar riscos, sugerir recortes, identificar impacto em outras áreas, fazer perguntas e propor caminhos que não estejam explícitos no rascunho inicial.
+- O resultado esperado é transformar a draft em uma issue propriamente formatada para consumo posterior da própria IA durante a execução.
+- A issue pronta deve deixar claro o que está sendo resolvido, por que isso importa, qual é o escopo inicial e quais critérios indicam que o trabalho está pronto para implementação.
+- Se a análise revelar trade-offs amplos ou decisões estruturais importantes, registrar também em `docs/ideas/` ou `docs/rfcs/`, conforme o caso.
+
+Template sugerido para issue pronta:
+
+```md
+## Tipo
+
+## Contexto
+
+## Motivação
+
+## Situação atual
+
+## Resultado desejado
+
+## Hipóteses ou caminhos possíveis
+
+## Escopo inicial
+
+## Fora de escopo
+
+## Evidências e referências
+
+## Perguntas em aberto
+
+## Critérios de pronto para executar
+```
+
+### 3. Resolução das issues
+- Depois da triagem, a IA pode receber a issue pronta como insumo de execução.
+- A execução deve preferir uma branch por issue ou por recorte coerente de trabalho.
+- A execução também deve preferir um commit principal por issue resolvida. Não acumular múltiplas issues no mesmo commit, exceto quando forem diretamente relacionadas e o recorte técnico for inseparável.
+- Quando mais de uma issue diretamente relacionada entrar no mesmo commit, isso deve ficar explícito na mensagem do commit e no PR.
+- Antes de alterar código, validar o contexto no repositório, identificar arquivos afetados e confirmar dependências técnicas relevantes.
+- A resolução deve incluir, quando aplicável, atualização de testes, ajustes de documentação e validação local com comandos como `flutter analyze`, `flutter test` e `dart format lib test`.
+- Se durante a implementação surgirem descobertas novas, elas podem gerar novas drafts em vez de inflar silenciosamente o escopo da issue atual.
+
+### 4. Consolidação em release branch quando houver múltiplas branches
+- Quando a resolução de um conjunto de issues gerar mais de uma branch, criar uma `release branch` para consolidação.
+- O nome da release branch deve ser anotado com a data atual em formato de calendário, por exemplo `release/2026-04-16`.
+- Essa branch serve para integrar todas as branches de issues já resolvidas, revisar compatibilidade entre mudanças e estabilizar o pacote antes da promoção para `main`.
+- A release branch não deve virar espaço de desenvolvimento indefinido; o objetivo dela é integração, verificação final e preparação de release.
+
+### 5. Mesclagem na `main`
+- Se houver apenas uma branch de issue e não existir necessidade de consolidação intermediária, ela pode seguir diretamente para merge em `main`.
+- Se houver múltiplas branches, a promoção para `main` deve acontecer a partir da `release branch`.
+- Toda mesclagem em `main` deve representar um estado publicável ou próximo disso, com escopo claro do que está entrando.
+- PRs devem referenciar as issues correspondentes com palavras-chave de fechamento automático do GitHub, como `Closes #123`, `Fixes #123` ou `Resolves #123`, e incluir evidências de validação sempre que possível.
+
+### 6. Execução automatizada do workflow no Codemagic
+- Após a mesclagem da branch final em `main`, o workflow automatizado no Codemagic é disparado.
+- Esse workflow é responsável por aplicar a estratégia de versionamento baseada em CalVer, buildar o APK com essa versão, criar a tag correspondente no GitHub e publicar o artefato na Play Store.
+- Ao ajustar qualquer parte desse fluxo, tratar `main`, versionamento, tagging e publicação como uma cadeia única de release, e não como etapas isoladas.
+
+### Regras práticas do fluxo
+- A IA pode participar da formulação do problema, não apenas da implementação.
+- Nem toda issue começa pronta; o projeto assume explicitamente uma fase de descoberta assistida por IA.
+- Draft issue é artefato de exploração. Issue pronta é artefato de execução.
+- Sempre preferir branches curtas e escopo explícito por issue.
+- Sempre preferir commits curtos e rastreáveis por issue. Não agrupar várias issues independentes em um único commit.
+- Se duas ou mais issues precisarem do mesmo commit por serem diretamente relacionadas, declarar isso explicitamente no commit e no PR.
+- Commits e PRs que resolvem issues devem usar palavras-chave de fechamento automático do GitHub sempre que isso for compatível com o recorte entregue.
+- Se a implementação revelar trabalho adicional relevante, abrir novo item em vez de esconder expansão de escopo dentro da branch atual.
+
 ## Build, Test, and Development Commands
 Run the standard Flutter workflow from the repo root:
 
@@ -354,7 +452,10 @@ Use `flutter_test`, `bloc_test`, and `mocktail`. Name tests with the `_test.dart
 ## Commit & Pull Request Guidelines
 Recent history follows Conventional Commit prefixes in Portuguese-friendly summaries, for example `feat: adicionar gráfico...` and `fix: resolver overflow...`. Keep the prefix lowercase (`feat`, `fix`, `refactor`, `test`, `chore`) and describe the observable change.
 
+Quando um commit resolver uma issue, a mensagem do commit deve incluir a referência da issue com palavra-chave de fechamento, por exemplo `fix: corrigir recarga do carrinho (fixes #28)`. Evitar commits que fechem múltiplas issues independentes; se isso for inevitável por acoplamento técnico real, deixar a relação explícita no próprio commit.
+
 PRs should include a short description, linked issue or task when available, test evidence (`flutter analyze`, `flutter test`), and screenshots or recordings for UI changes.
+Ao resolver issues, a descrição do PR deve usar palavras-chave de fechamento automático para cada issue incluída, em vez de apenas listar os números.
 
 ## Configuration & Secrets
 `.env` is loaded as a Flutter asset; do not commit real secrets or ad hoc local overrides. Review `lib/firebase_options.dart`, `firebase.json`, and `supabase/config.toml` before changing environment-specific behavior.
