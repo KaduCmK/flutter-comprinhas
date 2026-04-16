@@ -26,6 +26,36 @@ class _ListHistoryScreenState extends State<ListHistoryScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
+          if (state.error != null && state.purchaseHistory.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Não foi possível carregar o histórico de compras.',
+                      style: Theme.of(context).textTheme.titleMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      state.error!,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () {
+                        context.read<HistoryBloc>().add(LoadHistory());
+                      },
+                      child: const Text('Tentar novamente'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           if (state.purchaseHistory.isEmpty) {
             return const Center(
               child: Text("Nenhuma compra foi registrada ainda."),
