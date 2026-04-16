@@ -28,6 +28,24 @@ async function getEmbedding(text: string, apiKey: string): Promise<number[]> {
   return data.embedding.values;
 }
 
+async function clearDerivedSuggestionData(
+  supabaseClient: ReturnType<typeof createClient>,
+  itemId: string,
+) {
+  await supabaseClient
+    .from("list_item_product_matches")
+    .delete()
+    .eq("list_item_id", itemId);
+
+  await supabaseClient
+    .from("list_items")
+    .update({
+      preco_sugerido: null,
+      unidade_preco_sugerido: null,
+    })
+    .eq("id", itemId);
+}
+
 serve(async (req) => {
   try {
     const supabaseClient = createClient(
@@ -73,6 +91,7 @@ serve(async (req) => {
     if (rpcError) throw rpcError;
 
     if (!matchedProducts || matchedProducts.length === 0) {
+      await clearDerivedSuggestionData(supabaseClient, itemId);
       console.log(`Nenhum produto encontrado com similaridade aceitável para "${itemName}".`);
       return new Response(JSON.stringify({ message: "Nenhum produto compatível encontrado." }), { status: 200 });
     }
@@ -107,6 +126,10 @@ serve(async (req) => {
 
       console.log(`Preço sugerido de ${bestMatch.valor_unitario} (Unidade: ${productData?.unidade_medida}) para "${itemName}" (baseado no match mais similar: "${bestMatch.nome}" com ${(bestMatch.similarity * 100).toFixed(1)}%).`);
     } else {
+      await supabaseClient.from("list_items").update({
+        preco_sugerido: null,
+        unidade_preco_sugerido: null
+      }).eq("id", itemId);
       console.log(`Produtos similares a "${itemName}" encontrados, mas nenhum com preço.`);
     }
 
