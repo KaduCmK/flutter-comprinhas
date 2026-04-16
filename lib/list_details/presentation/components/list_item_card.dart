@@ -197,7 +197,7 @@ class ListItemCard extends StatelessWidget {
                 padding: const EdgeInsets.only(right: 4),
                 child: TextButton.icon(
                   onPressed: () {
-                    listDetailsBloc!.add(SugerirPreco(item));
+                    listDetailsBloc.add(SugerirPreco(item));
                   },
                   icon: const Icon(Icons.auto_awesome, size: 16),
                   label: const Text(

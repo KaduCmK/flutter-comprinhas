@@ -58,6 +58,15 @@ export type CartItemForMatching = {
   list_name: string;
 };
 
+export class HttpError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+  }
+}
+
 export type InvoiceMatchCandidate = {
   invoice_item_temp_id: string;
   product_name: string;
@@ -423,6 +432,105 @@ export async function previewInvoiceMatches(
       invoice_extra_items_count: extraItems.length,
     },
   };
+}
+
+export async function loadAuthorizedCartItemsForInvoiceFlow({
+  supabaseAdmin,
+  userId,
+  cartItemIds,
+}: {
+  supabaseAdmin: any;
+  userId: string;
+  cartItemIds: string[];
+}): Promise<CartItemForMatching[]> {
+  const uniqueCartItemIds = Array.from(new Set(cartItemIds));
+  if (uniqueCartItemIds.length !== cartItemIds.length) {
+    throw new HttpError(
+      400,
+      "A requisição contém itens duplicados do carrinho.",
+    );
+  }
+
+  const { data: cartItems, error: cartError } = await supabaseAdmin
+    .from("cart_items")
+    .select(
+      "id, user_id, list_items!inner(id, name, amount, unit_id, list_id, lists!inner(id, name, cart_mode), units(id, abbreviation))",
+    )
+    .in("id", uniqueCartItemIds);
+
+  if (cartError) {
+    throw new HttpError(
+      500,
+      `Erro ao carregar itens do carrinho: ${cartError.message}`,
+    );
+  }
+
+  if (!cartItems?.length) {
+    throw new HttpError(404, "Nenhum item do carrinho foi encontrado.");
+  }
+
+  if (cartItems.length !== uniqueCartItemIds.length) {
+    throw new HttpError(
+      403,
+      "Há itens do carrinho inacessíveis para o usuário autenticado.",
+    );
+  }
+
+  const listIds = new Set(
+    cartItems.map((item: any) => item.list_items.list_id as string),
+  );
+  if (listIds.size !== 1) {
+    throw new HttpError(
+      400,
+      "A compra com NF deve pertencer a uma única lista.",
+    );
+  }
+
+  const listId = cartItems[0].list_items.list_id as string;
+  const listMode = cartItems[0].list_items.lists?.cart_mode as string? ?? "shared";
+
+  const { data: membership, error: membershipError } = await supabaseAdmin
+    .from("list_members")
+    .select("user_id")
+    .eq("list_id", listId)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (membershipError) {
+    throw new HttpError(
+      500,
+      `Erro ao validar acesso à lista: ${membershipError.message}`,
+    );
+  }
+
+  if (!membership) {
+    throw new HttpError(
+      403,
+      "O usuário autenticado não tem acesso à lista informada.",
+    );
+  }
+
+  if (listMode === "individual") {
+    const hasForeignItems = cartItems.some((item: any) => item.user_id !== userId);
+    if (hasForeignItems) {
+      throw new HttpError(
+        403,
+        "No modo individual, só é permitido revisar ou confirmar itens do próprio usuário.",
+      );
+    }
+  }
+
+  return cartItems.map((cartItem: any) => ({
+    cart_item_id: cartItem.id,
+    list_item_id: cartItem.list_items.id,
+    user_id: cartItem.user_id,
+    name: cartItem.list_items.name,
+    amount: Number(cartItem.list_items.amount ?? 0),
+    unit_id: cartItem.list_items.unit_id ?? null,
+    unit_label: cartItem.list_items.units?.abbreviation ?? null,
+    list_id: cartItem.list_items.list_id,
+    list_name: cartItem.list_items.lists.name,
+  }));
 }
 
 export async function persistInvoiceData(
