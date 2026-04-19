@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
-import 'package:flutter_comprinhas/listas/presentation/components/edit_list_dialog.dart';
-import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
 import 'package:flutter_comprinhas/shared/widgets/overlapping_avatars.dart';
@@ -37,14 +34,7 @@ class ListCard extends StatelessWidget {
             );
             return;
           }
-          showDialog(
-            context: context,
-            builder:
-                (_) => BlocProvider.value(
-                  value: context.read<ListasBloc>(),
-                  child: EditListDialog(list: list),
-                ),
-          );
+          context.push('/listas/${list.id}/editar');
         },
         child: Stack(
           fit: StackFit.expand,

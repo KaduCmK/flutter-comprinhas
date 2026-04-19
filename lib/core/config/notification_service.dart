@@ -1,10 +1,15 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_comprinhas/core/platform/platform_capabilities.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
   Future<void> init() async {
+    if (!PlatformCapabilities.supportsLocalNotifications) {
+      return;
+    }
+
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
@@ -19,6 +24,10 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    if (!PlatformCapabilities.supportsLocalNotifications) {
+      return;
+    }
+
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
           'sending_nfe_cannel',
@@ -47,6 +56,10 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
+    if (!PlatformCapabilities.supportsLocalNotifications) {
+      return;
+    }
+
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
           'nfe_result_channel',
@@ -67,6 +80,10 @@ class NotificationService {
   }
 
   Future<void> cancelNotification(int id) async {
+    if (!PlatformCapabilities.supportsLocalNotifications) {
+      return;
+    }
+
     await _flutterLocalNotificationsPlugin.cancel(id);
   }
 }

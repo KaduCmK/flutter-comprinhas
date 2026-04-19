@@ -1,8 +1,8 @@
-import 'dart:io';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/purchase_with_nfe_preview.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/product_match.dart';
+import 'package:flutter_comprinhas/core/models/image_upload_data.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/shared/entities/purchase_history.dart';
 import 'package:flutter_comprinhas/shared/entities/unit.dart';
@@ -14,7 +14,10 @@ abstract class ListasRepository {
     String? listId,
     String? backgroundImageUrl,
   });
-  Future<String?> uploadBackgroundImage(File imageFile, String listId);
+  Future<String?> uploadBackgroundImage(
+    ImageUploadData imageData,
+    String listId,
+  );
   Future<void> deleteList(String listId);
   Future<void> joinList(String listId);
   Future<ListaCompra> getListById(String listId);

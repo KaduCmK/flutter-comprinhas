@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:equatable/equatable.dart';
+import 'package:flutter_comprinhas/core/models/image_upload_data.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
@@ -53,9 +52,9 @@ class ListasBloc extends Bloc<ListasEvent, ListasState> {
         backgroundImageUrl: event.backgroundImageUrl,
       );
 
-      if (event.imageFile != null) {
+      if (event.imageData != null) {
         final uploadedUrl = await _repository.uploadBackgroundImage(
-          event.imageFile!,
+          event.imageData!,
           listId,
         );
         if (uploadedUrl != null) {

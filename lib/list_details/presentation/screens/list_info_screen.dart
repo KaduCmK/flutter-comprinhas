@@ -1,16 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_comprinhas/core/models/image_upload_data.dart';
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/main.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ListInfoScreen extends StatefulWidget {
-  final ListaCompra list;
+  final String listId;
 
-  const ListInfoScreen({super.key, required this.list});
+  const ListInfoScreen({super.key, required this.listId});
 
   @override
   State<ListInfoScreen> createState() => _ListInfoScreenState();
@@ -20,6 +19,7 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
   bool _isUploadingBackgroundImage = false;
 
   Future<void> _pickAndUploadImage() async {
+    final listasBloc = context.read<ListasBloc>();
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -29,26 +29,33 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
     if (!mounted || pickedFile == null) return;
 
     setState(() => _isUploadingBackgroundImage = true);
+    final imageBytes = await pickedFile.readAsBytes();
+    if (!mounted) return;
+    final currentList = _resolveList(listasBloc.state);
 
-    context.read<ListasBloc>().add(
+    listasBloc.add(
       UpsertListEvent(
-        widget.list.name,
-        listId: widget.list.id,
-        backgroundImageUrl: widget.list.backgroundImage,
-        imageFile: File(pickedFile.path),
+        currentList?.name ?? '',
+        listId: widget.listId,
+        backgroundImageUrl: currentList?.backgroundImage,
+        imageData: ImageUploadData(
+          bytes: imageBytes,
+          fileName: pickedFile.name,
+          contentType: pickedFile.mimeType,
+        ),
       ),
     );
   }
 
+  ListaCompra? _resolveList(ListasState state) {
+    for (final list in state.lists) {
+      if (list.id == widget.listId) return list;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
-    ListaCompra resolveList(ListasState state) {
-      for (final list in state.lists) {
-        if (list.id == widget.list.id) return list;
-      }
-      return widget.list;
-    }
-
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -72,7 +79,19 @@ class _ListInfoScreenState extends State<ListInfoScreen> {
       },
       child: BlocBuilder<ListasBloc, ListasState>(
         builder: (context, state) {
-          final currentList = resolveList(state);
+          final currentList = _resolveList(state);
+          if (currentList == null) {
+            if (state is ListasError) {
+              return Scaffold(
+                appBar: AppBar(title: const Text('Informações da Lista')),
+                body: Center(child: Text(state.message)),
+              );
+            }
+
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
           final isOwner = supabase.auth.currentUser?.id == currentList.ownerId;
           final hasImage = currentList.backgroundImage != null;
 

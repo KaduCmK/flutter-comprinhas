@@ -1,9 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/core/platform/platform_capabilities.dart';
 import 'package:flutter_comprinhas/firebase_options.dart';
 
 Future<void> configureFirebase() async {
+  if (!PlatformCapabilities.supportsFirebaseMessaging) {
+    return;
+  }
+
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);

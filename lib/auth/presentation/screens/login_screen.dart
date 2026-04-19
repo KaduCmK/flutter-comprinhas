@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/core/platform/platform_capabilities.dart';
 import 'package:flutter_comprinhas/core/config/push_token_sync_service.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
 import 'package:flutter_comprinhas/main.dart';
@@ -7,10 +8,44 @@ import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  final String? nextPath;
+
+  const LoginScreen({super.key, this.nextPath});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _redirectIfLoggedIn());
+  }
+
+  Future<void> _redirectIfLoggedIn() async {
+    if (!mounted) return;
+    if (supabase.auth.currentSession == null) return;
+
+    await sl<PushTokenSyncService>().start();
+    if (!mounted) return;
+    context.go(widget.nextPath ?? '/home');
+  }
 
   Future<void> _signIn(BuildContext context) async {
+    if (PlatformCapabilities.isWeb) {
+      final redirectUri = Uri.parse(
+        '${Uri.base.origin}/login${widget.nextPath != null ? '?next=${Uri.encodeComponent(widget.nextPath!)}' : ''}',
+      );
+
+      await supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUri.toString(),
+      );
+      return;
+    }
+
     final googleSignIn = GoogleSignIn.instance;
     await googleSignIn.initialize(
       serverClientId: dotenv.get('GCLOUD_WEB_CLIENT_ID'),
@@ -38,7 +73,7 @@ class LoginScreen extends StatelessWidget {
       await sl<PushTokenSyncService>().start();
 
       if (context.mounted) {
-        context.go('/home');
+        context.go(widget.nextPath ?? '/home');
       }
     }
   }

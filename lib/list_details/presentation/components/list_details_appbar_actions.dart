@@ -1,10 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/list_details/presentation/components/qr_code_dialog.dart';
 import 'package:flutter_comprinhas/list_details/presentation/screens/bloc/list_details/list_details_bloc.dart';
+import 'package:flutter_comprinhas/listas/presentation/components/list_share_link.dart';
 import 'package:go_router/go_router.dart';
 
 class ListDetailsAppbarActions extends StatelessWidget {
@@ -207,11 +206,8 @@ class ListDetailsAppbarActions extends StatelessWidget {
               leadingIcon: Icon(Icons.link),
               child: Text("Copiar código"),
               onPressed: () {
-                final encodedListId = base64Url.encode(
-                  utf8.encode(state.list!.id),
-                );
-                final listCode = 'comprinhas://join/$encodedListId';
-                Clipboard.setData(ClipboardData(text: listCode)).then((_) {
+                final shareLink = ListShareLink.build(state.list!.id);
+                Clipboard.setData(ClipboardData(text: shareLink)).then((_) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

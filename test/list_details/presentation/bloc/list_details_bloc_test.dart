@@ -18,6 +18,13 @@ void main() {
     registerFallbackValue(CartMode.shared);
     registerFallbackValue(FakeRealtimeChannel());
     registerFallbackValue(PostgresChangeEvent.all);
+    registerFallbackValue(
+      PostgresChangeFilter(
+        type: PostgresChangeFilterType.eq,
+        column: 'list_id',
+        value: 'list-1',
+      ),
+    );
   });
 
   group('ListDetailsBloc', () {
@@ -55,10 +62,11 @@ void main() {
           event: any(named: 'event'),
           schema: any(named: 'schema'),
           table: any(named: 'table'),
+          filter: any(named: 'filter'),
           callback: any(named: 'callback'),
         ),
       ).thenReturn(mockChannel);
-      when(() => mockChannel.subscribe(any())).thenReturn(mockChannel);
+      when(() => mockChannel.subscribe()).thenReturn(mockChannel);
 
       when(() => mockSupabaseClient.auth).thenReturn(mockGotrueClient);
       when(() => mockGotrueClient.currentUser).thenReturn(mockUser);
@@ -146,7 +154,12 @@ void main() {
             ),
             isA<ListDetailsState>()
                 .having((s) => s.isLoading, 'isLoading', false)
-                .having((s) => s.list, 'list', mockList),
+                .having((s) => s.list, 'list', mockList)
+                .having((s) => s.items, 'items vazios antes do filtro final', isEmpty),
+            isA<ListDetailsState>()
+                .having((s) => s.isLoading, 'isLoading', false)
+                .having((s) => s.list, 'list', mockList)
+                .having((s) => s.items.length, 'items carregados', 2),
           ],
       verify: (_) {
         verify(() => mockListasRepository.getListById(listId)).called(1);

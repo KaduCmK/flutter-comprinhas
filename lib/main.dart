@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +8,7 @@ import 'package:flutter_comprinhas/core/config/app_settings_service.dart';
 import 'package:flutter_comprinhas/core/config/firebase_config.dart';
 import 'package:flutter_comprinhas/core/config/notification_service.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
+import 'package:flutter_comprinhas/core/platform/platform_capabilities.dart';
 import 'package:flutter_comprinhas/global_cart/presentation/bloc/global_cart_bloc.dart';
 import 'package:flutter_comprinhas/global_cart/presentation/global_cart_screen.dart';
 import 'package:flutter_comprinhas/home/presentation/screens/home_screen.dart';
@@ -25,6 +24,7 @@ import 'package:flutter_comprinhas/list_details/presentation/screens/list_info_s
 import 'package:flutter_comprinhas/listas/domain/entities/lista_compra.dart';
 import 'package:flutter_comprinhas/listas/domain/listas_repository.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
+import 'package:flutter_comprinhas/listas/presentation/screens/join_link_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/join_list_screen.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/nova_lista_screen.dart';
 import 'package:flutter_comprinhas/mercado/data/mercado_repository.dart';
@@ -64,7 +64,12 @@ final _router = GoRouter(
   initialLocation: '/',
   routes: [
     GoRoute(path: '/', builder: (context, state) => const SplashScreen()),
-    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+    GoRoute(
+      path: '/login',
+      builder:
+          (context, state) =>
+              LoginScreen(nextPath: state.uri.queryParameters['next']),
+    ),
     ShellRoute(
       builder: (context, state, child) {
         return BlocProvider(
@@ -155,57 +160,59 @@ final _router = GoRouter(
     GoRoute(
       path: '/list/:listId/info',
       builder: (context, state) {
-        final list = state.extra as ListaCompra;
         return BlocProvider(
           create:
               (_) =>
                   ListasBloc(repository: sl<ListasRepository>())
                     ..add(GetListsEvent()),
-          child: ListInfoScreen(list: list),
+          child: ListInfoScreen(listId: state.pathParameters['listId']!),
         );
       },
     ),
     GoRoute(
-      path: '/nova-lista',
+      path: '/listas/nova',
       builder: (context, state) {
-        debugPrint(state.extra.toString());
-        final extra = state.extra as Map<String, dynamic>;
-        final listasBloc = extra['bloc'] as ListasBloc;
-        final listaToEdit = extra['list'] as ListaCompra?;
-
-        return BlocProvider.value(
-          value: listasBloc,
-          child: NovaListaScreen(listToEdit: listaToEdit),
+        return BlocProvider(
+          create:
+              (_) =>
+                  ListasBloc(repository: sl<ListasRepository>())
+                    ..add(GetListsEvent()),
+          child: const NovaListaScreen(),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/listas/:listId/editar',
+      builder: (context, state) {
+        return BlocProvider(
+          create:
+              (_) =>
+                  ListasBloc(repository: sl<ListasRepository>())
+                    ..add(GetListsEvent()),
+          child: NovaListaScreen(listId: state.pathParameters['listId']!),
         );
       },
     ),
     GoRoute(
       path: '/join-list',
-      builder: (context, state) {
-        final listasBloc = state.extra as ListasBloc;
-        return BlocProvider.value(value: listasBloc, child: JoinListScreen());
-      },
+      builder: (context, state) => const JoinListScreen(),
     ),
     GoRoute(
       path: '/join/:listId',
-      redirect: (context, state) async {
-        final encodedListId = state.pathParameters['listId']!;
-        try {
-          final listId = utf8.decode(base64Url.decode(encodedListId));
-          await sl<ListasRepository>().joinList(listId);
-          return '/list/$listId';
-        } catch (e) {
-          debugPrint('Erro ao entrar na lista: $e');
-          return '/home';
-        }
-      },
       builder:
           (context, state) =>
-              const Scaffold(body: Center(child: Text('Carregando...'))),
+              JoinLinkScreen(encodedListId: state.pathParameters['listId']!),
     ),
     GoRoute(
       path: '/enviar-nfe',
       builder: (context, state) {
+        if (!PlatformCapabilities.supportsMercadoFeatures) {
+          return const _UnsupportedFeatureScreen(
+            title: 'Mercados indisponível',
+            message: 'O fluxo de nota fiscal ainda não está disponível na web.',
+          );
+        }
+
         final extra = state.extra;
         if (extra is MercadoBloc) {
           return BlocProvider.value(
@@ -219,6 +226,13 @@ final _router = GoRouter(
     GoRoute(
       path: '/nfe-details',
       builder: (context, state) {
+        if (!PlatformCapabilities.supportsMercadoFeatures) {
+          return const _UnsupportedFeatureScreen(
+            title: 'Mercados indisponível',
+            message: 'Esta área ainda não está disponível na web.',
+          );
+        }
+
         final purchase = state.extra as PurchaseHistory;
         return BlocProvider(
           create: (_) => NfeDetailsCubit(mercadoRepository: sl()),
@@ -229,6 +243,13 @@ final _router = GoRouter(
     GoRoute(
       path: '/mercado-details',
       builder: (context, state) {
+        if (!PlatformCapabilities.supportsMercadoFeatures) {
+          return const _UnsupportedFeatureScreen(
+            title: 'Mercados indisponível',
+            message: 'Esta área ainda não está disponível na web.',
+          );
+        }
+
         final stats = state.extra as MercadoStats;
         return MercadoDetailsScreen(stats: stats);
       },
@@ -263,6 +284,29 @@ class MyApp extends StatelessWidget {
           routerConfig: _router,
         );
       },
+    );
+  }
+}
+
+class _UnsupportedFeatureScreen extends StatelessWidget {
+  final String title;
+  final String message;
+
+  const _UnsupportedFeatureScreen({
+    required this.title,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(message, textAlign: TextAlign.center),
+        ),
+      ),
     );
   }
 }

@@ -106,10 +106,7 @@ class _ListDetailsAppBarState extends State<ListDetailsAppBar> {
                           InkWell(
                             onTap: () {
                               if (state.list != null) {
-                                context.push(
-                                  '/list/${state.list!.id}/info',
-                                  extra: state.list,
-                                );
+                                context.push('/list/${state.list!.id}/info');
                               }
                             },
                             borderRadius: BorderRadius.circular(8),

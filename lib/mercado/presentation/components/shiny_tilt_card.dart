@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_comprinhas/core/config/app_settings_service.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
+import 'package:flutter_comprinhas/core/platform/platform_capabilities.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 
 class ShinyTiltCard extends StatefulWidget {
@@ -56,6 +57,10 @@ class _ShinyTiltCardState extends State<ShinyTiltCard> {
   }
 
   void _startEffects() {
+    if (!PlatformCapabilities.supportsSpecialEffects) {
+      return;
+    }
+
     _accelerometerSubscription?.cancel();
     _accelerometerSubscription = accelerometerEventStream().listen((event) {
       if (!mounted) return;

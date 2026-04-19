@@ -1,6 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/listas/presentation/components/list_share_link.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QrCodeDialog extends StatelessWidget {
@@ -10,8 +9,7 @@ class QrCodeDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final encodedListId = base64Url.encode(utf8.encode(listId));
-    final deepLink = 'comprinhas://join/$encodedListId';
+    final shareLink = ListShareLink.build(listId);
 
     return AlertDialog(
       title: const Text("Compartilhar Lista"),
@@ -19,7 +17,7 @@ class QrCodeDialog extends StatelessWidget {
         width: 300,
         height: 300,
         child: QrImageView(
-          data: deepLink,
+          data: shareLink,
           version: QrVersions.auto,
           backgroundColor: Colors.white,
         ),

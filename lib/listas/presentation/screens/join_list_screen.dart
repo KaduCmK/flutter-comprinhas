@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_comprinhas/listas/presentation/components/list_share_link.dart';
 import 'package:go_router/go_router.dart';
 
 class JoinListScreen extends StatefulWidget {
@@ -27,10 +28,12 @@ class _JoinListScreenState extends State<JoinListScreen> {
   void _checkClipboard() async {
     final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
     final clipboardText = clipboardData?.text;
+    final encodedId =
+        clipboardText == null
+            ? null
+            : ListShareLink.extractEncodedId(clipboardText);
 
-    if (clipboardText != null &&
-        clipboardText.startsWith('comprinhas://join/') &&
-        mounted) {
+    if (encodedId != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
@@ -39,15 +42,20 @@ class _JoinListScreenState extends State<JoinListScreen> {
         ),
       );
       setState(() {
-        listIdController.text = clipboardText;
+        listIdController.text = clipboardText!;
       });
     }
   }
 
   void _joinListById() {
-    debugPrint(listIdController.text);
-    final uri = Uri.parse(listIdController.text);
-    final encodedId = uri.pathSegments.last;
+    final encodedId = ListShareLink.extractEncodedId(listIdController.text);
+    if (encodedId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Link ou código inválido.')),
+      );
+      return;
+    }
+
     context.replace('/join/$encodedId');
   }
 

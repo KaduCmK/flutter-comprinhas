@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
+import 'package:flutter_comprinhas/core/platform/platform_capabilities.dart';
 import 'package:flutter_comprinhas/home/presentation/components/home_fab.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/bloc/listas_bloc.dart';
 import 'package:flutter_comprinhas/listas/presentation/screens/listas_screen.dart';
@@ -15,11 +16,17 @@ class HomeScreenProvider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (!PlatformCapabilities.supportsMercadoFeatures) {
+      return BlocProvider(
+        create: (_) => ListasBloc(repository: sl())..add(GetListsEvent()),
+        child: const HomeScreen(),
+      );
+    }
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create:
-              (context) => ListasBloc(repository: sl())..add(GetListsEvent()),
+          create: (_) => ListasBloc(repository: sl())..add(GetListsEvent()),
         ),
         BlocProvider(
           create:
@@ -42,15 +49,17 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static final List<Widget> _destinations = [];
-
   int _selectedIndex = 0;
   late final PageController _pageController;
+
+  List<Widget> get _destinations => [
+    const ListasScreen(),
+    if (PlatformCapabilities.supportsMercadoFeatures) const MercadoScreen(),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _destinations.addAll([const ListasScreen(), const MercadoScreen()]);
     _pageController = PageController(initialPage: _selectedIndex);
   }
 
@@ -77,6 +86,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!PlatformCapabilities.supportsMercadoFeatures) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Comprinhas"),
+          leading: const UserAvatar(),
+          actions: [
+            IconButton(
+              onPressed: () => context.push('/settings'),
+              icon: const Icon(Icons.settings_outlined),
+              tooltip: 'Configurações',
+            ),
+          ],
+        ),
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        floatingActionButtonLocation: ExpandableFab.location,
+        floatingActionButton: const HomeFab(selectedIndex: 0),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Builder(
+            builder: (context) {
+              return const ListasScreen();
+            },
+          ),
+        ),
+      );
+    }
+
     return BlocListener<MercadoBloc, MercadoState>(
       listener: (context, state) {
         if (state.status == MercadoStatus.sent) {

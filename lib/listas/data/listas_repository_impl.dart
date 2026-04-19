@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_comprinhas/core/models/image_upload_data.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/cart_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/list_item.dart';
 import 'package:flutter_comprinhas/list_details/domain/entities/purchase_with_nfe_preview.dart';
@@ -127,17 +127,25 @@ class ListasRepositoryImpl implements ListasRepository {
   }
 
   @override
-  Future<String?> uploadBackgroundImage(File imageFile, String listId) async {
+  Future<String?> uploadBackgroundImage(
+    ImageUploadData imageData,
+    String listId,
+  ) async {
     try {
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final fileName =
+          '${DateTime.now().millisecondsSinceEpoch}_${imageData.fileName}';
       final filePath = '$listId/$fileName';
 
       await _client.storage
           .from('list_backgrounds')
-          .upload(
+          .uploadBinary(
             filePath,
-            imageFile,
-            fileOptions: const FileOptions(cacheControl: '3600', upsert: true),
+            imageData.bytes,
+            fileOptions: FileOptions(
+              cacheControl: '3600',
+              upsert: true,
+              contentType: imageData.contentType,
+            ),
           );
 
       return _client.storage.from('list_backgrounds').getPublicUrl(filePath);
