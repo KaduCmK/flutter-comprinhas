@@ -16,6 +16,10 @@ class ListShareLink {
     return '$baseUrl/join/$encodedListId';
   }
 
+  static String buildAppDeepLinkFromEncodedId(String encodedListId) {
+    return 'comprinhas://join/$encodedListId';
+  }
+
   static String? extractEncodedId(String rawValue) {
     final trimmedValue = rawValue.trim();
     if (trimmedValue.isEmpty) return null;

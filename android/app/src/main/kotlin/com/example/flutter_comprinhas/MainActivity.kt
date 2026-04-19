@@ -46,6 +46,20 @@ class MainActivity : FlutterActivity() {
             }
             return path
         }
+
+        if ((uri.scheme == "https" || uri.scheme == "http") &&
+            uri.host == "comprinhas-460819.web.app" &&
+            uri.pathSegments.isNotEmpty() &&
+            uri.pathSegments.first() == "join") {
+            return uri.encodedPath?.let { path ->
+                if (uri.query.isNullOrEmpty()) {
+                    path
+                } else {
+                    "$path?${uri.encodedQuery}"
+                }
+            }
+        }
+
         return null
     }
 }

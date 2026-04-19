@@ -48,7 +48,14 @@ class ListasRepositoryImpl implements ListasRepository {
   @override
   Future<void> joinList(String listId) async {
     try {
-      await _client.functions.invoke('join-list', body: {'list_id': listId});
+      final response = await _client.functions.invoke(
+        'join-list',
+        body: {'list_id': listId},
+      );
+
+      if (response.status < 200 || response.status >= 300) {
+        throw response.data ?? 'Não foi possível entrar na lista.';
+      }
     } catch (e) {
       _logger.e('Erro ao chamar edge function join_list: $e');
       rethrow;

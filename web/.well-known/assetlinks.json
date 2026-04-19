@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.github.kaducmk.comprinhas",
+      "sha256_cert_fingerprints": [
+        "39:16:12:C8:EB:A7:80:D0:11:54:D4:4B:CC:83:9F:A8:C3:AD:08:1C:DB:D6:68:79:49:4B:B2:BE:DF:61:A9:55"
+      ]
+    }
+  }
+]
