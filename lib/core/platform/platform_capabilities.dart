@@ -7,6 +7,8 @@ class PlatformCapabilities {
 
   static bool get supportsFirebaseMessaging => !kIsWeb;
 
+  static bool get supportsCrashReporting => !kIsWeb;
+
   static bool get supportsLocalNotifications => !kIsWeb;
 
   static bool get supportsSpecialEffects => !kIsWeb;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_comprinhas/app_theme.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/login_screen.dart';
 import 'package:flutter_comprinhas/auth/presentation/screens/splash_screen.dart';
 import 'package:flutter_comprinhas/core/config/app_settings_service.dart';
+import 'package:flutter_comprinhas/core/config/crash_reporting_service.dart';
 import 'package:flutter_comprinhas/core/config/firebase_config.dart';
 import 'package:flutter_comprinhas/core/config/notification_service.dart';
 import 'package:flutter_comprinhas/core/config/service_locator.dart';
@@ -40,22 +43,35 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await initializeDateFormatting('pt_BR', null);
-  await dotenv.load(fileName: '.env');
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
+    await initializeDateFormatting('pt_BR', null);
+    await dotenv.load(fileName: '.env');
 
-  configureServiceLocator();
-  await sl<AppSettingsService>().init();
-  await sl<NotificationService>().init();
+    configureServiceLocator();
+    await sl<AppSettingsService>().init();
+    await sl<NotificationService>().init();
 
-  await configureFirebase();
+    await configureFirebase();
+    await CrashReportingService.init();
 
-  await Supabase.initialize(
-    url: dotenv.get('SUPABASE_URL'),
-    anonKey: dotenv.get('SUPABASE_ANON_KEY'),
-  );
+    await Supabase.initialize(
+      url: dotenv.get('SUPABASE_URL'),
+      anonKey: dotenv.get('SUPABASE_ANON_KEY'),
+    );
 
-  runApp(const MyApp());
+    runApp(const MyApp());
+  }, (error, stackTrace) async {
+    FlutterError.presentError(
+      FlutterErrorDetails(exception: error, stack: stackTrace),
+    );
+    await CrashReportingService.recordError(
+      error,
+      stackTrace,
+      fatal: true,
+      reason: 'Erro não tratado em runZonedGuarded',
+    );
+  });
 }
 
 final supabase = Supabase.instance.client;
