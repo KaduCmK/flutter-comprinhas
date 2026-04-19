@@ -26,7 +26,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'iOS não é uma plataforma suportada neste projeto no momento.',
+        );
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -55,16 +57,5 @@ class DefaultFirebaseOptions {
     messagingSenderId: '892316366568',
     projectId: 'comprinhas-460819',
     storageBucket: 'comprinhas-460819.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCnnrUpMyNkm1vDsD1mGMI-sk9EPPzA6io',
-    appId: '1:892316366568:ios:2378b9bb5a42cefd3b7b5d',
-    messagingSenderId: '892316366568',
-    projectId: 'comprinhas-460819',
-    storageBucket: 'comprinhas-460819.firebasestorage.app',
-    androidClientId:
-        '892316366568-mpilie6gihqm2nmeoe6sd400n45bh64m.apps.googleusercontent.com',
-    iosBundleId: 'com.example.flutterComprinhas',
   );
 }
